@@ -239,33 +239,33 @@ export default function ResultClient() {
     <div style={{ minHeight: "100vh", background: "#fff", padding: pagePad, color: "#0f172a" }}>
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
 {/* Top bar */}
-<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-  {/* Left: Logo + Brand */}
-  <a
-    href="/"
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      textDecoration: "none",
-      color: "#0f172a",
-      minWidth: 220,
-    }}
-    aria-label="Go to homepage"
-  >
+<div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  }}
+>
+  {/* ✅ Brand (Logo + Name) */}
+  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
     <img
       src="/logo.png"
       alt="UAEHomeValue"
       style={{
-        height: 28,
-        width: "auto",
-        display: "block",
+        width: 32,
+        height: 32,
+        objectFit: "contain",
+        borderRadius: 8,
+        border: "1px solid #e2e8f0",
+        background: "#ffffff",
+        padding: 4,
       }}
     />
-    <div style={{ display: "grid", lineHeight: 1.1 }}>
-      <div style={{ fontSize: 14, fontWeight: 950, letterSpacing: -0.2 }}>UAEHomeValue</div>
-      <div style={{ fontSize: 12, color: "#64748b", fontWeight: 800 }}>Instant estimate</div>
+    <div style={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>
+      UAEHomeValue
     </div>
+  </div>
   </a>
 
   {/* Right: Actions */}
