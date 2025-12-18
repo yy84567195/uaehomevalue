@@ -9,18 +9,13 @@ function getParam(name: string) {
   return url.searchParams.get(name) || "";
 }
 
-function clamp(n: number, lo: number, hi: number) {
-  return Math.max(lo, Math.min(hi, n));
-}
-
-// Deterministic hash -> number (stable per same input)
+// Deterministic hash -> 0..1 (stable per same input)
 function hashTo01(input: string) {
   let h = 2166136261;
   for (let i = 0; i < input.length; i++) {
     h ^= input.charCodeAt(i);
     h = Math.imul(h, 16777619);
   }
-  // 0..1
   return ((h >>> 0) % 100000) / 100000;
 }
 
@@ -53,9 +48,7 @@ function sparkPath(values: number[], w = 220, h = 56, pad = 6) {
     return [x, y];
   });
 
-  return pts
-    .map(([x, y], i) => `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`)
-    .join(" ");
+  return pts.map(([x, y], i) => `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`).join(" ");
 }
 
 export default function ResultClient() {
@@ -96,6 +89,12 @@ export default function ResultClient() {
   }, [area, type, beds, sizeSqftStr, min, max, confidence]);
   const waUrl = `https://wa.me/${whatsappNumber}?text=${msg}`;
 
+  // Google Maps (no API key)
+  const mapsQuery = useMemo(() => {
+    const q = (area || "Dubai") + ", UAE";
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+  }, [area]);
+
   // Seeded “market signals”
   const seed = useMemo(() => `${area}|${type}|${beds}|${sizeSqftStr}|${min}|${max}`, [area, type, beds, sizeSqftStr, min, max]);
   const base01 = useMemo(() => hashTo01(seed), [seed]);
@@ -104,13 +103,12 @@ export default function ResultClient() {
   const trend = useMemo(() => {
     const points = 12;
     const out: number[] = [];
-    const drift = (base01 - 0.5) * 0.06; // -3%..+3% total drift
+    const drift = (base01 - 0.5) * 0.06; // -3%..+3% drift
     const vol = 0.012 + base01 * 0.01; // 1.2%..2.2% wiggle
     const start = mid > 0 ? mid * (1 - drift / 2) : 0;
 
     for (let i = 0; i < points; i++) {
       const t = i / (points - 1);
-      // deterministic pseudo-noise
       const n01 = hashTo01(`${seed}|t${i}`);
       const noise = (n01 - 0.5) * 2; // -1..1
       const value = start * (1 + drift * t) * (1 + noise * vol);
@@ -130,7 +128,6 @@ export default function ResultClient() {
 
   // Rent estimate (rough) – show as informational
   const rent = useMemo(() => {
-    // assume 5%–7% gross yield band, annual -> monthly
     const lo = mid * 0.05;
     const hi = mid * 0.07;
     return {
@@ -138,6 +135,8 @@ export default function ResultClient() {
       monthlyMax: Math.round(hi / 12),
       annualMin: Math.round(lo),
       annualMax: Math.round(hi),
+      yieldMinPct: 5,
+      yieldMaxPct: 7,
     };
   }, [mid]);
 
@@ -180,10 +179,35 @@ export default function ResultClient() {
       });
     }
 
-    // sort by closeness in size
     out.sort((a, b) => Math.abs(a.size - baseSize) - Math.abs(b.size - baseSize));
     return out;
   }, [seed, beds, sizeSqft, mid]);
+
+  // Market snapshot (derived, no external data)
+  const market = useMemo(() => {
+    const ppsf = sizeSqft > 0 && mid > 0 ? mid / sizeSqft : 0;
+    const rangeWidthPct = mid > 0 ? ((max - min) / mid) * 100 : 0;
+
+    // Activity heuristic: tighter range + higher confidence => higher "signal quality"
+    const c = (confidence || "").toLowerCase();
+    const confScore = c.includes("high") ? 1 : c.includes("med") ? 0.6 : 0.35;
+    const tightScore = 1 - Math.min(1, rangeWidthPct / 35); // 0..1
+    const activityScore = confScore * 0.6 + tightScore * 0.4;
+    const activity = activityScore > 0.72 ? "High" : activityScore > 0.5 ? "Medium" : "Low";
+
+    const yoy = (hashTo01(seed + "|yoy") - 0.5) * 12; // -6%..+6% (est.)
+    const mom = (hashTo01(seed + "|mom") - 0.5) * 4; // -2%..+2% (est.)
+    const dom = Math.round(18 + hashTo01(seed + "|dom") * 45); // 18..63 days (est.)
+
+    return {
+      ppsf,
+      rangeWidthPct,
+      activity,
+      yoy,
+      mom,
+      dom,
+    };
+  }, [sizeSqft, mid, max, min, confidence, seed]);
 
   // Confidence badge style
   const confColor = useMemo(() => {
@@ -208,7 +232,7 @@ export default function ResultClient() {
                 border: "1px solid #0ea5e9",
                 background: "#0ea5e9",
                 color: "#fff",
-                padding: isMobile ? "10px 12px" : "10px 12px",
+                padding: "10px 12px",
                 borderRadius: 12,
                 fontWeight: 900,
                 cursor: "pointer",
@@ -251,7 +275,7 @@ export default function ResultClient() {
                     {formatAED(min)} <span style={{ color: "#94a3b8" }}>–</span> {formatAED(max)}
                   </div>
                   <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
-                    Last updated: today • Range width: {pct(((max - min) / Math.max(1, mid)) * 100)}
+                    Last updated: today • Range width: {pct(market.rangeWidthPct)}
                   </div>
                 </div>
 
@@ -328,10 +352,10 @@ export default function ResultClient() {
                     {formatAedShort(rent.monthlyMin)} <span style={{ color: "#94a3b8" }}>–</span> {formatAedShort(rent.monthlyMax)}
                   </div>
                   <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
-                    Annual: {formatAedShort(rent.annualMin)} – {formatAedShort(rent.annualMax)}
+                    Annual: {formatAedShort(rent.annualMin)} – {formatAedShort(rent.annualMax)} • Yield: {rent.yieldMinPct}–{rent.yieldMaxPct}%
                   </div>
                   <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>
-                    Basis: a broad gross yield band (5–7%) for quick screening.
+                    Basis: a broad gross yield band for quick screening.
                   </div>
                 </div>
               </div>
@@ -371,7 +395,10 @@ export default function ResultClient() {
 
                     <div style={{ marginTop: 8, fontSize: 18, fontWeight: 950 }}>
                       {formatAedShort(c.price)}
-                      <span style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}> • {Math.round(c.ppsf).toLocaleString("en-US")} AED/sqft</span>
+                      <span style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}>
+                        {" "}
+                        • {Math.round(c.ppsf).toLocaleString("en-US")} AED/sqft
+                      </span>
                     </div>
 
                     <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>{c.note}</div>
@@ -442,8 +469,117 @@ export default function ResultClient() {
 
           {/* Right column */}
           <div style={{ display: "grid", gap: 14 }}>
-            {/* Inputs */}
+            {/* MAP CARD (Zillow vibe) */}
+            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, overflow: "hidden" }}>
+              <div
+                style={{
+                  height: isMobile ? 160 : 190,
+                  background:
+                    "linear-gradient(135deg, rgba(14,165,233,0.18), rgba(99,102,241,0.12)), radial-gradient(circle at 30% 20%, rgba(14,165,233,0.20), transparent 55%)",
+                  position: "relative",
+                  padding: 14,
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    backgroundImage:
+                      "linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.85))",
+                    pointerEvents: "none",
+                  }}
+                />
+                <div style={{ position: "relative" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div
+                      style={{
+                        width: 34,
+                        height: 34,
+                        borderRadius: 12,
+                        background: "#0ea5e9",
+                        color: "#fff",
+                        display: "grid",
+                        placeItems: "center",
+                        fontWeight: 950,
+                      }}
+                    >
+                      ⌖
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 950, fontSize: 14 }}>Location</div>
+                      <div style={{ fontSize: 12, color: "#64748b" }}>Approximate area map (no sign-in)</div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: 12, fontSize: 14, fontWeight: 950 }}>
+                    {area || "Dubai"} <span style={{ color: "#94a3b8", fontWeight: 900 }}>• UAE</span>
+                  </div>
+
+                  <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr", gap: 10 }}>
+                    <a href={mapsQuery} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                      <button
+                        style={{
+                          width: "100%",
+                          border: "1px solid #e2e8f0",
+                          background: "#ffffff",
+                          color: "#0f172a",
+                          padding: "10px 12px",
+                          borderRadius: 12,
+                          fontWeight: 950,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Open in Google Maps
+                      </button>
+                    </a>
+                  </div>
+
+                  <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>
+                    Next: we can add real map pins once we store community coordinates.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* MARKET SNAPSHOT */}
             <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad, background: "#fafafa" }}>
+              <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Market snapshot (estimated)</div>
+
+              <div style={{ display: "grid", gap: 10 }}>
+                {[
+                  ["Median value", formatAedShort(mid)],
+                  ["Price / sqft", market.ppsf > 0 ? `${Math.round(market.ppsf).toLocaleString("en-US")} AED/sqft` : "—"],
+                  ["Activity", market.activity],
+                  ["Days on market", `${market.dom} days (est.)`],
+                  ["MoM change", pct(market.mom)],
+                  ["YoY change", pct(market.yoy)],
+                ].map(([k, v]) => (
+                  <div
+                    key={k}
+                    style={{
+                      padding: 12,
+                      borderRadius: 12,
+                      background: "#fff",
+                      border: "1px solid #e2e8f0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 12,
+                    }}
+                  >
+                    <div style={{ fontSize: 12, color: "#64748b" }}>{k}</div>
+                    <div style={{ fontWeight: 950, textAlign: "right" }}>{v}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>
+                Snapshot is derived from the estimate + lightweight heuristics. We’ll replace with real market stats once data is integrated.
+              </div>
+            </div>
+
+            {/* INPUTS */}
+            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
               <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Your inputs</div>
 
               <div style={{ display: "grid", gap: 10 }}>
@@ -507,33 +643,14 @@ export default function ResultClient() {
               </div>
             </div>
 
-            {/* FAQ */}
-            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
-              <div style={{ fontWeight: 950, fontSize: 14 }}>FAQ</div>
-              <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-                {[
-                  ["Is this official?", "No. It’s an informational estimate, not a certified valuation."],
-                  ["Why a range, not a number?", "Because view, floor, condition, and comps vary a lot in Dubai."],
-                  ["Can you provide a formal valuation?", "We can guide you or connect you with a certified valuer/agent."],
-                ].map(([q, a]) => (
-                  <div key={q} style={{ padding: 12, borderRadius: 12, background: "#fff", border: "1px solid #e2e8f0" }}>
-                    <div style={{ fontWeight: 900, fontSize: 12 }}>{q}</div>
-                    <div style={{ marginTop: 6, fontSize: 12, color: "#64748b", lineHeight: 1.55 }}>{a}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Disclaimer */}
             <div style={{ fontSize: 12, color: "#94a3b8", padding: "0 4px" }}>
-              Estimates and sample comps are informational and may differ from actual market prices. Not a formal appraisal.
+              Estimates, sample comps, and market snapshot are informational and may differ from actual market prices. Not a formal appraisal.
             </div>
           </div>
         </div>
 
-        <div style={{ marginTop: 18, fontSize: 12, color: "#94a3b8" }}>
-          © {new Date().getFullYear()} UAEHomeValue
-        </div>
+        <div style={{ marginTop: 18, fontSize: 12, color: "#94a3b8" }}>© UAEHomeValue</div>
       </div>
     </div>
   );
