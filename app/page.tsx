@@ -6,20 +6,21 @@ import data from "@/data/price_ranges.json";
 type PropertyType = "Apartment" | "Villa";
 
 export default function HomePage() {
-  // Build a safe string[] areas list
-  const areas = useMemo(() => {
+  // ✅ Build a SAFE string[] areas list (no unknown, no TS error)
+  const areas = useMemo<string[]>(() => {
     const rows = (data as any)?.communities ?? [];
-    const list = rows
+    const list: string[] = rows
       .map((r: any) => String(r?.area ?? "").trim())
       .filter((a: string) => a.length > 0);
     return Array.from(new Set(list)).sort();
   }, []);
 
-  const [area, setArea] = useState<string>(areas?.[0] || "Dubai Marina");
+  // States
+  const [area, setArea] = useState<string>("Dubai Marina");
   const [type, setType] = useState<PropertyType>("Apartment");
   const [beds, setBeds] = useState<number>(2);
   const [sizeSqft, setSizeSqft] = useState<number>(1250);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [err, setErr] = useState<string | undefined>(undefined);
 
   const isValid = useMemo(() => !!area && sizeSqft > 0, [area, sizeSqft]);
@@ -43,13 +44,13 @@ export default function HomePage() {
         type,
         beds: String(beds),
         sizeSqft: String(sizeSqft),
-        min: String(out?.min ?? 0),
-        max: String(out?.max ?? 0),
-        confidence: String(out?.confidence ?? "Low"),
+        min: String(out.min || 0),
+        max: String(out.max || 0),
+        confidence: String(out.confidence || "Medium"),
       });
 
       window.location.href = `/result?${params.toString()}`;
-    } catch (e: any) {
+    } catch (e) {
       setErr("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -57,26 +58,26 @@ export default function HomePage() {
   }
 
   return (
-    <div className="grid grid2">
-      {/* Left card: form */}
-      <div className="card cardPad">
-        <h1 className="h1">Check your home value in Dubai — instantly.</h1>
+    <div style={{ minHeight: "100vh", background: "#ffffff", padding: "40px 16px", color: "#0f172a" }}>
+      <div style={{ maxWidth: 920, margin: "0 auto" }}>
+        <h1 style={{ fontSize: 32, fontWeight: 900, letterSpacing: -0.6 }}>
+          Check your home value in Dubai
+        </h1>
 
-        {/* ✅ Slogan (same as result page) */}
-        <div style={{ marginTop: 6, fontSize: 14, color: "#64748b", fontWeight: 700 }}>
+        <p style={{ marginTop: 8, color: "#475569" }}>
           Estimate first. Decide better.
-        </div>
-
-        <p className="p" style={{ marginTop: 10 }}>
-          Free price estimate range based on nearby market data. No sign-up required.
         </p>
 
-        <div className="row row4">
+        <div style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 16 }}>
           {/* Area */}
           <div>
-            <div className="label">Area</div>
-            <select className="input" value={area} onChange={(e) => setArea(e.target.value)}>
-              {(areas as string[]).map((a) => (
+            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 6 }}>Area</div>
+            <select
+              value={area}
+              onChange={(e) => setArea(e.target.value)}
+              style={{ width: "100%", padding: 10, borderRadius: 10, border: "1px solid #e2e8f0" }}
+            >
+              {areas.map((a) => (
                 <option key={a} value={a}>
                   {a}
                 </option>
@@ -86,21 +87,25 @@ export default function HomePage() {
 
           {/* Type */}
           <div>
-            <div className="label">Type</div>
+            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 6 }}>Property type</div>
             <select
-              className="input"
               value={type}
               onChange={(e) => setType(e.target.value as PropertyType)}
+              style={{ width: "100%", padding: 10, borderRadius: 10, border: "1px solid #e2e8f0" }}
             >
               <option value="Apartment">Apartment</option>
               <option value="Villa">Villa</option>
             </select>
           </div>
 
-          {/* Bedrooms */}
+          {/* Beds */}
           <div>
-            <div className="label">Bedrooms</div>
-            <select className="input" value={beds} onChange={(e) => setBeds(Number(e.target.value))}>
+            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 6 }}>Bedrooms</div>
+            <select
+              value={beds}
+              onChange={(e) => setBeds(Number(e.target.value))}
+              style={{ width: "100%", padding: 10, borderRadius: 10, border: "1px solid #e2e8f0" }}
+            >
               <option value={0}>Studio</option>
               <option value={1}>1</option>
               <option value={2}>2</option>
@@ -111,59 +116,45 @@ export default function HomePage() {
 
           {/* Size */}
           <div>
-            <div className="label">Size (sq ft)</div>
+            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 6 }}>Size (sqft)</div>
             <input
-              className="input"
               type="number"
               value={sizeSqft}
               onChange={(e) => setSizeSqft(Number(e.target.value))}
               placeholder="e.g. 1250"
-              min={1}
+              style={{ width: "100%", padding: 10, borderRadius: 10, border: "1px solid #e2e8f0" }}
             />
           </div>
         </div>
 
-        <div style={{ marginTop: 14 }}>
-          <button className="btn" onClick={onSubmit} disabled={!isValid || loading}>
+        <div style={{ marginTop: 24 }}>
+          <button
+            onClick={onSubmit}
+            disabled={!isValid || loading}
+            style={{
+              width: "100%",
+              padding: "14px 16px",
+              borderRadius: 14,
+              border: "none",
+              background: "#0ea5e9",
+              color: "#ffffff",
+              fontWeight: 900,
+              cursor: "pointer",
+              fontSize: 15,
+            }}
+          >
             {loading ? "Calculating…" : "Check My Home Value"}
           </button>
 
-          {err ? (
-            <div style={{ marginTop: 10 }} className="alert">
+          {err && (
+            <div style={{ marginTop: 12, color: "#991b1b", fontSize: 13 }}>
               {err}
             </div>
-          ) : null}
-
-          <div className="small" style={{ marginTop: 10 }}>
-            Apartments · Villas · Dubai (MVP)
-          </div>
-        </div>
-      </div>
-
-      {/* Right card: explanation */}
-      <div className="card cardPad">
-        <div className="kpi">
-          <div className="kpiVal">How it works</div>
-          <div className="kpiSub">
-            We show a realistic value range (not a single number) using comparable homes and a light
-            size adjustment.
-          </div>
+          )}
         </div>
 
-        <div className="hr" />
-
-        <div className="alert">
-          <b>Want a more accurate estimate?</b>
-          <br />
-          After you see your range, you can request a detailed valuation on WhatsApp by sharing
-          floor, view, parking and condition.
-        </div>
-
-        <div className="hr" />
-
-        <div className="small">
-          Tip: Start with Dubai Marina / Downtown / Business Bay to validate the flow. Then expand
-          communities.
+        <div style={{ marginTop: 20, fontSize: 12, color: "#94a3b8" }}>
+          Independent market-based estimate · No listings · No agents
         </div>
       </div>
     </div>
