@@ -18,7 +18,7 @@ export default function HomePage() {
   const [type, setType] = useState<PropertyType>("Apartment");
   const [beds, setBeds] = useState<number>(2);
 
-  // ✅ 用 string 存面积，允许空（不会出现 0 去不掉）
+  // 用 string 存面积，允许清空
   const [sizeSqftText, setSizeSqftText] = useState<string>("1250");
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -31,7 +31,10 @@ export default function HomePage() {
     return Number.isFinite(n) ? n : NaN;
   }, [sizeSqftText]);
 
-  const isValid = useMemo(() => !!area && Number.isFinite(sizeSqftNum) && sizeSqftNum > 0, [area, sizeSqftNum]);
+  const isValid = useMemo(
+    () => !!area && Number.isFinite(sizeSqftNum) && sizeSqftNum > 0,
+    [area, sizeSqftNum]
+  );
 
   async function onSubmit() {
     setErr(undefined);
@@ -68,8 +71,13 @@ export default function HomePage() {
     }
   }
 
-  // ✅ UI：变大、加粗、对比更强
-  const labelStyle: React.CSSProperties = { fontSize: 14, fontWeight: 800, color: "#0f172a", marginBottom: 8 };
+  const labelStyle: React.CSSProperties = {
+    fontSize: 14,
+    fontWeight: 800,
+    color: "#0f172a",
+    marginBottom: 8,
+  };
+
   const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "14px 14px",
@@ -81,26 +89,84 @@ export default function HomePage() {
     fontWeight: 700,
     outline: "none",
   };
-  const helperStyle: React.CSSProperties = { fontSize: 13, color: "#334155", marginTop: 10, lineHeight: 1.55 };
+
+  const helperStyle: React.CSSProperties = {
+    fontSize: 13,
+    color: "#334155",
+    marginTop: 10,
+    lineHeight: 1.55,
+  };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#ffffff", padding: "36px 16px", color: "#0f172a" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#ffffff",
+        padding: "36px 16px",
+        color: "#0f172a",
+      }}
+    >
       <div style={{ maxWidth: 920, margin: "0 auto" }}>
-        <h1 style={{ fontSize: 34, fontWeight: 950, letterSpacing: -0.6, margin: 0 }}>
+        {/* ✅ Logo Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 28,
+          }}
+        >
+          <img
+            src="/logo.png"
+            alt="UAEHomeValue"
+            style={{ height: 36 }}
+          />
+          <div style={{ fontWeight: 900, fontSize: 18 }}>
+            UAEHomeValue
+          </div>
+        </div>
+
+        <h1
+          style={{
+            fontSize: 34,
+            fontWeight: 950,
+            letterSpacing: -0.6,
+            margin: 0,
+          }}
+        >
           Check your home value in Dubai
         </h1>
 
-        <p style={{ marginTop: 10, color: "#334155", fontSize: 16, fontWeight: 700 }}>
+        <p
+          style={{
+            marginTop: 10,
+            color: "#334155",
+            fontSize: 16,
+            fontWeight: 700,
+          }}
+        >
           Estimate first. Decide better.
         </p>
 
-        <div style={{ marginTop: 22, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 16 }}>
+        <div
+          style={{
+            marginTop: 22,
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit,minmax(220px,1fr))",
+            gap: 16,
+          }}
+        >
           {/* Area */}
           <div>
             <div style={labelStyle}>Area</div>
-            <select value={area} onChange={(e) => setArea(e.target.value)} style={inputStyle}>
+            <select
+              value={area}
+              onChange={(e) => setArea(e.target.value)}
+              style={inputStyle}
+            >
               {areas.map((a) => (
-                <option key={a} value={a} style={{ color: "#0f172a" }}>
+                <option key={a} value={a}>
                   {a}
                 </option>
               ))}
@@ -110,7 +176,13 @@ export default function HomePage() {
           {/* Type */}
           <div>
             <div style={labelStyle}>Property type</div>
-            <select value={type} onChange={(e) => setType(e.target.value as PropertyType)} style={inputStyle}>
+            <select
+              value={type}
+              onChange={(e) =>
+                setType(e.target.value as PropertyType)
+              }
+              style={inputStyle}
+            >
               <option value="Apartment">Apartment</option>
               <option value="Villa">Villa</option>
             </select>
@@ -119,7 +191,13 @@ export default function HomePage() {
           {/* Beds */}
           <div>
             <div style={labelStyle}>Bedrooms</div>
-            <select value={beds} onChange={(e) => setBeds(Number(e.target.value))} style={inputStyle}>
+            <select
+              value={beds}
+              onChange={(e) =>
+                setBeds(Number(e.target.value))
+              }
+              style={inputStyle}
+            >
               <option value={0}>Studio</option>
               <option value={1}>1</option>
               <option value={2}>2</option>
@@ -135,14 +213,15 @@ export default function HomePage() {
               inputMode="numeric"
               value={sizeSqftText}
               onChange={(e) => {
-                // ✅ 允许清空；只保留数字
                 const v = e.target.value.replace(/[^\d]/g, "");
                 setSizeSqftText(v);
               }}
               placeholder="e.g. 1250"
               style={inputStyle}
             />
-            <div style={helperStyle}>Tip: you can clear the field and type again (no forced “0”).</div>
+            <div style={helperStyle}>
+              Tip: you can clear the field and type again.
+            </div>
           </div>
         </div>
 
@@ -168,13 +247,27 @@ export default function HomePage() {
           </button>
 
           {err && (
-            <div style={{ marginTop: 12, color: "#991b1b", fontSize: 14, fontWeight: 800 }}>
+            <div
+              style={{
+                marginTop: 12,
+                color: "#991b1b",
+                fontSize: 14,
+                fontWeight: 800,
+              }}
+            >
               {err}
             </div>
           )}
         </div>
 
-        <div style={{ marginTop: 18, fontSize: 13, color: "#64748b", fontWeight: 700 }}>
+        <div
+          style={{
+            marginTop: 18,
+            fontSize: 13,
+            color: "#64748b",
+            fontWeight: 700,
+          }}
+        >
           Independent market-based estimate · No listings · No agents
         </div>
       </div>
