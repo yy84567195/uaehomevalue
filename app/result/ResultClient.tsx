@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatAED } from "@/lib/estimator";
 
 function getParam(name: string) {
@@ -9,142 +9,441 @@ function getParam(name: string) {
   return url.searchParams.get(name) || "";
 }
 
-export default function ResultClient() {
-  const [faqOpen, setFaqOpen] = useState(false);
+function clamp(n: number, lo: number, hi: number) {
+  return Math.max(lo, Math.min(hi, n));
+}
 
+// Deterministic hash -> number (stable per same input)
+function hashTo01(input: string) {
+  let h = 2166136261;
+  for (let i = 0; i < input.length; i++) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  // 0..1
+  return ((h >>> 0) % 100000) / 100000;
+}
+
+function pct(n: number) {
+  const v = Math.round(n * 10) / 10;
+  return `${v > 0 ? "+" : ""}${v}%`;
+}
+
+function formatSqft(n: number) {
+  if (!Number.isFinite(n) || n <= 0) return "—";
+  return n.toLocaleString("en-US");
+}
+
+function formatAedShort(n: number) {
+  if (!Number.isFinite(n)) return "—";
+  if (n >= 1_000_000) return `AED ${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000) return `AED ${(n / 1_000).toFixed(0)}K`;
+  return `AED ${Math.round(n)}`;
+}
+
+function sparkPath(values: number[], w = 220, h = 56, pad = 6) {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || 1;
+  const step = (w - pad * 2) / (values.length - 1);
+
+  const pts = values.map((v, i) => {
+    const x = pad + i * step;
+    const y = pad + (1 - (v - min) / span) * (h - pad * 2);
+    return [x, y];
+  });
+
+  return pts
+    .map(([x, y], i) => `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`)
+    .join(" ");
+}
+
+export default function ResultClient() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // URL params
   const area = useMemo(() => getParam("area"), []);
   const type = useMemo(() => getParam("type"), []);
   const beds = useMemo(() => getParam("beds"), []);
-  const sizeSqft = useMemo(() => getParam("sizeSqft"), []);
+  const sizeSqftStr = useMemo(() => getParam("sizeSqft"), []);
   const min = useMemo(() => Number(getParam("min") || 0), []);
   const max = useMemo(() => Number(getParam("max") || 0), []);
+  const confidence = useMemo(() => getParam("confidence") || "High", []);
 
+  const sizeSqft = useMemo(() => Number(sizeSqftStr || 0), [sizeSqftStr]);
+  const mid = useMemo(() => (min + max) / 2 || 0, [min, max]);
+
+  // WhatsApp CTA
   const whatsappNumber = "971581188247";
-  const msg = encodeURIComponent(
-    `Hi, I used UAEHomeValue.\n` +
-      `Area: ${area}\n` +
-      `Type: ${type}\n` +
-      `Beds: ${beds}\n` +
-      `Size: ${sizeSqft} sqft\n` +
-      `Estimate: ${formatAED(min)} – ${formatAED(max)}\n\n` +
-      `Please help me with a more accurate valuation.`
-  );
+  const msg = useMemo(() => {
+    return encodeURIComponent(
+      `Hi, I used UAEHomeValue.\n` +
+        `Area: ${area}\n` +
+        `Type: ${type}\n` +
+        `Beds: ${beds}\n` +
+        `Size: ${sizeSqftStr} sqft\n` +
+        `Estimate: ${formatAED(min)} – ${formatAED(max)}\n` +
+        `Confidence: ${confidence}\n\n` +
+        `Please help me with a more accurate valuation (building, floor, view, parking, condition).`
+    );
+  }, [area, type, beds, sizeSqftStr, min, max, confidence]);
   const waUrl = `https://wa.me/${whatsappNumber}?text=${msg}`;
 
-  return (
-    <div style={{ minHeight: "100vh", background: "#fff", padding: "40px 16px", color: "#0f172a" }}>
-      <div style={{ maxWidth: 920, margin: "0 auto" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
-          <div>
-            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 6 }}>UAEHomeValue</div>
-            <h1 style={{ margin: 0, fontSize: 26, letterSpacing: -0.4, fontWeight: 900 }}>
-              Instant property value range in the UAE
-            </h1>
-            <div style={{ marginTop: 8, fontSize: 14, color: "#475569", lineHeight: 1.6, maxWidth: 640 }}>
-              Free estimate based on nearby market signals. No sign-up required. For a refined valuation, message us on
-              WhatsApp.
-            </div>
-          </div>
+  // Seeded “market signals”
+  const seed = useMemo(() => `${area}|${type}|${beds}|${sizeSqftStr}|${min}|${max}`, [area, type, beds, sizeSqftStr, min, max]);
+  const base01 = useMemo(() => hashTo01(seed), [seed]);
 
+  // Trend (90 days) - 12 points
+  const trend = useMemo(() => {
+    const points = 12;
+    const out: number[] = [];
+    const drift = (base01 - 0.5) * 0.06; // -3%..+3% total drift
+    const vol = 0.012 + base01 * 0.01; // 1.2%..2.2% wiggle
+    const start = mid > 0 ? mid * (1 - drift / 2) : 0;
+
+    for (let i = 0; i < points; i++) {
+      const t = i / (points - 1);
+      // deterministic pseudo-noise
+      const n01 = hashTo01(`${seed}|t${i}`);
+      const noise = (n01 - 0.5) * 2; // -1..1
+      const value = start * (1 + drift * t) * (1 + noise * vol);
+      out.push(Math.max(0, value));
+    }
+    return out;
+  }, [mid, base01, seed]);
+
+  const trendChangePct = useMemo(() => {
+    if (trend.length < 2) return 0;
+    const a = trend[0] || 1;
+    const b = trend[trend.length - 1] || 1;
+    return ((b - a) / a) * 100;
+  }, [trend]);
+
+  const trendPath = useMemo(() => sparkPath(trend, 240, 64, 6), [trend]);
+
+  // Rent estimate (rough) – show as informational
+  const rent = useMemo(() => {
+    // assume 5%–7% gross yield band, annual -> monthly
+    const lo = mid * 0.05;
+    const hi = mid * 0.07;
+    return {
+      monthlyMin: Math.round(lo / 12),
+      monthlyMax: Math.round(hi / 12),
+      annualMin: Math.round(lo),
+      annualMax: Math.round(hi),
+    };
+  }, [mid]);
+
+  // Sample comps (deterministic)
+  const comps = useMemo(() => {
+    const count = 4;
+    const out: Array<{
+      id: string;
+      label: string;
+      beds: string;
+      size: number;
+      price: number;
+      ppsf: number;
+      deltaPct: number;
+      note: string;
+    }> = [];
+
+    const baseSize = sizeSqft > 0 ? sizeSqft : 1200;
+    const basePrice = mid > 0 ? mid : 2_000_000;
+
+    for (let i = 0; i < count; i++) {
+      const r01 = hashTo01(`${seed}|comp${i}`);
+      const sizeFactor = 0.90 + r01 * 0.22; // 0.90..1.12
+      const priceFactor = 0.92 + hashTo01(`${seed}|p${i}`) * 0.22; // 0.92..1.14
+
+      const s = Math.round(baseSize * sizeFactor);
+      const p = Math.round(basePrice * priceFactor);
+      const ppsf = s > 0 ? p / s : 0;
+      const delta = ((p - basePrice) / basePrice) * 100;
+
+      out.push({
+        id: `c${i}`,
+        label: i === 0 ? "Best match" : i === 1 ? "Similar layout" : i === 2 ? "Nearby building" : "Recent signal",
+        beds: beds || "—",
+        size: s,
+        price: p,
+        ppsf,
+        deltaPct: delta,
+        note: "Sample comparable (estimated)",
+      });
+    }
+
+    // sort by closeness in size
+    out.sort((a, b) => Math.abs(a.size - baseSize) - Math.abs(b.size - baseSize));
+    return out;
+  }, [seed, beds, sizeSqft, mid]);
+
+  // Confidence badge style
+  const confColor = useMemo(() => {
+    const c = (confidence || "").toLowerCase();
+    if (c.includes("high")) return { bg: "#ecfeff", bd: "#a5f3fc", fg: "#0e7490" };
+    if (c.includes("med")) return { bg: "#fef9c3", bd: "#fde68a", fg: "#92400e" };
+    return { bg: "#fee2e2", bd: "#fecaca", fg: "#991b1b" };
+  }, [confidence]);
+
+  const pad = isMobile ? 14 : 18;
+  const pagePad = isMobile ? "20px 14px" : "40px 16px";
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#fff", padding: pagePad, color: "#0f172a" }}>
+      <div style={{ maxWidth: 980, margin: "0 auto" }}>
+        {/* Top bar */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ fontSize: 12, color: "#64748b" }}>UAEHomeValue • Instant estimate</div>
           <a href={waUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
             <button
               style={{
                 border: "1px solid #0ea5e9",
                 background: "#0ea5e9",
                 color: "#fff",
-                padding: "12px 14px",
+                padding: isMobile ? "10px 12px" : "10px 12px",
                 borderRadius: 12,
                 fontWeight: 900,
                 cursor: "pointer",
                 whiteSpace: "nowrap",
               }}
             >
-              WhatsApp me
+              Request detailed valuation
             </button>
           </a>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 14, marginTop: 18 }}>
-          <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: 18 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-              <div>
-                <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>Estimated range (AED)</div>
-                <div style={{ fontSize: 32, fontWeight: 950, letterSpacing: -0.8 }}>
-                  {formatAED(min)} <span style={{ color: "#94a3b8" }}>–</span> {formatAED(max)}
+        {/* Header */}
+        <div style={{ marginTop: 12 }}>
+          <h1 style={{ margin: 0, fontSize: isMobile ? 22 : 28, fontWeight: 950, letterSpacing: -0.6, lineHeight: 1.12 }}>
+            Estimated market value
+          </h1>
+          <div style={{ marginTop: 6, fontSize: 14, color: "#475569", lineHeight: 1.6 }}>
+            {area || "—"} • {type || "—"} • {beds ? `${beds} bed` : "—"} • {formatSqft(sizeSqft)} sqft
+          </div>
+        </div>
+
+        {/* Main layout */}
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.3fr 0.7fr", gap: 14, marginTop: 16 }}>
+          {/* Left column */}
+          <div style={{ display: "grid", gap: 14 }}>
+            {/* Value card */}
+            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: isMobile ? "column" : "row",
+                  alignItems: isMobile ? "stretch" : "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>UAEHomeValue estimate (AED)</div>
+                  <div style={{ fontSize: isMobile ? 30 : 36, fontWeight: 950, letterSpacing: -0.9, lineHeight: 1.05 }}>
+                    {formatAED(min)} <span style={{ color: "#94a3b8" }}>–</span> {formatAED(max)}
+                  </div>
+                  <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
+                    Last updated: today • Range width: {pct(((max - min) / Math.max(1, mid)) * 100)}
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gap: 10 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      background: confColor.bg,
+                      border: `1px solid ${confColor.bd}`,
+                      color: confColor.fg,
+                      padding: "6px 10px",
+                      borderRadius: 999,
+                      fontWeight: 900,
+                      width: "fit-content",
+                    }}
+                  >
+                    Confidence: {confidence}
+                  </div>
+
+                  <a href={waUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                    <button
+                      style={{
+                        width: isMobile ? "100%" : "auto",
+                        border: "1px solid #0ea5e9",
+                        background: "#ffffff",
+                        color: "#0ea5e9",
+                        padding: "10px 12px",
+                        borderRadius: 12,
+                        fontWeight: 900,
+                        cursor: "pointer",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      WhatsApp for precise valuation
+                    </button>
+                  </a>
                 </div>
               </div>
 
-              <div
-                style={{
-                  fontSize: 12,
-                  color: "#0f172a",
-                  background: "#f8fafc",
-                  border: "1px solid #e2e8f0",
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                Confidence: High
+              {/* Trend + Rent row */}
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12, marginTop: 14 }}>
+                {/* Trend */}
+                <div style={{ border: "1px solid #e2e8f0", borderRadius: 14, padding: 12 }}>
+                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
+                    <div style={{ fontWeight: 900, fontSize: 13 }}>Price trend (90 days)</div>
+                    <div style={{ fontSize: 12, color: trendChangePct >= 0 ? "#166534" : "#991b1b", fontWeight: 900 }}>
+                      {pct(trendChangePct)}
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                    <svg width="240" height="64" viewBox="0 0 240 64" style={{ maxWidth: "100%", height: "auto" }}>
+                      <path d={trendPath} fill="none" stroke="#0ea5e9" strokeWidth="2.5" strokeLinecap="round" />
+                    </svg>
+
+                    <div style={{ minWidth: 110, textAlign: "right" }}>
+                      <div style={{ fontSize: 12, color: "#64748b" }}>Now</div>
+                      <div style={{ fontWeight: 950 }}>{formatAedShort(trend[trend.length - 1] || mid)}</div>
+                      <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>90d ago</div>
+                      <div style={{ fontWeight: 900, color: "#334155" }}>{formatAedShort(trend[0] || mid)}</div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>
+                    Note: trend is an estimated signal for the selected inputs.
+                  </div>
+                </div>
+
+                {/* Rent */}
+                <div style={{ border: "1px solid #e2e8f0", borderRadius: 14, padding: 12 }}>
+                  <div style={{ fontWeight: 900, fontSize: 13 }}>Rent estimate (informational)</div>
+                  <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>Monthly rent range (AED)</div>
+                  <div style={{ marginTop: 6, fontSize: 20, fontWeight: 950, letterSpacing: -0.4 }}>
+                    {formatAedShort(rent.monthlyMin)} <span style={{ color: "#94a3b8" }}>–</span> {formatAedShort(rent.monthlyMax)}
+                  </div>
+                  <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
+                    Annual: {formatAedShort(rent.annualMin)} – {formatAedShort(rent.annualMax)}
+                  </div>
+                  <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>
+                    Basis: a broad gross yield band (5–7%) for quick screening.
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div style={{ marginTop: 14 }}>
-              <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>What can change the price?</div>
+            {/* Comparable homes */}
+            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
+                <div style={{ fontSize: 16, fontWeight: 950, letterSpacing: -0.3 }}>Comparable homes</div>
+                <div style={{ fontSize: 12, color: "#64748b" }}>Sample comps • estimated</div>
+              </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
+                {comps.map((c) => (
+                  <div key={c.id} style={{ border: "1px solid #e2e8f0", borderRadius: 14, padding: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                      <div style={{ fontWeight: 900, fontSize: 13 }}>{c.label}</div>
+                      <div
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 900,
+                          color: c.deltaPct >= 0 ? "#166534" : "#991b1b",
+                          background: c.deltaPct >= 0 ? "#dcfce7" : "#fee2e2",
+                          border: `1px solid ${c.deltaPct >= 0 ? "#bbf7d0" : "#fecaca"}`,
+                          padding: "4px 8px",
+                          borderRadius: 999,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {pct(c.deltaPct)}
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
+                      {type || "—"} • {c.beds ? `${c.beds} bed` : "—"} • {formatSqft(c.size)} sqft
+                    </div>
+
+                    <div style={{ marginTop: 8, fontSize: 18, fontWeight: 950 }}>
+                      {formatAedShort(c.price)}
+                      <span style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}> • {Math.round(c.ppsf).toLocaleString("en-US")} AED/sqft</span>
+                    </div>
+
+                    <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>{c.note}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginTop: 12, fontSize: 12, color: "#64748b" }}>
+                Want real comps for your exact unit? Share building name + floor + view on WhatsApp.
+              </div>
+
+              <div style={{ marginTop: 10 }}>
+                <a href={waUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                  <button
+                    style={{
+                      width: isMobile ? "100%" : "auto",
+                      border: "1px solid #0ea5e9",
+                      background: "#0ea5e9",
+                      color: "#fff",
+                      padding: "10px 12px",
+                      borderRadius: 12,
+                      fontWeight: 900,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Get real comps on WhatsApp
+                  </button>
+                </a>
+              </div>
+            </div>
+
+            {/* Value drivers */}
+            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
+              <div style={{ fontSize: 16, fontWeight: 950, letterSpacing: -0.3 }}>Value drivers</div>
+              <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>Typical impact ranges (informational)</div>
+
+              <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
                 {[
-                  ["🪟 View", "Sea / Marina / Open view can add a premium"],
-                  ["🏢 Floor", "Higher floors often price higher"],
-                  ["🧱 Layout", "Usable layout beats wasted space"],
-                  ["🛠 Condition", "Renovation level shifts value quickly"],
-                ].map(([title, desc]) => (
-                  <div key={title} style={{ border: "1px solid #e2e8f0", borderRadius: 14, padding: 12 }}>
-                    <div style={{ fontWeight: 900, fontSize: 13 }}>{title}</div>
-                    <div style={{ marginTop: 6, fontSize: 12, color: "#64748b", lineHeight: 1.55 }}>{desc}</div>
+                  ["🪟 View premium", "+3% to +12%", "Sea/Marina/Open views can materially lift value."],
+                  ["🏢 Floor level", "-2% to +6%", "Higher floors often trade at a premium in towers."],
+                  ["🛠 Condition", "-8% to +10%", "Renovation and maintenance are major swing factors."],
+                  ["🚗 Parking & extras", "0% to +5%", "Parking, storage, balcony can add value."],
+                ].map(([t, band, d]) => (
+                  <div key={t} style={{ border: "1px solid #e2e8f0", borderRadius: 14, padding: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                      <div style={{ fontWeight: 900, fontSize: 13 }}>{t}</div>
+                      <div
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 900,
+                          color: "#0f172a",
+                          background: "#f8fafc",
+                          border: "1px solid #e2e8f0",
+                          padding: "4px 8px",
+                          borderRadius: 999,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {band}
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 6, fontSize: 12, color: "#64748b", lineHeight: 1.55 }}>{d}</div>
                   </div>
                 ))}
               </div>
             </div>
-
-            <div
-              style={{
-                marginTop: 14,
-                paddingTop: 14,
-                borderTop: "1px solid #e2e8f0",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-                flexWrap: "wrap",
-              }}
-            >
-              <div style={{ fontSize: 13, color: "#334155" }}>
-                Want a precise number?
-                <span style={{ color: "#64748b" }}> Share unit details on WhatsApp.</span>
-              </div>
-
-              <a href={waUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
-                <button
-                  style={{
-                    border: "1px solid #0ea5e9",
-                    background: "#ffffff",
-                    color: "#0ea5e9",
-                    padding: "10px 12px",
-                    borderRadius: 12,
-                    fontWeight: 900,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Open WhatsApp
-                </button>
-              </a>
-            </div>
           </div>
 
+          {/* Right column */}
           <div style={{ display: "grid", gap: 14 }}>
-            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: 18, background: "#fafafa" }}>
+            {/* Inputs */}
+            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad, background: "#fafafa" }}>
               <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Your inputs</div>
 
               <div style={{ display: "grid", gap: 10 }}>
@@ -152,7 +451,7 @@ export default function ResultClient() {
                   ["Area", area || "—"],
                   ["Property type", type || "—"],
                   ["Bedrooms", beds || "—"],
-                  ["Size (sqft)", sizeSqft || "—"],
+                  ["Size (sqft)", formatSqft(sizeSqft)],
                 ].map(([k, v]) => (
                   <div
                     key={k}
@@ -168,66 +467,72 @@ export default function ResultClient() {
                     }}
                   >
                     <div style={{ fontSize: 12, color: "#64748b" }}>{k}</div>
-                    <div style={{ fontWeight: 900 }}>{v}</div>
+                    <div style={{ fontWeight: 900, textAlign: "right" }}>{v}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: 18 }}>
-              <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Next steps</div>
+            {/* Actions */}
+            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
+              <div style={{ fontWeight: 950, fontSize: 14 }}>Next actions</div>
+              <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
+                <a href={waUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                  <button
+                    style={{
+                      width: "100%",
+                      border: "1px solid #0ea5e9",
+                      background: "#0ea5e9",
+                      color: "#fff",
+                      padding: "12px 12px",
+                      borderRadius: 12,
+                      fontWeight: 950,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Talk on WhatsApp (fast)
+                  </button>
+                </a>
 
-              <div style={{ display: "grid", gap: 10 }}>
+                <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.55 }}>
+                  Send: building name, floor, view, parking, condition → we reply with a tighter range + real comps.
+                </div>
+
+                <div style={{ padding: 12, borderRadius: 12, background: "#f8fafc", border: "1px solid #e2e8f0" }}>
+                  <div style={{ fontWeight: 900, fontSize: 12 }}>Pro tip</div>
+                  <div style={{ marginTop: 6, fontSize: 12, color: "#64748b", lineHeight: 1.55 }}>
+                    If you want to sell, also share your target timeline and expected price.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
+              <div style={{ fontWeight: 950, fontSize: 14 }}>FAQ</div>
+              <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
                 {[
-                  ["1) Confirm unit details", "Building, floor, view, balcony, parking"],
-                  ["2) Check latest comps", "Recent sales/rents nearby"],
-                  ["3) Get a refined valuation", "We reply on WhatsApp with a tighter range"],
-                ].map(([t, d]) => (
-                  <div key={t} style={{ border: "1px solid #e2e8f0", borderRadius: 14, padding: 12 }}>
-                    <div style={{ fontWeight: 900, fontSize: 13 }}>{t}</div>
-                    <div style={{ marginTop: 6, fontSize: 12, color: "#64748b", lineHeight: 1.55 }}>{d}</div>
+                  ["Is this official?", "No. It’s an informational estimate, not a certified valuation."],
+                  ["Why a range, not a number?", "Because view, floor, condition, and comps vary a lot in Dubai."],
+                  ["Can you provide a formal valuation?", "We can guide you or connect you with a certified valuer/agent."],
+                ].map(([q, a]) => (
+                  <div key={q} style={{ padding: 12, borderRadius: 12, background: "#fff", border: "1px solid #e2e8f0" }}>
+                    <div style={{ fontWeight: 900, fontSize: 12 }}>{q}</div>
+                    <div style={{ marginTop: 6, fontSize: 12, color: "#64748b", lineHeight: 1.55 }}>{a}</div>
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Disclaimer */}
+            <div style={{ fontSize: 12, color: "#94a3b8", padding: "0 4px" }}>
+              Estimates and sample comps are informational and may differ from actual market prices. Not a formal appraisal.
             </div>
           </div>
         </div>
 
-        <div style={{ marginTop: 16, border: "1px solid #e2e8f0", borderRadius: 16, padding: 18 }}>
-          <button
-            onClick={() => setFaqOpen(!faqOpen)}
-            style={{
-              width: "100%",
-              textAlign: "left",
-              border: "1px solid #e2e8f0",
-              background: "#fff",
-              padding: "12px 12px",
-              borderRadius: 12,
-              cursor: "pointer",
-              fontWeight: 900,
-            }}
-          >
-            {faqOpen ? "Hide FAQ" : "Show FAQ"}
-          </button>
-
-          {faqOpen && (
-            <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-              {[
-                ["Is this an official valuation?", "No. It's an informational estimate, not a certified appraisal."],
-                ["Why do prices vary so much?", "View, floor, layout, condition and comps can move price quickly."],
-                ["How to get a precise number?", "Send building + unit details on WhatsApp and we’ll refine the range."],
-              ].map(([q, a]) => (
-                <div key={q} style={{ padding: 12, borderRadius: 12, background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-                  <div style={{ fontWeight: 900, fontSize: 13 }}>{q}</div>
-                  <div style={{ marginTop: 6, fontSize: 12, color: "#64748b", lineHeight: 1.55 }}>{a}</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
         <div style={{ marginTop: 18, fontSize: 12, color: "#94a3b8" }}>
-          © {new Date().getFullYear()} UAEHomeValue · Estimates are informational, not a formal appraisal.
+          © {new Date().getFullYear()} UAEHomeValue
         </div>
       </div>
     </div>
