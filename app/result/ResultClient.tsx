@@ -96,7 +96,10 @@ export default function ResultClient() {
   }, [area]);
 
   // Seeded “market signals”
-  const seed = useMemo(() => `${area}|${type}|${beds}|${sizeSqftStr}|${min}|${max}`, [area, type, beds, sizeSqftStr, min, max]);
+  const seed = useMemo(
+    () => `${area}|${type}|${beds}|${sizeSqftStr}|${min}|${max}`,
+    [area, type, beds, sizeSqftStr, min, max]
+  );
   const base01 = useMemo(() => hashTo01(seed), [seed]);
 
   // Trend (90 days) - 12 points
@@ -126,7 +129,7 @@ export default function ResultClient() {
 
   const trendPath = useMemo(() => sparkPath(trend, 240, 64, 6), [trend]);
 
-  // Rent estimate (rough) – show as informational
+  // Rent estimate (rough)
   const rent = useMemo(() => {
     const lo = mid * 0.05;
     const hi = mid * 0.07;
@@ -183,30 +186,22 @@ export default function ResultClient() {
     return out;
   }, [seed, beds, sizeSqft, mid]);
 
-  // Market snapshot (derived, no external data)
+  // Market snapshot (derived)
   const market = useMemo(() => {
     const ppsf = sizeSqft > 0 && mid > 0 ? mid / sizeSqft : 0;
     const rangeWidthPct = mid > 0 ? ((max - min) / mid) * 100 : 0;
 
-    // Activity heuristic: tighter range + higher confidence => higher "signal quality"
     const c = (confidence || "").toLowerCase();
     const confScore = c.includes("high") ? 1 : c.includes("med") ? 0.6 : 0.35;
-    const tightScore = 1 - Math.min(1, rangeWidthPct / 35); // 0..1
+    const tightScore = 1 - Math.min(1, rangeWidthPct / 35);
     const activityScore = confScore * 0.6 + tightScore * 0.4;
     const activity = activityScore > 0.72 ? "High" : activityScore > 0.5 ? "Medium" : "Low";
 
-    const yoy = (hashTo01(seed + "|yoy") - 0.5) * 12; // -6%..+6% (est.)
-    const mom = (hashTo01(seed + "|mom") - 0.5) * 4; // -2%..+2% (est.)
-    const dom = Math.round(18 + hashTo01(seed + "|dom") * 45); // 18..63 days (est.)
+    const yoy = (hashTo01(seed + "|yoy") - 0.5) * 12; // -6..+6
+    const mom = (hashTo01(seed + "|mom") - 0.5) * 4; // -2..+2
+    const dom = Math.round(18 + hashTo01(seed + "|dom") * 45); // 18..63
 
-    return {
-      ppsf,
-      rangeWidthPct,
-      activity,
-      yoy,
-      mom,
-      dom,
-    };
+    return { ppsf, rangeWidthPct, activity, yoy, mom, dom };
   }, [sizeSqft, mid, max, min, confidence, seed]);
 
   // Confidence badge style
@@ -249,6 +244,12 @@ export default function ResultClient() {
           <h1 style={{ margin: 0, fontSize: isMobile ? 22 : 28, fontWeight: 950, letterSpacing: -0.6, lineHeight: 1.12 }}>
             Estimated market value
           </h1>
+
+          {/* ✅ Slogan */}
+          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
+            Estimate first. Decide better.
+          </div>
+
           <div style={{ marginTop: 6, fontSize: 14, color: "#475569", lineHeight: 1.6 }}>
             {area || "—"} • {type || "—"} • {beds ? `${beds} bed` : "—"} • {formatSqft(sizeSqft)} sqft
           </div>
@@ -312,6 +313,37 @@ export default function ResultClient() {
                       WhatsApp for precise valuation
                     </button>
                   </a>
+                </div>
+              </div>
+
+              {/* ✅ Explanation module */}
+              <div
+                style={{
+                  marginTop: 16,
+                  padding: 16,
+                  borderRadius: 14,
+                  background: "#f8fafc",
+                  border: "1px solid #e2e8f0",
+                  fontSize: 13,
+                  lineHeight: 1.7,
+                  color: "#334155",
+                }}
+              >
+                <div style={{ fontWeight: 900, marginBottom: 6 }}>How this estimate is calculated</div>
+                <div>
+                  This estimate is generated using recent listing ranges from similar homes in the same community, adjusted by size, property
+                  type and current market signals.
+                  <br />
+                  <br />
+                  <b>Key factors considered:</b>
+                  <ul style={{ margin: "6px 0 6px 18px" }}>
+                    <li>Location (community-level pricing)</li>
+                    <li>Property type (apartment or villa)</li>
+                    <li>Size (price-per-sqft adjustment)</li>
+                    <li>Current market activity</li>
+                  </ul>
+                  This is a <b>market-based estimate</b>, not a formal appraisal. Final value may vary depending on building, floor, view,
+                  condition and timing.
                 </div>
               </div>
 
@@ -469,7 +501,7 @@ export default function ResultClient() {
 
           {/* Right column */}
           <div style={{ display: "grid", gap: 14 }}>
-            {/* MAP CARD (Zillow vibe) */}
+            {/* MAP CARD */}
             <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, overflow: "hidden" }}>
               <div
                 style={{
@@ -484,8 +516,7 @@ export default function ResultClient() {
                   style={{
                     position: "absolute",
                     inset: 0,
-                    backgroundImage:
-                      "linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.85))",
+                    backgroundImage: "linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.85))",
                     pointerEvents: "none",
                   }}
                 />
@@ -535,7 +566,7 @@ export default function ResultClient() {
                   </div>
 
                   <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>
-                    Next: we can add real map pins once we store community coordinates.
+                    Next: add real pins once we store community coordinates.
                   </div>
                 </div>
               </div>

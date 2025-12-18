@@ -3,25 +3,32 @@
 import { useMemo, useState } from "react";
 import data from "@/data/price_ranges.json";
 
-const areas = Array.from(
-  new Set((data as any).communities.map((r: any) => String(r.area)))
-).sort() as string[];
+type PropertyType = "Apartment" | "Villa";
 
 export default function HomePage() {
-  const [area, setArea] = useState("Dubai Marina");
-  const [type, setType] = useState<"Apartment" | "Villa">("Apartment");
-  const [beds, setBeds] = useState(2);
-  const [sizeSqft, setSizeSqft] = useState(1250);
+  // Build a safe string[] areas list
+  const areas = useMemo(() => {
+    const rows = (data as any)?.communities ?? [];
+    const list = rows
+      .map((r: any) => String(r?.area ?? "").trim())
+      .filter((a: string) => a.length > 0);
+    return Array.from(new Set(list)).sort();
+  }, []);
+
+  const [area, setArea] = useState<string>(areas?.[0] || "Dubai Marina");
+  const [type, setType] = useState<PropertyType>("Apartment");
+  const [beds, setBeds] = useState<number>(2);
+  const [sizeSqft, setSizeSqft] = useState<number>(1250);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | undefined>(undefined);
 
-  const isValid = useMemo(() => area && sizeSqft > 0, [area, sizeSqft]);
+  const isValid = useMemo(() => !!area && sizeSqft > 0, [area, sizeSqft]);
 
   async function onSubmit() {
     setErr(undefined);
     if (!isValid) return;
-    setLoading(true);
 
+    setLoading(true);
     try {
       const res = await fetch("/api/estimate", {
         method: "POST",
@@ -36,9 +43,9 @@ export default function HomePage() {
         type,
         beds: String(beds),
         sizeSqft: String(sizeSqft),
-        min: String(out.min || 0),
-        max: String(out.max || 0),
-        confidence: String(out.confidence || "Low"),
+        min: String(out?.min ?? 0),
+        max: String(out?.max ?? 0),
+        confidence: String(out?.confidence ?? "Low"),
       });
 
       window.location.href = `/result?${params.toString()}`;
@@ -51,17 +58,25 @@ export default function HomePage() {
 
   return (
     <div className="grid grid2">
+      {/* Left card: form */}
       <div className="card cardPad">
         <h1 className="h1">Check your home value in Dubai — instantly.</h1>
-        <p className="p">
+
+        {/* ✅ Slogan (same as result page) */}
+        <div style={{ marginTop: 6, fontSize: 14, color: "#64748b", fontWeight: 700 }}>
+          Estimate first. Decide better.
+        </div>
+
+        <p className="p" style={{ marginTop: 10 }}>
           Free price estimate range based on nearby market data. No sign-up required.
         </p>
 
         <div className="row row4">
+          {/* Area */}
           <div>
             <div className="label">Area</div>
             <select className="input" value={area} onChange={(e) => setArea(e.target.value)}>
-              {areas.map((a) => (
+              {(areas as string[]).map((a) => (
                 <option key={a} value={a}>
                   {a}
                 </option>
@@ -69,14 +84,20 @@ export default function HomePage() {
             </select>
           </div>
 
+          {/* Type */}
           <div>
             <div className="label">Type</div>
-            <select className="input" value={type} onChange={(e) => setType(e.target.value as any)}>
+            <select
+              className="input"
+              value={type}
+              onChange={(e) => setType(e.target.value as PropertyType)}
+            >
               <option value="Apartment">Apartment</option>
               <option value="Villa">Villa</option>
             </select>
           </div>
 
+          {/* Bedrooms */}
           <div>
             <div className="label">Bedrooms</div>
             <select className="input" value={beds} onChange={(e) => setBeds(Number(e.target.value))}>
@@ -88,6 +109,7 @@ export default function HomePage() {
             </select>
           </div>
 
+          {/* Size */}
           <div>
             <div className="label">Size (sq ft)</div>
             <input
@@ -96,6 +118,7 @@ export default function HomePage() {
               value={sizeSqft}
               onChange={(e) => setSizeSqft(Number(e.target.value))}
               placeholder="e.g. 1250"
+              min={1}
             />
           </div>
         </div>
@@ -117,12 +140,13 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Right card: explanation */}
       <div className="card cardPad">
         <div className="kpi">
           <div className="kpiVal">How it works</div>
           <div className="kpiSub">
-            We show a realistic value range (not a single number) using comparable homes and a
-            light size adjustment.
+            We show a realistic value range (not a single number) using comparable homes and a light
+            size adjustment.
           </div>
         </div>
 
