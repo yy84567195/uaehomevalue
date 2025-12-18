@@ -48,7 +48,9 @@ function sparkPath(values: number[], w = 220, h = 56, pad = 6) {
     return [x, y];
   });
 
-  return pts.map(([x, y], i) => `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`).join(" ");
+  return pts
+    .map(([x, y], i) => `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`)
+    .join(" ");
 }
 
 export default function ResultClient() {
@@ -73,6 +75,17 @@ export default function ResultClient() {
   const sizeSqft = useMemo(() => Number(sizeSqftStr || 0), [sizeSqftStr]);
   const mid = useMemo(() => (min + max) / 2 || 0, [min, max]);
 
+  // ✅ Back-to-input links
+  const changeInputsUrl = useMemo(() => {
+    const params = new URLSearchParams();
+    if (area) params.set("area", area);
+    if (type) params.set("type", type);
+    if (beds) params.set("beds", beds);
+    if (sizeSqftStr) params.set("sizeSqft", sizeSqftStr);
+    const qs = params.toString();
+    return qs ? `/?${qs}` : "/";
+  }, [area, type, beds, sizeSqftStr]);
+
   // WhatsApp CTA
   const whatsappNumber = "971581188247";
   const msg = useMemo(() => {
@@ -93,6 +106,12 @@ export default function ResultClient() {
   const mapsQuery = useMemo(() => {
     const q = (area || "Dubai") + ", UAE";
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+  }, [area]);
+
+  // ✅ Map embed (visual)
+  const mapsEmbed = useMemo(() => {
+    const q = (area || "Dubai") + ", UAE";
+    return `https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
   }, [area]);
 
   // Seeded “market signals”
@@ -162,7 +181,7 @@ export default function ResultClient() {
 
     for (let i = 0; i < count; i++) {
       const r01 = hashTo01(`${seed}|comp${i}`);
-      const sizeFactor = 0.90 + r01 * 0.22; // 0.90..1.12
+      const sizeFactor = 0.9 + r01 * 0.22; // 0.90..1.12
       const priceFactor = 0.92 + hashTo01(`${seed}|p${i}`) * 0.22; // 0.92..1.14
 
       const s = Math.round(baseSize * sizeFactor);
@@ -172,7 +191,8 @@ export default function ResultClient() {
 
       out.push({
         id: `c${i}`,
-        label: i === 0 ? "Best match" : i === 1 ? "Similar layout" : i === 2 ? "Nearby building" : "Recent signal",
+        label:
+          i === 0 ? "Best match" : i === 1 ? "Similar layout" : i === 2 ? "Nearby building" : "Recent signal",
         beds: beds || "—",
         size: s,
         price: p,
@@ -221,34 +241,78 @@ export default function ResultClient() {
         {/* Top bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ fontSize: 12, color: "#64748b" }}>UAEHomeValue • Instant estimate</div>
-          <a href={waUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
-            <button
-              style={{
-                border: "1px solid #0ea5e9",
-                background: "#0ea5e9",
-                color: "#fff",
-                padding: "10px 12px",
-                borderRadius: 12,
-                fontWeight: 900,
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Request detailed valuation
-            </button>
-          </a>
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
+            {/* ✅ Back to re-input */}
+            <a href="/" style={{ textDecoration: "none" }}>
+              <button
+                style={{
+                  border: "1px solid #e2e8f0",
+                  background: "#ffffff",
+                  color: "#0f172a",
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  fontWeight: 900,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Re-check another home
+              </button>
+            </a>
+
+            <a href={changeInputsUrl} style={{ textDecoration: "none" }}>
+              <button
+                style={{
+                  border: "1px solid #0ea5e9",
+                  background: "#0ea5e9",
+                  color: "#fff",
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  fontWeight: 900,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Change inputs
+              </button>
+            </a>
+
+            <a href={waUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+              <button
+                style={{
+                  border: "1px solid #0ea5e9",
+                  background: "#0ea5e9",
+                  color: "#fff",
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  fontWeight: 900,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Request detailed valuation
+              </button>
+            </a>
+          </div>
         </div>
 
         {/* Header */}
         <div style={{ marginTop: 12 }}>
-          <h1 style={{ margin: 0, fontSize: isMobile ? 22 : 28, fontWeight: 950, letterSpacing: -0.6, lineHeight: 1.12 }}>
+          <h1
+            style={{
+              margin: 0,
+              fontSize: isMobile ? 22 : 28,
+              fontWeight: 950,
+              letterSpacing: -0.6,
+              lineHeight: 1.12,
+            }}
+          >
             Estimated market value
           </h1>
 
-          {/* ✅ Slogan */}
-          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
-            Estimate first. Decide better.
-          </div>
+          {/* Slogan */}
+          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>Estimate first. Decide better.</div>
 
           <div style={{ marginTop: 6, fontSize: 14, color: "#475569", lineHeight: 1.6 }}>
             {area || "—"} • {type || "—"} • {beds ? `${beds} bed` : "—"} • {formatSqft(sizeSqft)} sqft
@@ -316,7 +380,7 @@ export default function ResultClient() {
                 </div>
               </div>
 
-              {/* ✅ Explanation module */}
+              {/* Explanation module */}
               <div
                 style={{
                   marginTop: 16,
@@ -501,75 +565,42 @@ export default function ResultClient() {
 
           {/* Right column */}
           <div style={{ display: "grid", gap: 14 }}>
-            {/* MAP CARD */}
-            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, overflow: "hidden" }}>
-              <div
-                style={{
-                  height: isMobile ? 160 : 190,
-                  background:
-                    "linear-gradient(135deg, rgba(14,165,233,0.18), rgba(99,102,241,0.12)), radial-gradient(circle at 30% 20%, rgba(14,165,233,0.20), transparent 55%)",
-                  position: "relative",
-                  padding: 14,
-                }}
-              >
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    backgroundImage: "linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.85))",
-                    pointerEvents: "none",
-                  }}
-                />
-                <div style={{ position: "relative" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div
+            {/* ✅ MAP CARD (visualized) */}
+            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, overflow: "hidden", background: "#fff" }}>
+              <div style={{ padding: pad, borderBottom: "1px solid #e2e8f0" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                  <div>
+                    <div style={{ fontWeight: 950, fontSize: 14 }}>Location map</div>
+                    <div style={{ fontSize: 12, color: "#64748b" }}>{area || "Dubai"}, UAE</div>
+                  </div>
+                  <a href={mapsQuery} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                    <button
                       style={{
-                        width: 34,
-                        height: 34,
+                        border: "1px solid #e2e8f0",
+                        background: "#ffffff",
+                        color: "#0f172a",
+                        padding: "8px 10px",
                         borderRadius: 12,
-                        background: "#0ea5e9",
-                        color: "#fff",
-                        display: "grid",
-                        placeItems: "center",
-                        fontWeight: 950,
+                        fontWeight: 900,
+                        cursor: "pointer",
+                        whiteSpace: "nowrap",
                       }}
                     >
-                      ⌖
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 950, fontSize: 14 }}>Location</div>
-                      <div style={{ fontSize: 12, color: "#64748b" }}>Approximate area map (no sign-in)</div>
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: 12, fontSize: 14, fontWeight: 950 }}>
-                    {area || "Dubai"} <span style={{ color: "#94a3b8", fontWeight: 900 }}>• UAE</span>
-                  </div>
-
-                  <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr", gap: 10 }}>
-                    <a href={mapsQuery} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
-                      <button
-                        style={{
-                          width: "100%",
-                          border: "1px solid #e2e8f0",
-                          background: "#ffffff",
-                          color: "#0f172a",
-                          padding: "10px 12px",
-                          borderRadius: 12,
-                          fontWeight: 950,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Open in Google Maps
-                      </button>
-                    </a>
-                  </div>
-
-                  <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>
-                    Next: add real pins once we store community coordinates.
-                  </div>
+                      Open
+                    </button>
+                  </a>
                 </div>
               </div>
+
+              <iframe
+                title="Map"
+                src={mapsEmbed}
+                width="100%"
+                height={isMobile ? 220 : 260}
+                style={{ border: 0, display: "block" }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
             </div>
 
             {/* MARKET SNAPSHOT */}
@@ -668,7 +699,7 @@ export default function ResultClient() {
                 <div style={{ padding: 12, borderRadius: 12, background: "#f8fafc", border: "1px solid #e2e8f0" }}>
                   <div style={{ fontWeight: 900, fontSize: 12 }}>Pro tip</div>
                   <div style={{ marginTop: 6, fontSize: 12, color: "#64748b", lineHeight: 1.55 }}>
-                    If you want to sell, also share your target timeline and expected price.
+                    For best accuracy, include floor number and view (sea/marina/city) and whether the unit is upgraded.
                   </div>
                 </div>
               </div>
