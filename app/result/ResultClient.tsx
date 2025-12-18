@@ -238,65 +238,91 @@ export default function ResultClient() {
   return (
     <div style={{ minHeight: "100vh", background: "#fff", padding: pagePad, color: "#0f172a" }}>
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
-        {/* Top bar */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <div style={{ fontSize: 12, color: "#64748b" }}>UAEHomeValue • Instant estimate</div>
+{/* Top bar */}
+<div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+  {/* Left: Logo + Brand */}
+  <a
+    href="/"
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      textDecoration: "none",
+      color: "#0f172a",
+      minWidth: 220,
+    }}
+    aria-label="Go to homepage"
+  >
+    <img
+      src="/logo.png"
+      alt="UAEHomeValue"
+      style={{
+        height: 28,
+        width: "auto",
+        display: "block",
+      }}
+    />
+    <div style={{ display: "grid", lineHeight: 1.1 }}>
+      <div style={{ fontSize: 14, fontWeight: 950, letterSpacing: -0.2 }}>UAEHomeValue</div>
+      <div style={{ fontSize: 12, color: "#64748b", fontWeight: 800 }}>Instant estimate</div>
+    </div>
+  </a>
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
-            {/* ✅ Back to re-input */}
-            <a href="/" style={{ textDecoration: "none" }}>
-              <button
-                style={{
-                  border: "1px solid #e2e8f0",
-                  background: "#ffffff",
-                  color: "#0f172a",
-                  padding: "10px 12px",
-                  borderRadius: 12,
-                  fontWeight: 900,
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                Re-check another home
-              </button>
-            </a>
+  {/* Right: Actions */}
+  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
+    {/* ✅ Back to re-input */}
+    <a href="/" style={{ textDecoration: "none" }}>
+      <button
+        style={{
+          border: "1px solid #e2e8f0",
+          background: "#ffffff",
+          color: "#0f172a",
+          padding: "10px 12px",
+          borderRadius: 12,
+          fontWeight: 900,
+          cursor: "pointer",
+          whiteSpace: "nowrap",
+        }}
+      >
+        Re-check another home
+      </button>
+    </a>
 
-            <a href={changeInputsUrl} style={{ textDecoration: "none" }}>
-              <button
-                style={{
-                  border: "1px solid #0ea5e9",
-                  background: "#0ea5e9",
-                  color: "#fff",
-                  padding: "10px 12px",
-                  borderRadius: 12,
-                  fontWeight: 900,
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                Change inputs
-              </button>
-            </a>
+    <a href={changeInputsUrl} style={{ textDecoration: "none" }}>
+      <button
+        style={{
+          border: "1px solid #0ea5e9",
+          background: "#0ea5e9",
+          color: "#fff",
+          padding: "10px 12px",
+          borderRadius: 12,
+          fontWeight: 900,
+          cursor: "pointer",
+          whiteSpace: "nowrap",
+        }}
+      >
+        Change inputs
+      </button>
+    </a>
 
-            <a href={waUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
-              <button
-                style={{
-                  border: "1px solid #0ea5e9",
-                  background: "#0ea5e9",
-                  color: "#fff",
-                  padding: "10px 12px",
-                  borderRadius: 12,
-                  fontWeight: 900,
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                Request detailed valuation
-              </button>
-            </a>
-          </div>
-        </div>
-
+    <a href={waUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+      <button
+        style={{
+          border: "1px solid #0ea5e9",
+          background: "#0ea5e9",
+          color: "#fff",
+          padding: "10px 12px",
+          borderRadius: 12,
+          fontWeight: 900,
+          cursor: "pointer",
+          whiteSpace: "nowrap",
+        }}
+      >
+        Request detailed valuation
+      </button>
+    </a>
+  </div>
+</div>
         {/* Header */}
         <div style={{ marginTop: 12 }}>
           <h1
