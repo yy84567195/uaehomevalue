@@ -3,8 +3,9 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'UAEHomeValue — Dubai Home Value Estimate',
-  description: 'Check your home value in Dubai — instantly. Free price estimate range based on nearby market data.',
+  title: 'Dubai Home Value Estimate | Instant Property Price Range – UAEHomeValue',
+  description:
+    'Check your home value in Dubai instantly. Get a realistic property price range based on nearby market data. Free, independent, no agents.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
