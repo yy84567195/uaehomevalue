@@ -1,94 +1,86 @@
 import { NextResponse } from "next/server";
 import data from "@/data/price_ranges.json";
 
-type ReqBody = {
-  area: string;
-  type: "Apartment" | "Villa";
-  beds: number;
-  sizeSqft: number;
-};
-
-function asNum(n: any, fallback = 0) {
-  const v = Number(n);
-  return Number.isFinite(v) ? v : fallback;
-}
-
-function norm(s: any) {
-  return String(s ?? "").trim().toLowerCase();
-}
+/**
+ * 核心思路（像 Zillow）：
+ * 1. 先算一个「锚点价」（community + type + beds 的中位）
+ * 2. 再根据 size 做线性调整
+ * 3. 最后根据 confidence 给不同宽度的估值区间
+ */
 
 export async function POST(req: Request) {
-  const body = (await req.json()) as ReqBody;
+  try {
+    const body = await req.json();
+    const { area, type, beds, sizeSqft } = body;
 
-  const areaIn = norm(body.area);
-  const typeIn = norm(body.type);
-  const bedsIn = asNum(body.beds, 0);
-  const sizeIn = asNum(body.sizeSqft, 0);
+    if (!area || !type || !sizeSqft) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
-  const rows: any[] = (data as any)?.communities ?? [];
+    // ===== 1️⃣ 从数据中找到社区 & 类型匹配 =====
+    const communities = (data as any)?.communities ?? [];
+    const rows = communities.filter(
+      (r: any) =>
+        String(r.area).toLowerCase() === String(area).toLowerCase() &&
+        String(r.type).toLowerCase() === String(type).toLowerCase()
+    );
 
-  // You may have different keys in your json; keep it flexible:
-  // Expect row.area, row.type, row.beds, row.min, row.max, row.ppsfMin, row.ppsfMax etc.
-  const candidates = rows
-    .map((r) => ({
-      area: norm(r.area),
-      type: norm(r.type ?? r.propertyType ?? r.ptype),
-      beds: asNum(r.beds ?? r.bedrooms ?? r.br, 0),
-      min: asNum(r.min ?? r.minPrice ?? r.low, 0),
-      max: asNum(r.max ?? r.maxPrice ?? r.high, 0),
-      ppsfMin: asNum(r.ppsfMin ?? r.minPpsf ?? r.lowPpsf, 0),
-      ppsfMax: asNum(r.ppsfMax ?? r.maxPpsf ?? r.highPpsf, 0),
-    }))
-    .filter((r) => r.area);
+    if (!rows.length) {
+      // 没有精确匹配 → 返回低置信度宽区间
+      const fallbackMid = 1800 * sizeSqft; // 粗略 fallback
+      return NextResponse.json({
+        min: Math.round(fallbackMid * 0.75),
+        max: Math.round(fallbackMid * 1.25),
+        confidence: "Low",
+      });
+    }
 
-  // 1) strict match
-  let pick = candidates.filter((r) => r.area === areaIn && r.type === typeIn && r.beds === bedsIn);
-  let confidence: "High" | "Medium" | "Low" = "High";
+    // ===== 2️⃣ 计算锚点价（price per sqft 中位）=====
+    const ppsfList = rows.map((r: any) => Number(r.ppsf)).filter(Boolean);
+    const medianPpsf =
+      ppsfList.sort((a, b) => a - b)[Math.floor(ppsfList.length / 2)];
 
-  // 2) same area + type, any beds
-  if (!pick.length) {
-    pick = candidates.filter((r) => r.area === areaIn && r.type === typeIn);
-    confidence = "Medium";
+    const anchorPrice = medianPpsf * Number(sizeSqft);
+
+    // ===== 3️⃣ Bedrooms 微调（很轻）=====
+    const bedFactor =
+      beds === 0 ? 0.98 : beds === 1 ? 1 : beds === 2 ? 1.02 : 1.04;
+
+    const adjustedMid = anchorPrice * bedFactor;
+
+    // ===== 4️⃣ 置信度判断 =====
+    let confidence: "High" | "Medium" | "Low" = "Medium";
+
+    if (rows.length >= 6) confidence = "High";
+    if (rows.length <= 2) confidence = "Low";
+
+    // ===== 5️⃣ 区间宽度控制（关键！）=====
+    /**
+     * 这是你现在和之前最大的不同点：
+     * - High：非常像 Zillow（±8% ~ ±10%）
+     * - Medium：市场常见波动（±15%）
+     * - Low：数据不足，明显更宽
+     */
+    let bandPct = 0.15;
+
+    if (confidence === "High") bandPct = 0.1;
+    if (confidence === "Low") bandPct = 0.22;
+
+    const min = Math.round(adjustedMid * (1 - bandPct));
+    const max = Math.round(adjustedMid * (1 + bandPct));
+
+    return NextResponse.json({
+      min,
+      max,
+      confidence,
+    });
+  } catch (e) {
+    return NextResponse.json(
+      { error: "Server error" },
+      { status: 500 }
+    );
   }
-
-  // 3) same area, any type
-  if (!pick.length) {
-    pick = candidates.filter((r) => r.area === areaIn);
-    confidence = "Low";
-  }
-
-  // 4) global fallback
-  if (!pick.length) {
-    pick = candidates;
-    confidence = "Low";
-  }
-
-  // Compute estimate:
-  // Prefer explicit min/max; otherwise use ppsf range * size
-  let min = 0;
-  let max = 0;
-
-  // Use median of available ranges to be stable
-  const mins = pick.map((r) => (r.min > 0 ? r.min : r.ppsfMin > 0 ? r.ppsfMin * sizeIn : 0)).filter((x) => x > 0);
-  const maxs = pick.map((r) => (r.max > 0 ? r.max : r.ppsfMax > 0 ? r.ppsfMax * sizeIn : 0)).filter((x) => x > 0);
-
-  mins.sort((a, b) => a - b);
-  maxs.sort((a, b) => a - b);
-
-  const midMin = mins.length ? mins[Math.floor(mins.length / 2)] : 0;
-  const midMax = maxs.length ? maxs[Math.floor(maxs.length / 2)] : 0;
-
-  min = Math.round(midMin);
-  max = Math.round(midMax);
-
-  // Ensure non-zero output
-  if (!(min > 0 && max > 0) || max < min) {
-    // very last fallback
-    const base = sizeIn > 0 ? 1600 * sizeIn : 2_000_000; // conservative fallback
-    min = Math.round(base * 0.92);
-    max = Math.round(base * 1.08);
-    confidence = "Low";
-  }
-
-  return NextResponse.json({ min, max, confidence });
 }
