@@ -51,17 +51,40 @@ export default function HomePage() {
         body: JSON.stringify({ area, type, beds, sizeSqft: Number(sizeSqftNum) }),
       });
 
-      const out = await res.json();
+const out = await res.json();
 
-      const params = new URLSearchParams({
-        area,
-        type,
-        beds: String(beds),
-        sizeSqft: String(Number(sizeSqftNum)),
-        min: String(out.min || 0),
-        max: String(out.max || 0),
-        confidence: String(out.confidence || "Medium"),
-      });
+if (!res.ok || out?.error) {
+  setErr(out?.error || "Estimate failed. Please try again.");
+  setLoading(false);
+  return;
+}
+
+const minVal = Number(out.min);
+const maxVal = Number(out.max);
+
+if (
+  !Number.isFinite(minVal) ||
+  !Number.isFinite(maxVal) ||
+  minVal <= 0 ||
+  maxVal <= 0
+) {
+  setErr("No estimate available for this selection yet. Please try another area.");
+  setLoading(false);
+  return;
+}
+
+const params = new URLSearchParams({
+  area,
+  type,
+  beds: String(beds),
+  sizeSqft: String(Number(sizeSqftNum)),
+  min: String(minVal),
+  max: String(maxVal),
+  confidence: String(out.confidence || "Medium"),
+});
+
+window.location.href = `/result?${params.toString()}`;
+
 
       window.location.href = `/result?${params.toString()}`;
     } catch {

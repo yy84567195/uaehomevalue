@@ -1,86 +1,101 @@
 import { NextResponse } from "next/server";
 import data from "@/data/price_ranges.json";
 
-/**
- * 核心思路（像 Zillow）：
- * 1. 先算一个「锚点价」（community + type + beds 的中位）
- * 2. 再根据 size 做线性调整
- * 3. 最后根据 confidence 给不同宽度的估值区间
- */
+type Confidence = "High" | "Medium" | "Low";
+
+function norm(s: any) {
+  return String(s ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function median(nums: number[]) {
+  const arr = nums.filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
+  if (!arr.length) return NaN;
+  return arr[Math.floor(arr.length / 2)];
+}
+
+function clamp(n: number, lo: number, hi: number) {
+  return Math.max(lo, Math.min(hi, n));
+}
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { area, type, beds, sizeSqft } = body;
+    const areaRaw = body?.area;
+    const typeRaw = body?.type;
+    const bedsRaw = body?.beds;
+    const sizeSqftRaw = body?.sizeSqft;
 
-    if (!area || !type || !sizeSqft) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+    const area = norm(areaRaw);
+    const type = norm(typeRaw);
+    const beds = Number(bedsRaw ?? 0);
+    const sizeSqft = Number(sizeSqftRaw);
+
+    if (!area || !type || !Number.isFinite(sizeSqft) || sizeSqft <= 0) {
+      return NextResponse.json({ error: "Missing/invalid fields" }, { status: 400 });
     }
 
-    // ===== 1️⃣ 从数据中找到社区 & 类型匹配 =====
     const communities = (data as any)?.communities ?? [];
-    const rows = communities.filter(
-      (r: any) =>
-        String(r.area).toLowerCase() === String(area).toLowerCase() &&
-        String(r.type).toLowerCase() === String(type).toLowerCase()
-    );
+    const allRows = Array.isArray(communities) ? communities : [];
 
+    // 1) 精确匹配：area + type
+    let rows = allRows.filter((r: any) => norm(r?.area) === area && norm(r?.type) === type);
+
+    // 2) 次优匹配：只匹配 type（同类型全局）
     if (!rows.length) {
-      // 没有精确匹配 → 返回低置信度宽区间
-      const fallbackMid = 1800 * sizeSqft; // 粗略 fallback
-      return NextResponse.json({
-        min: Math.round(fallbackMid * 0.75),
-        max: Math.round(fallbackMid * 1.25),
-        confidence: "Low",
-      });
+      rows = allRows.filter((r: any) => norm(r?.type) === type);
     }
 
-    // ===== 2️⃣ 计算锚点价（price per sqft 中位）=====
-    const ppsfList = rows.map((r: any) => Number(r.ppsf)).filter(Boolean);
-    const medianPpsf =
-      ppsfList.sort((a, b) => a - b)[Math.floor(ppsfList.length / 2)];
+    // 3) 再不行：全量
+    if (!rows.length) {
+      rows = allRows;
+    }
 
-    const anchorPrice = medianPpsf * Number(sizeSqft);
+    // 取 ppsf
+    const ppsfList = rows
+      .map((r: any) => Number(r?.ppsf))
+      .filter((n: number) => Number.isFinite(n) && n > 0);
 
-    // ===== 3️⃣ Bedrooms 微调（很轻）=====
-    const bedFactor =
-      beds === 0 ? 0.98 : beds === 1 ? 1 : beds === 2 ? 1.02 : 1.04;
+    // 如果数据里没有 ppsf，就用一个迪拜粗略 fallback（避免 0）
+    // 你可以后面用真实数据替换这个默认值
+    const basePpsf = Number.isFinite(median(ppsfList)) ? (median(ppsfList) as number) : 1800;
 
-    const adjustedMid = anchorPrice * bedFactor;
+    // bedrooms 轻微修正（不要太夸张）
+    const bedFactor = beds === 0 ? 0.98 : beds === 1 ? 1.0 : beds === 2 ? 1.03 : beds === 3 ? 1.06 : 1.08;
 
-    // ===== 4️⃣ 置信度判断 =====
-    let confidence: "High" | "Medium" | "Low" = "Medium";
+    const mid = basePpsf * sizeSqft * bedFactor;
 
-    if (rows.length >= 6) confidence = "High";
-    if (rows.length <= 2) confidence = "Low";
+    // confidence：根据样本量 + ppsf 离散度
+    const n = ppsfList.length;
+    const conf: Confidence = n >= 10 ? "High" : n >= 4 ? "Medium" : "Low";
 
-    // ===== 5️⃣ 区间宽度控制（关键！）=====
-    /**
-     * 这是你现在和之前最大的不同点：
-     * - High：非常像 Zillow（±8% ~ ±10%）
-     * - Medium：市场常见波动（±15%）
-     * - Low：数据不足，明显更宽
-     */
-    let bandPct = 0.15;
+    // 区间宽度：High 更窄，Low 更宽（但别夸张）
+    // 另外根据 ppsf 的离散程度再微调
+    let band = conf === "High" ? 0.10 : conf === "Medium" ? 0.15 : 0.22;
 
-    if (confidence === "High") bandPct = 0.1;
-    if (confidence === "Low") bandPct = 0.22;
+    if (ppsfList.length >= 6) {
+      const lo = ppsfList[Math.floor(ppsfList.length * 0.2)];
+      const hi = ppsfList[Math.floor(ppsfList.length * 0.8)];
+      const spread = (hi - lo) / basePpsf; // 0.x
+      band = clamp(band + spread * 0.10, 0.08, 0.28);
+    }
 
-    const min = Math.round(adjustedMid * (1 - bandPct));
-    const max = Math.round(adjustedMid * (1 + bandPct));
+    const min = Math.round(mid * (1 - band));
+    const max = Math.round(mid * (1 + band));
+
+    // ✅ 兜底：绝不允许 0
+    const safeMin = Math.max(min, 1);
+    const safeMax = Math.max(max, safeMin + 1);
 
     return NextResponse.json({
-      min,
-      max,
-      confidence,
+      min: safeMin,
+      max: safeMax,
+      confidence: conf,
+      source: rows === allRows ? "fallback_all" : "matched",
     });
   } catch (e) {
-    return NextResponse.json(
-      { error: "Server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

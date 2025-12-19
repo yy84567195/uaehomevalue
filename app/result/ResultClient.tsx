@@ -72,6 +72,28 @@ export default function ResultClient() {
 
   const sizeSqft = useMemo(() => Number(sizeSqftStr || 0), [sizeSqftStr]);
   const mid = useMemo(() => (min + max) / 2 || 0, [min, max]);
+// ✅ Likely range（更窄的“可能成交区间”）
+const likely = useMemo(() => {
+  if (!min || !max || !mid || max <= min) {
+    return { likelyMin: min, likelyMax: max, bandPct: 0 };
+  }
+
+  // 根据置信度控制收紧程度
+  const c = (confidence || "").toLowerCase();
+  const tight =
+    c.includes("high") ? 0.25 :   // ±12.5%
+    c.includes("med")  ? 0.35 :   // ±17.5%
+                         0.5;     // ±25%
+
+  const halfBand = ((max - min) * tight) / 2;
+
+  const likelyMin = Math.round(Math.max(min, mid - halfBand));
+  const likelyMax = Math.round(Math.min(max, mid + halfBand));
+  const bandPct = ((likelyMax - likelyMin) / mid) * 100;
+
+  return { likelyMin, likelyMax, bandPct };
+}, [min, max, mid, confidence]);
+
 
   // ✅ Back-to-input links
   const changeInputsUrl = useMemo(() => {
@@ -228,6 +250,30 @@ export default function ResultClient() {
 
   const pad = isMobile ? 14 : 18;
   const pagePad = isMobile ? "20px 14px" : "40px 16px";
+function valueAdjustments() {
+  return [
+    {
+      label: "Sea / Marina view",
+      impact: "+6% to +12%",
+      note: "Strong premium for unobstructed water views",
+    },
+    {
+      label: "High floor",
+      impact: "+2% to +5%",
+      note: "Higher floors typically trade at a premium",
+    },
+    {
+      label: "Upgraded / renovated",
+      impact: "+5% to +10%",
+      note: "Modern finishes significantly affect value",
+    },
+    {
+      label: "Low floor / road view",
+      impact: "−3% to −8%",
+      note: "Noise and privacy discount",
+    },
+  ];
+}
 
   return (
     <div style={{ minHeight: "100vh", background: "#fff", padding: pagePad, color: "#0f172a" }}>
@@ -330,6 +376,7 @@ export default function ResultClient() {
             {/* A) Value card */}
             <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
               <div
+              
                 style={{
                   display: "flex",
                   flexDirection: isMobile ? "column" : "row",
@@ -339,10 +386,36 @@ export default function ResultClient() {
                 }}
               >
                 <div>
-                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>UAEHomeValue estimate (AED)</div>
-                  <div style={{ fontSize: isMobile ? 30 : 36, fontWeight: 950, letterSpacing: -0.9, lineHeight: 1.05 }}>
-                    {formatAED(min)} <span style={{ color: "#94a3b8" }}>–</span> {formatAED(max)}
-                  </div>
+               <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>
+  Likely value range (AED)
+</div>
+
+<div
+  style={{
+    fontSize: isMobile ? 32 : 38,
+    fontWeight: 950,
+    letterSpacing: -1,
+    lineHeight: 1.05,
+  }}
+>
+  {formatAED(likely.likelyMin)}
+  <span style={{ color: "#94a3b8" }}> – </span>
+  {formatAED(likely.likelyMax)}
+</div>
+
+<div
+  style={{
+    marginTop: 10,
+    fontSize: 13,
+    color: "#64748b",
+    lineHeight: 1.6,
+  }}
+>
+  Conservative market range:
+  <b> {formatAED(min)} – {formatAED(max)}</b>
+  {" "}• Likely band width: {pct(likely.bandPct)}
+</div>
+
                   <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
                     Last updated: today • Range width: {pct(market.rangeWidthPct)}
                   </div>
@@ -521,6 +594,46 @@ export default function ResultClient() {
                 </a>
               </div>
             </div>
+<div
+  style={{
+    border: "1px solid #e2e8f0",
+    borderRadius: 16,
+    padding: pad,
+    marginTop: 16,
+    background: "#f8fafc",
+  }}
+>
+  <div style={{ fontSize: 15, fontWeight: 950, marginBottom: 10 }}>
+    What could move your value up or down
+  </div>
+
+  <div style={{ display: "grid", gap: 10 }}>
+    {valueAdjustments().map((v) => (
+      <div
+        key={v.label}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 12,
+          padding: "10px 12px",
+          background: "#fff",
+          borderRadius: 12,
+          border: "1px solid #e2e8f0",
+        }}
+      >
+        <div>
+          <div style={{ fontWeight: 900 }}>{v.label}</div>
+          <div style={{ fontSize: 12, color: "#64748b" }}>{v.note}</div>
+        </div>
+        <div style={{ fontWeight: 900 }}>{v.impact}</div>
+      </div>
+    ))}
+  </div>
+
+  <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>
+    Share floor, view and condition on WhatsApp to refine your estimate.
+  </div>
+</div>
 
             {/* D) Value drivers */}
             <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
