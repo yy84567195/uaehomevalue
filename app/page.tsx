@@ -36,63 +36,67 @@ export default function HomePage() {
     [area, sizeSqftNum]
   );
 
-  async function onSubmit() {
-    setErr(undefined);
-    if (!isValid) {
-      setErr("Please enter a valid size (sqft).");
+async function onSubmit() {
+  setErr(undefined);
+
+  if (!isValid) {
+    setErr("Please enter a valid size (sqft).");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const res = await fetch("/api/estimate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        area,
+        type,
+        beds,
+        sizeSqft: Number(sizeSqftNum),
+      }),
+    });
+
+    const out = await res.json();
+
+    // 1️⃣ API 报错直接停止
+    if (!res.ok || out?.error) {
+      setErr(out?.error || "Estimate failed. Please try again.");
       return;
     }
 
-    setLoading(true);
-    try {
-      const res = await fetch("/api/estimate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ area, type, beds, sizeSqft: Number(sizeSqftNum) }),
-      });
+    // 2️⃣ 强校验，防止 min=0 / max=0
+    const minVal = Number(out?.min);
+    const maxVal = Number(out?.max);
 
-const out = await res.json();
-
-if (!res.ok || out?.error) {
-  setErr(out?.error || "Estimate failed. Please try again.");
-  setLoading(false);
-  return;
-}
-
-const minVal = Number(out.min);
-const maxVal = Number(out.max);
-
-if (
-  !Number.isFinite(minVal) ||
-  !Number.isFinite(maxVal) ||
-  minVal <= 0 ||
-  maxVal <= 0
-) {
-  setErr("No estimate available for this selection yet. Please try another area.");
-  setLoading(false);
-  return;
-}
-
-const params = new URLSearchParams({
-  area,
-  type,
-  beds: String(beds),
-  sizeSqft: String(Number(sizeSqftNum)),
-  min: String(minVal),
-  max: String(maxVal),
-  confidence: String(out.confidence || "Medium"),
-});
-
-window.location.href = `/result?${params.toString()}`;
-
-
-      window.location.href = `/result?${params.toString()}`;
-    } catch {
-      setErr("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
+    if (
+      !Number.isFinite(minVal) ||
+      !Number.isFinite(maxVal) ||
+      minVal <= 0 ||
+      maxVal <= 0 ||
+      maxVal <= minVal
+    ) {
+      setErr("No estimate available for this selection yet. Please try another area.");
+      return;
     }
+
+    const params = new URLSearchParams({
+      area,
+      type,
+      beds: String(beds),
+      sizeSqft: String(Number(sizeSqftNum)),
+      min: String(minVal),
+      max: String(maxVal),
+      confidence: String(out?.confidence || "Medium"),
+    });
+
+    window.location.href = `/result?${params.toString()}`;
+  } catch {
+    setErr("Network error. Please try again.");
+  } finally {
+    setLoading(false);
   }
+}
 
   const labelStyle: React.CSSProperties = {
     fontSize: 14,
