@@ -51,6 +51,31 @@ function sparkPath(values: number[], w = 220, h = 56, pad = 6) {
   return pts.map(([x, y], i) => `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`).join(" ");
 }
 
+function valueAdjustments() {
+  return [
+    {
+      label: "Sea / Marina view",
+      impact: "+6% to +12%",
+      note: "Strong premium for unobstructed water views",
+    },
+    {
+      label: "High floor",
+      impact: "+2% to +5%",
+      note: "Higher floors typically trade at a premium",
+    },
+    {
+      label: "Upgraded / renovated",
+      impact: "+5% to +10%",
+      note: "Modern finishes significantly affect value",
+    },
+    {
+      label: "Low floor / road view",
+      impact: "−3% to −8%",
+      note: "Noise and privacy discount",
+    },
+  ];
+}
+
 export default function ResultClient() {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -72,28 +97,45 @@ export default function ResultClient() {
 
   const sizeSqft = useMemo(() => Number(sizeSqftStr || 0), [sizeSqftStr]);
   const mid = useMemo(() => (min + max) / 2 || 0, [min, max]);
-// ✅ Likely range（更窄的“可能成交区间”）
-const likely = useMemo(() => {
-  if (!min || !max || !mid || max <= min) {
-    return { likelyMin: min, likelyMax: max, bandPct: 0 };
-  }
 
-  // 根据置信度控制收紧程度
-  const c = (confidence || "").toLowerCase();
-  const tight =
-    c.includes("high") ? 0.25 :   // ±12.5%
-    c.includes("med")  ? 0.35 :   // ±17.5%
-                         0.5;     // ±25%
+  // ✅ 波动范围：直接用 min/max 算，保证换区域一定变
+  const band = useMemo(() => {
+    const lo = Number(min);
+    const hi = Number(max);
+    const m = (lo + hi) / 2;
 
-  const halfBand = ((max - min) * tight) / 2;
+    if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi <= lo || !Number.isFinite(m) || m <= 0) {
+      return { rangePct: 0, likelyPct: 0 };
+    }
 
-  const likelyMin = Math.round(Math.max(min, mid - halfBand));
-  const likelyMax = Math.round(Math.min(max, mid + halfBand));
-  const bandPct = ((likelyMax - likelyMin) / mid) * 100;
+    const rangePct = ((hi - lo) / m) * 100;
 
-  return { likelyMin, likelyMax, bandPct };
-}, [min, max, mid, confidence]);
+    // “可能波动幅度”用置信度收紧：High 更小、Low 更大
+    const c = String(confidence || "").toLowerCase();
+    const tight = c.includes("high") ? 0.25 : c.includes("med") ? 0.35 : 0.5;
 
+    const likelyPct = rangePct * tight;
+
+    return { rangePct, likelyPct };
+  }, [min, max, confidence]);
+
+  // ✅ Likely range（更窄的“可能成交区间”）
+  const likely = useMemo(() => {
+    if (!min || !max || !mid || max <= min) {
+      return { likelyMin: min, likelyMax: max, bandPct: 0 };
+    }
+
+    const c = (confidence || "").toLowerCase();
+    const tight = c.includes("high") ? 0.25 : c.includes("med") ? 0.35 : 0.5;
+
+    const halfBand = ((max - min) * tight) / 2;
+
+    const likelyMin = Math.round(Math.max(min, mid - halfBand));
+    const likelyMax = Math.round(Math.min(max, mid + halfBand));
+    const bandPct = mid > 0 ? ((likelyMax - likelyMin) / mid) * 100 : 0;
+
+    return { likelyMin, likelyMax, bandPct };
+  }, [min, max, mid, confidence]);
 
   // ✅ Back-to-input links
   const changeInputsUrl = useMemo(() => {
@@ -128,7 +170,6 @@ const likely = useMemo(() => {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
   }, [area]);
 
-  // ✅ Map embed (visual)
   const mapsEmbed = useMemo(() => {
     const q = (area || "Dubai") + ", UAE";
     return `https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
@@ -250,37 +291,13 @@ const likely = useMemo(() => {
 
   const pad = isMobile ? 14 : 18;
   const pagePad = isMobile ? "20px 14px" : "40px 16px";
-function valueAdjustments() {
-  return [
-    {
-      label: "Sea / Marina view",
-      impact: "+6% to +12%",
-      note: "Strong premium for unobstructed water views",
-    },
-    {
-      label: "High floor",
-      impact: "+2% to +5%",
-      note: "Higher floors typically trade at a premium",
-    },
-    {
-      label: "Upgraded / renovated",
-      impact: "+5% to +10%",
-      note: "Modern finishes significantly affect value",
-    },
-    {
-      label: "Low floor / road view",
-      impact: "−3% to −8%",
-      note: "Noise and privacy discount",
-    },
-  ];
-}
 
   return (
     <div style={{ minHeight: "100vh", background: "#fff", padding: pagePad, color: "#0f172a" }}>
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
         {/* Top bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-          {/* ✅ Brand (Logo + Name + subtitle) */}
+          {/* Brand */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <img
               src="/logo.png"
@@ -361,9 +378,7 @@ function valueAdjustments() {
           <h1 style={{ margin: 0, fontSize: isMobile ? 22 : 28, fontWeight: 950, letterSpacing: -0.6, lineHeight: 1.12 }}>
             Estimated market value
           </h1>
-
           <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>Estimate first. Decide better.</div>
-
           <div style={{ marginTop: 6, fontSize: 14, color: "#475569", lineHeight: 1.6 }}>
             {area || "—"} • {type || "—"} • {beds ? `${beds} bed` : "—"} • {formatSqft(sizeSqft)} sqft
           </div>
@@ -376,7 +391,6 @@ function valueAdjustments() {
             {/* A) Value card */}
             <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
               <div
-              
                 style={{
                   display: "flex",
                   flexDirection: isMobile ? "column" : "row",
@@ -386,38 +400,18 @@ function valueAdjustments() {
                 }}
               >
                 <div>
-               <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>
-  Likely value range (AED)
-</div>
+                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>Likely value range (AED)</div>
 
-<div
-  style={{
-    fontSize: isMobile ? 32 : 38,
-    fontWeight: 950,
-    letterSpacing: -1,
-    lineHeight: 1.05,
-  }}
->
-  {formatAED(likely.likelyMin)}
-  <span style={{ color: "#94a3b8" }}> – </span>
-  {formatAED(likely.likelyMax)}
-</div>
+                  <div style={{ fontSize: isMobile ? 32 : 38, fontWeight: 950, letterSpacing: -1, lineHeight: 1.05 }}>
+                    {formatAED(likely.likelyMin)} <span style={{ color: "#94a3b8" }}>–</span> {formatAED(likely.likelyMax)}
+                  </div>
 
-<div
-  style={{
-    marginTop: 10,
-    fontSize: 13,
-    color: "#64748b",
-    lineHeight: 1.6,
-  }}
->
-  Conservative market range:
-  <b> {formatAED(min)} – {formatAED(max)}</b>
-  {" "}• Likely band width: {pct(likely.bandPct)}
-</div>
+                  <div style={{ marginTop: 10, fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>
+                    Conservative market range: <b>{formatAED(min)} – {formatAED(max)}</b> • Likely band width: {pct(likely.bandPct)}
+                  </div>
 
                   <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
-                    Last updated: today • Range width: {pct(market.rangeWidthPct)}
+                    Last updated: today • Range width: {pct(band.rangePct)} • Likely volatility: {pct(band.likelyPct)}
                   </div>
                 </div>
 
@@ -594,46 +588,46 @@ function valueAdjustments() {
                 </a>
               </div>
             </div>
-<div
-  style={{
-    border: "1px solid #e2e8f0",
-    borderRadius: 16,
-    padding: pad,
-    marginTop: 16,
-    background: "#f8fafc",
-  }}
->
-  <div style={{ fontSize: 15, fontWeight: 950, marginBottom: 10 }}>
-    What could move your value up or down
-  </div>
 
-  <div style={{ display: "grid", gap: 10 }}>
-    {valueAdjustments().map((v) => (
-      <div
-        key={v.label}
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 12,
-          padding: "10px 12px",
-          background: "#fff",
-          borderRadius: 12,
-          border: "1px solid #e2e8f0",
-        }}
-      >
-        <div>
-          <div style={{ fontWeight: 900 }}>{v.label}</div>
-          <div style={{ fontSize: 12, color: "#64748b" }}>{v.note}</div>
-        </div>
-        <div style={{ fontWeight: 900 }}>{v.impact}</div>
-      </div>
-    ))}
-  </div>
+            {/* Extra: Adjustments card */}
+            <div
+              style={{
+                border: "1px solid #e2e8f0",
+                borderRadius: 16,
+                padding: pad,
+                marginTop: 2,
+                background: "#f8fafc",
+              }}
+            >
+              <div style={{ fontSize: 15, fontWeight: 950, marginBottom: 10 }}>What could move your value up or down</div>
 
-  <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>
-    Share floor, view and condition on WhatsApp to refine your estimate.
-  </div>
-</div>
+              <div style={{ display: "grid", gap: 10 }}>
+                {valueAdjustments().map((v) => (
+                  <div
+                    key={v.label}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 12,
+                      padding: "10px 12px",
+                      background: "#fff",
+                      borderRadius: 12,
+                      border: "1px solid #e2e8f0",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 900 }}>{v.label}</div>
+                      <div style={{ fontSize: 12, color: "#64748b" }}>{v.note}</div>
+                    </div>
+                    <div style={{ fontWeight: 900 }}>{v.impact}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>
+                Share floor, view and condition on WhatsApp to refine your estimate.
+              </div>
+            </div>
 
             {/* D) Value drivers */}
             <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
@@ -674,7 +668,7 @@ function valueAdjustments() {
 
           {/* Right column */}
           <div style={{ display: "grid", gap: 14 }}>
-            {/* E) MAP CARD (visualized) */}
+            {/* E) MAP CARD */}
             <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, overflow: "hidden", background: "#fff" }}>
               <div style={{ padding: pad, borderBottom: "1px solid #e2e8f0" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
