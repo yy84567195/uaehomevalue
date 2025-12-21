@@ -87,6 +87,7 @@ const [refineData, setRefineData] = useState({
   condition: "",
   parking: "",
   expectedPrice: "",
+  amenities: [] as string[],
 });
 const [refineResult, setRefineResult] = useState<null | {
   min: number;
@@ -171,21 +172,6 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
     return qs ? `/?${qs}` : "/";
   }, [area, type, beds, sizeSqftStr]);
 
-  // WhatsApp CTA
-  const whatsappNumber = "971581188247";
-  const msg = useMemo(() => {
-    return encodeURIComponent(
-      `Hi, I used UAEHomeValue.\n` +
-        `Area: ${area}\n` +
-        `Type: ${type}\n` +
-        `Beds: ${beds}\n` +
-        `Size: ${sizeSqftStr} sqft\n` +
-        `Estimate: ${formatAED(min)} – ${formatAED(max)}\n` +
-        `Confidence: ${confidence}\n\n` +
-        `Please help me with a more accurate valuation (building, floor, view, parking, condition).`
-    );
-  }, [area, type, beds, sizeSqftStr, min, max, confidence]);
-  const waUrl = `https://wa.me/${whatsappNumber}?text=${msg}`;
 
   // Google Maps (no API key)
   const mapsQuery = useMemo(() => {
@@ -328,6 +314,7 @@ const inputStyle: React.CSSProperties = {
 
   return (
     <div style={{ minHeight: "100vh", background: "#fff", padding: pagePad, color: "#0f172a" }}>
+
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
         {refineResult && (
   <div
@@ -446,22 +433,6 @@ const inputStyle: React.CSSProperties = {
               </button>
             </a>
 
-            <a href={waUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
-              <button
-                style={{
-                  border: "1px solid #0ea5e9",
-                  background: "#0ea5e9",
-                  color: "#fff",
-                  padding: "10px 12px",
-                  borderRadius: 12,
-                  fontWeight: 900,
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                Request detailed valuation
-              </button>
-            </a>
           </div>
         </div>
 
@@ -549,11 +520,28 @@ const inputStyle: React.CSSProperties = {
       background: "#f8fafc",
     }}
   >
-    <div style={{ fontWeight: 950, fontSize: 15, marginBottom: 10 }}>
-      Improve valuation accuracy
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+      <div style={{ fontWeight: 950, fontSize: 15 }}>Improve valuation accuracy</div>
+      <button
+        onClick={() => setShowRefine(false)}
+        style={{
+          border: "1px solid #e2e8f0",
+          background: "#fff",
+          padding: "6px 10px",
+          borderRadius: 10,
+          fontWeight: 900,
+          cursor: "pointer",
+        }}
+      >
+        Close
+      </button>
     </div>
 
-    <div style={{ display: "grid", gap: 10 }}>
+    <div style={{ marginTop: 8, fontSize: 12, color: "#64748b", lineHeight: 1.5 }}>
+      Fill what you know (30 seconds). More details → tighter range.
+    </div>
+
+    <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
       <input
         placeholder="Building name (e.g. Marina Gate)"
         value={refineData.building}
@@ -595,6 +583,81 @@ const inputStyle: React.CSSProperties = {
         <option value="renovated">Fully renovated</option>
       </select>
 
+      {/* ✅ Parking (你之前说缺的就是这个) */}
+      <select
+        value={refineData.parking}
+        onChange={(e) => setRefineData({ ...refineData, parking: e.target.value })}
+        style={inputStyle}
+      >
+        <option value="">Parking</option>
+        <option value="0">No parking</option>
+        <option value="1">1 space</option>
+        <option value="2">2 spaces</option>
+        <option value="3+">3+ spaces</option>
+      </select>
+
+      {/* ✅ Amenities multi-select */}
+      <div
+        style={{
+          border: "1px solid #e2e8f0",
+          background: "#fff",
+          borderRadius: 12,
+          padding: 12,
+        }}
+      >
+        <div style={{ fontSize: 12, fontWeight: 900, marginBottom: 8, color: "#0f172a" }}>
+          Community amenities (select all)
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {[
+            "Beach access",
+            "Mall nearby",
+            "Metro nearby",
+            "Park / waterfront",
+            "Good schools",
+            "Swimming pool",
+            "Gym",
+            "Kids play area",
+          ].map((a) => {
+            const checked = refineData.amenities?.includes(a);
+            return (
+              <label
+                key={a}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "8px 10px",
+                  borderRadius: 10,
+                  border: checked ? "1px solid #0ea5e9" : "1px solid #e2e8f0",
+                  background: checked ? "#f0f9ff" : "#fff",
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "#0f172a",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={!!checked}
+                  onChange={() => {
+                    setRefineData((prev) => {
+                      const list = prev.amenities || [];
+                      return {
+                        ...prev,
+                        amenities: checked ? list.filter((x) => x !== a) : [...list, a],
+                      };
+                    });
+                  }}
+                />
+                {a}
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
       <input
         placeholder="Your expected price (optional, AED)"
         inputMode="numeric"
@@ -607,69 +670,69 @@ const inputStyle: React.CSSProperties = {
     </div>
 
     <button
-onClick={() => {
-  // ✅ 用最终显示的区间当基准（有 override 就用 override）
-  const lo = Number(minFinal ?? min);
-  const hi = Number(maxFinal ?? max);
+      onClick={() => {
+        // ✅ 用最终显示的区间当基准（有 override 就用 override）
+        const lo = Number(minFinal ?? min);
+        const hi = Number(maxFinal ?? max);
 
-  if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi <= lo) {
-    setRefineResult({
-      min: lo || 0,
-      max: hi || 0,
-      note: "Not enough data to refine yet. Please try another area.",
-    });
-    return;
-  }
+        if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi <= lo) {
+          setRefineResult({
+            min: lo || 0,
+            max: hi || 0,
+            note: "Not enough data to refine yet. Please try another area.",
+          });
+          setShowRefine(false); // ✅ 分支也要收起
+          return;
+        }
 
-  const width = hi - lo;
-  const midLocal = (lo + hi) / 2;
+        const width = hi - lo;
+        const midLocal = (lo + hi) / 2;
 
-  // ✅ 根据用户填的信息多少决定收紧力度：填得越多越窄
-  const filled =
-    (refineData.building ? 1 : 0) +
-    (refineData.floor ? 1 : 0) +
-    (refineData.view ? 1 : 0) +
-    (refineData.condition ? 1 : 0) +
-    (refineData.parking ? 1 : 0) +
-    (refineData.expectedPrice ? 1 : 0);
+        // ✅ 填得越多越窄（并且 amenities >=2 也加分）
+        const filled =
+          (refineData.building ? 1 : 0) +
+          (refineData.floor ? 1 : 0) +
+          (refineData.view ? 1 : 0) +
+          (refineData.condition ? 1 : 0) +
+          (refineData.parking ? 1 : 0) +
+          (refineData.expectedPrice ? 1 : 0) +
+          ((refineData.amenities?.length || 0) >= 2 ? 1 : 0);
 
-  // 目标：把“原区间宽度”乘以一个缩小系数（一定 < 1）
-  // 例：原宽度 1.6M，factor=0.55 => 新宽度 0.88M（一定更窄）
-  const shrinkFactor = filled >= 4 ? 0.45 : filled >= 2 ? 0.55 : 0.70; // 越多越窄
+        // ✅ 更激进一点：保证“Refined 一定更窄”
+        // 原宽度 * factor（<1）
+        const shrinkFactor = filled >= 5 ? 0.40 : filled >= 3 ? 0.50 : 0.65;
 
-  const newHalf = (width * shrinkFactor) / 2;
+        let newHalf = (width * shrinkFactor) / 2;
+        let newMin = Math.round(midLocal - newHalf);
+        let newMax = Math.round(midLocal + newHalf);
 
-  // ✅ 先围绕 midLocal 收紧
-  let newMin = Math.round(midLocal - newHalf);
-  let newMax = Math.round(midLocal + newHalf);
+        // ✅ 锁在原区间内（只会更窄）
+        newMin = Math.max(lo, newMin);
+        newMax = Math.min(hi, newMax);
 
-  // ✅ 硬性保证：refined 不能超出原区间（只会更窄）
-  newMin = Math.max(lo, newMin);
-  newMax = Math.min(hi, newMax);
+        // ✅ 再强制至少缩小 25%
+        const newWidth = newMax - newMin;
+        if (newWidth >= width * 0.75) {
+          newHalf = (width * 0.74) / 2;
+          newMin = Math.max(lo, Math.round(midLocal - newHalf));
+          newMax = Math.min(hi, Math.round(midLocal + newHalf));
+        }
 
-  // ✅ 再硬性保证：一定比原来更窄（至少缩小 20%）
-  const newWidth = newMax - newMin;
-  if (newWidth >= width * 0.8) {
-    const forcedHalf = (width * 0.79) / 2;
-    newMin = Math.max(lo, Math.round(midLocal - forcedHalf));
-    newMax = Math.min(hi, Math.round(midLocal + forcedHalf));
-  }
+        // ✅ 写入 override（页面价格立刻变成更窄的）
+        setMinOverride(newMin);
+        setMaxOverride(newMax);
+        setConfidenceOverride("Refined");
 
-  // ✅ 写入 override（页面所有价格马上变成更窄的）
-  setMinOverride(newMin);
-  setMaxOverride(newMax);
-  setConfidenceOverride("Refined");
+        // ✅ 弹窗
+        setRefineResult({
+          min: newMin,
+          max: newMax,
+          note: "Thanks! We used your details to tighten the range.",
+        });
 
-  // ✅ 漂亮弹窗数据
-  setRefineResult({
-    min: newMin,
-    max: newMax,
-    note: "Thanks! We used your details to tighten the range.",
-  });
-
-  // 收起表单
-  setShowRefine(false);
-}}
+        // ✅ 收起表单
+        setShowRefine(false);
+      }}
       style={{
         marginTop: 12,
         width: "100%",
@@ -682,7 +745,7 @@ onClick={() => {
         cursor: "pointer",
       }}
     >
-      Update estimate
+      Submit & improve estimate
     </button>
 
     <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
@@ -805,28 +868,6 @@ onClick={() => {
                 ))}
               </div>
 
-              <div style={{ marginTop: 12, fontSize: 12, color: "#64748b" }}>
-                Want real comps for your exact unit? Share building name + floor + view on WhatsApp.
-              </div>
-
-              <div style={{ marginTop: 10 }}>
-                <a href={waUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
-                  <button
-                    style={{
-                      width: isMobile ? "100%" : "auto",
-                      border: "1px solid #0ea5e9",
-                      background: "#0ea5e9",
-                      color: "#fff",
-                      padding: "10px 12px",
-                      borderRadius: 12,
-                      fontWeight: 900,
-                      cursor: "pointer",
-                    }}
-                  >
-                    Get real comps on WhatsApp
-                  </button>
-                </a>
-              </div>
             </div>
 
             {/* Extra: Adjustments card */}
@@ -988,29 +1029,30 @@ onClick={() => {
               <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Your inputs</div>
 
               <div style={{ display: "grid", gap: 10 }}>
-                {[
-                  ["Area", area || "—"],
-                  ["Property type", type || "—"],
-                  ["Bedrooms", beds || "—"],
-                  ["Size (sqft)", formatSqft(sizeSqft)],
-                ].map(([k, v]) => (
-                  <div
-                    key={k}
-                    style={{
-                      padding: 12,
-                      borderRadius: 12,
-                      background: "#fff",
-                      border: "1px solid #e2e8f0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 12,
-                    }}
-                  >
-                    <div style={{ fontSize: 12, color: "#64748b" }}>{k}</div>
-                    <div style={{ fontWeight: 900, textAlign: "right" }}>{v}</div>
-                  </div>
-                ))}
+{[
+  ["Area", area || "—"],
+  ["Property type", type || "—"],
+  ["Bedrooms", beds || "—"],
+  ["Size (sqft)", formatSqft(sizeSqft)],
+  ["Parking", refineData?.parking ? refineData.parking : "—"], // ✅ 新增
+].map(([k, v]) => (
+  <div
+    key={k}
+    style={{
+      padding: 12,
+      borderRadius: 12,
+      background: "#fff",
+      border: "1px solid #e2e8f0",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12,
+    }}
+  >
+    <div style={{ fontSize: 12, color: "#64748b" }}>{k}</div>
+    <div style={{ fontWeight: 900, textAlign: "right" }}>{v}</div>
+  </div>
+))}
               </div>
             </div>
 
@@ -1018,22 +1060,7 @@ onClick={() => {
             <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
               <div style={{ fontWeight: 950, fontSize: 14 }}>Next actions</div>
               <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-                <a href={waUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
-                  <button
-                    style={{
-                      width: "100%",
-                      border: "1px solid #0ea5e9",
-                      background: "#0ea5e9",
-                      color: "#fff",
-                      padding: "12px 12px",
-                      borderRadius: 12,
-                      fontWeight: 950,
-                      cursor: "pointer",
-                    }}
-                  >
-                    Talk on WhatsApp (fast)
-                  </button>
-                </a>
+
 
                 <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.55 }}>
                   Send: building name, floor, view, parking, condition → we reply with a tighter range + real comps.
@@ -1055,8 +1082,64 @@ onClick={() => {
           </div>
         </div>
 
-        <div style={{ marginTop: 18, fontSize: 12, color: "#94a3b8" }}>© UAEHomeValue</div>
-      </div>
+{/* Help card (single WhatsApp entry, privacy-first) */}
+<div
+  style={{
+    marginTop: 28,
+    border: "1px solid #e2e8f0",
+    borderRadius: 16,
+    padding: 16,
+    background: "#f8fafc",
+    display: "grid",
+    gap: 10,
+    textAlign: "center",
+  }}
+>
+  <div style={{ fontSize: 14, fontWeight: 950 }}>
+    Something looks off? Talk to us
+  </div>
+
+  <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.6 }}>
+    We respect your privacy. No estimate or property details are shared unless you choose to.
+  </div>
+
+  <a
+    href="https://wa.me/971581188247"
+    target="_blank"
+    rel="noreferrer"
+    style={{ textDecoration: "none" }}
+  >
+    <button
+      style={{
+        border: "1px solid #0ea5e9",
+        background: "#0ea5e9",
+        color: "#fff",
+        padding: "10px 16px",
+        borderRadius: 12,
+        fontWeight: 900,
+        cursor: "pointer",
+      }}
+    >
+      Talk to us on WhatsApp
+    </button>
+  </a>
+
+  <div style={{ fontSize: 12, color: "#64748b" }}>
+    Optional: share building name, floor or view to help us guide you better.
+  </div>
+</div>
+
+<div
+  style={{
+    marginTop: 18,
+    fontSize: 12,
+    color: "#94a3b8",
+    textAlign: "center",
+  }}
+>
+  © UAEHomeValue
+</div>
+</div>
     </div>
   );
 }
