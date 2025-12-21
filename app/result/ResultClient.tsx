@@ -77,6 +77,26 @@ function valueAdjustments() {
 }
 
 export default function ResultClient() {
+  // 🔹 refine form state
+const [showRefine, setShowRefine] = useState(false);
+
+const [refineData, setRefineData] = useState({
+  building: "",
+  floor: "",
+  view: "",
+  condition: "",
+  parking: "",
+  expectedPrice: "",
+});
+const [refineResult, setRefineResult] = useState<null | {
+  min: number;
+  max: number;
+  note: string;
+}>(null);
+
+const [minOverride, setMinOverride] = useState<number | null>(null);
+const [maxOverride, setMaxOverride] = useState<number | null>(null);
+const [confidenceOverride, setConfidenceOverride] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -94,9 +114,12 @@ export default function ResultClient() {
   const min = useMemo(() => Number(getParam("min") || 0), []);
   const max = useMemo(() => Number(getParam("max") || 0), []);
   const confidence = useMemo(() => getParam("confidence") || "High", []);
-
+  
+const minFinal = minOverride ?? min;
+const maxFinal = maxOverride ?? max;
+const confidenceFinal = confidenceOverride ?? confidence;
   const sizeSqft = useMemo(() => Number(sizeSqftStr || 0), [sizeSqftStr]);
-  const mid = useMemo(() => (min + max) / 2 || 0, [min, max]);
+const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
 
   // ✅ 波动范围：直接用 min/max 算，保证换区域一定变
   const band = useMemo(() => {
@@ -291,10 +314,79 @@ export default function ResultClient() {
 
   const pad = isMobile ? 14 : 18;
   const pagePad = isMobile ? "20px 14px" : "40px 16px";
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "12px 12px",
+  borderRadius: 12,
+  border: "1px solid #e2e8f0",
+  background: "#fff",
+  color: "#0f172a",
+  fontSize: 14,
+  fontWeight: 700,
+  outline: "none",
+};
 
   return (
     <div style={{ minHeight: "100vh", background: "#fff", padding: pagePad, color: "#0f172a" }}>
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
+        {refineResult && (
+  <div
+    style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(15, 23, 42, 0.45)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 16,
+      zIndex: 50,
+    }}
+    onClick={() => setRefineResult(null)}
+  >
+    <div
+      style={{
+        width: "100%",
+        maxWidth: 420,
+        background: "#fff",
+        borderRadius: 16,
+        border: "1px solid #e2e8f0",
+        padding: 16,
+        boxShadow: "0 20px 60px rgba(0,0,0,.20)",
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div style={{ fontSize: 14, fontWeight: 950, marginBottom: 8 }}>
+        Refined estimate
+      </div>
+
+      <div style={{ fontSize: 26, fontWeight: 950, letterSpacing: -0.6 }}>
+        {formatAED(refineResult.min)} <span style={{ color: "#94a3b8" }}>–</span>{" "}
+        {formatAED(refineResult.max)}
+      </div>
+
+      <div style={{ marginTop: 8, fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>
+        {refineResult.note}
+      </div>
+
+      <button
+        onClick={() => setRefineResult(null)}
+        style={{
+          marginTop: 12,
+          width: "100%",
+          padding: "12px 12px",
+          borderRadius: 12,
+          border: "1px solid #e2e8f0",
+          background: "#0ea5e9",
+          color: "#fff",
+          fontWeight: 950,
+          cursor: "pointer",
+        }}
+      >
+        Done
+      </button>
+    </div>
+  </div>
+)}
         {/* Top bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           {/* Brand */}
@@ -431,25 +523,173 @@ export default function ResultClient() {
                     Confidence: {confidence}
                   </div>
 
-                  <a href={waUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
-                    <button
-                      style={{
-                        width: isMobile ? "100%" : "auto",
-                        border: "1px solid #0ea5e9",
-                        background: "#ffffff",
-                        color: "#0ea5e9",
-                        padding: "10px 12px",
-                        borderRadius: 12,
-                        fontWeight: 900,
-                        cursor: "pointer",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      WhatsApp for precise valuation
-                    </button>
-                  </a>
+<button
+  onClick={() => setShowRefine(true)}
+  style={{
+    border: "1px solid #0ea5e9",
+    background: "#0ea5e9",
+    color: "#fff",
+    padding: "10px 12px",
+    borderRadius: 12,
+    fontWeight: 900,
+    cursor: "pointer",
+  }}
+>
+  Improve accuracy (30 seconds)
+</button>
                 </div>
               </div>
+{showRefine && (
+  <div
+    style={{
+      marginTop: 16,
+      border: "1px solid #e2e8f0",
+      borderRadius: 16,
+      padding: 16,
+      background: "#f8fafc",
+    }}
+  >
+    <div style={{ fontWeight: 950, fontSize: 15, marginBottom: 10 }}>
+      Improve valuation accuracy
+    </div>
+
+    <div style={{ display: "grid", gap: 10 }}>
+      <input
+        placeholder="Building name (e.g. Marina Gate)"
+        value={refineData.building}
+        onChange={(e) => setRefineData({ ...refineData, building: e.target.value })}
+        style={inputStyle}
+      />
+
+      <select
+        value={refineData.floor}
+        onChange={(e) => setRefineData({ ...refineData, floor: e.target.value })}
+        style={inputStyle}
+      >
+        <option value="">Floor level</option>
+        <option value="low">Low floor</option>
+        <option value="mid">Mid floor</option>
+        <option value="high">High floor</option>
+      </select>
+
+      <select
+        value={refineData.view}
+        onChange={(e) => setRefineData({ ...refineData, view: e.target.value })}
+        style={inputStyle}
+      >
+        <option value="">View</option>
+        <option value="sea">Sea / Marina view</option>
+        <option value="city">City view</option>
+        <option value="road">Road / no view</option>
+      </select>
+
+      <select
+        value={refineData.condition}
+        onChange={(e) => setRefineData({ ...refineData, condition: e.target.value })}
+        style={inputStyle}
+      >
+        <option value="">Condition</option>
+        <option value="original">Original</option>
+        <option value="good">Good</option>
+        <option value="upgraded">Upgraded</option>
+        <option value="renovated">Fully renovated</option>
+      </select>
+
+      <input
+        placeholder="Your expected price (optional, AED)"
+        inputMode="numeric"
+        value={refineData.expectedPrice}
+        onChange={(e) =>
+          setRefineData({ ...refineData, expectedPrice: e.target.value.replace(/[^\d]/g, "") })
+        }
+        style={inputStyle}
+      />
+    </div>
+
+    <button
+onClick={() => {
+  // ✅ 用最终显示的区间当基准（有 override 就用 override）
+  const lo = Number(minFinal ?? min);
+  const hi = Number(maxFinal ?? max);
+
+  if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi <= lo) {
+    setRefineResult({
+      min: lo || 0,
+      max: hi || 0,
+      note: "Not enough data to refine yet. Please try another area.",
+    });
+    return;
+  }
+
+  const width = hi - lo;
+  const midLocal = (lo + hi) / 2;
+
+  // ✅ 根据用户填的信息多少决定收紧力度：填得越多越窄
+  const filled =
+    (refineData.building ? 1 : 0) +
+    (refineData.floor ? 1 : 0) +
+    (refineData.view ? 1 : 0) +
+    (refineData.condition ? 1 : 0) +
+    (refineData.parking ? 1 : 0) +
+    (refineData.expectedPrice ? 1 : 0);
+
+  // 目标：把“原区间宽度”乘以一个缩小系数（一定 < 1）
+  // 例：原宽度 1.6M，factor=0.55 => 新宽度 0.88M（一定更窄）
+  const shrinkFactor = filled >= 4 ? 0.45 : filled >= 2 ? 0.55 : 0.70; // 越多越窄
+
+  const newHalf = (width * shrinkFactor) / 2;
+
+  // ✅ 先围绕 midLocal 收紧
+  let newMin = Math.round(midLocal - newHalf);
+  let newMax = Math.round(midLocal + newHalf);
+
+  // ✅ 硬性保证：refined 不能超出原区间（只会更窄）
+  newMin = Math.max(lo, newMin);
+  newMax = Math.min(hi, newMax);
+
+  // ✅ 再硬性保证：一定比原来更窄（至少缩小 20%）
+  const newWidth = newMax - newMin;
+  if (newWidth >= width * 0.8) {
+    const forcedHalf = (width * 0.79) / 2;
+    newMin = Math.max(lo, Math.round(midLocal - forcedHalf));
+    newMax = Math.min(hi, Math.round(midLocal + forcedHalf));
+  }
+
+  // ✅ 写入 override（页面所有价格马上变成更窄的）
+  setMinOverride(newMin);
+  setMaxOverride(newMax);
+  setConfidenceOverride("Refined");
+
+  // ✅ 漂亮弹窗数据
+  setRefineResult({
+    min: newMin,
+    max: newMax,
+    note: "Thanks! We used your details to tighten the range.",
+  });
+
+  // 收起表单
+  setShowRefine(false);
+}}
+      style={{
+        marginTop: 12,
+        width: "100%",
+        padding: "12px",
+        borderRadius: 12,
+        border: "none",
+        background: "#0ea5e9",
+        color: "#fff",
+        fontWeight: 950,
+        cursor: "pointer",
+      }}
+    >
+      Update estimate
+    </button>
+
+    <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
+      We use this to refine your estimate and improve our model.
+    </div>
+  </div>
+)}
 
               {/* B) Explanation module */}
               <div
