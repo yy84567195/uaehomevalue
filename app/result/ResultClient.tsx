@@ -439,7 +439,7 @@ const inputStyle: React.CSSProperties = {
         {/* Header */}
         <div style={{ marginTop: 12 }}>
           <h1 style={{ margin: 0, fontSize: isMobile ? 22 : 28, fontWeight: 950, letterSpacing: -0.6, lineHeight: 1.12 }}>
-            Estimated market value
+            Estimated value for your home
           </h1>
           <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>Estimate first. Decide better.</div>
           <div style={{ marginTop: 6, fontSize: 14, color: "#475569", lineHeight: 1.6 }}>
@@ -1053,25 +1053,6 @@ const inputStyle: React.CSSProperties = {
     <div style={{ fontWeight: 900, textAlign: "right" }}>{v}</div>
   </div>
 ))}
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
-              <div style={{ fontWeight: 950, fontSize: 14 }}>Next actions</div>
-              <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-
-
-                <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.55 }}>
-                  Send: building name, floor, view, parking, condition → we reply with a tighter range + real comps.
-                </div>
-
-                <div style={{ padding: 12, borderRadius: 12, background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-                  <div style={{ fontWeight: 900, fontSize: 12 }}>Pro tip</div>
-                  <div style={{ marginTop: 6, fontSize: 12, color: "#64748b", lineHeight: 1.55 }}>
-                    For best accuracy, include floor number and view (sea/marina/city) and whether the unit is upgraded.
-                  </div>
-                </div>
               </div>
             </div>
 
