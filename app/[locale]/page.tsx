@@ -1,11 +1,15 @@
 "use client";
 
+import { useTranslations, useLocale } from "next-intl";
 import { useMemo, useState } from "react";
 import data from "@/data/price_ranges.json";
 
 type PropertyType = "Apartment" | "Villa";
 
 export default function HomePage() {
+  const locale = useLocale();
+  const tHome = useTranslations("home");
+
   const areas = useMemo<string[]>(() => {
     const rows = (data as any)?.communities ?? [];
     const list: string[] = rows
@@ -25,9 +29,9 @@ export default function HomePage() {
   const [err, setErr] = useState<string | undefined>(undefined);
 
   const sizeSqftNum = useMemo(() => {
-    const t = sizeSqftText.trim();
-    if (!t) return NaN;
-    const n = Number(t);
+    const v = sizeSqftText.trim();
+    if (!v) return NaN;
+    const n = Number(v);
     return Number.isFinite(n) ? n : NaN;
   }, [sizeSqftText]);
 
@@ -36,67 +40,68 @@ export default function HomePage() {
     [area, sizeSqftNum]
   );
 
-async function onSubmit() {
-  setErr(undefined);
+  async function onSubmit() {
+    setErr(undefined);
 
-  if (!isValid) {
-    setErr("Please enter a valid size (sqft).");
-    return;
-  }
+    if (!isValid) {
+      setErr(tHome("error.size"));
+      return;
+    }
 
-  setLoading(true);
-  try {
-    const res = await fetch("/api/estimate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    setLoading(true);
+    try {
+      const res = await fetch("/api/estimate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          area,
+          type,
+          beds,
+          sizeSqft: Number(sizeSqftNum),
+        }),
+      });
+
+      const out = await res.json();
+
+      // 1️⃣ API 报错直接停止
+      if (!res.ok || out?.error) {
+        setErr(out?.error || tHome("error.generic"));
+        return;
+      }
+
+      // 2️⃣ 强校验，防止 min=0 / max=0
+      const minVal = Number(out?.min);
+      const maxVal = Number(out?.max);
+
+      if (
+        !Number.isFinite(minVal) ||
+        !Number.isFinite(maxVal) ||
+        minVal <= 0 ||
+        maxVal <= 0 ||
+        maxVal <= minVal
+      ) {
+        setErr(tHome("error.noData"));
+        return;
+      }
+
+      const params = new URLSearchParams({
         area,
         type,
-        beds,
-        sizeSqft: Number(sizeSqftNum),
-      }),
-    });
+        beds: String(beds),
+        sizeSqft: String(Number(sizeSqftNum)),
+        min: String(minVal),
+        max: String(maxVal),
+        confidence: String(out?.confidence || "Medium"),
+      });
 
-    const out = await res.json();
-
-    // 1️⃣ API 报错直接停止
-    if (!res.ok || out?.error) {
-      setErr(out?.error || "Estimate failed. Please try again.");
-      return;
+      // ✅ 关键：带上当前语言前缀
+      window.location.href = `/${locale}/result?${params.toString()}`;
+    } catch {
+      setErr(tHome("error.network"));
+    } finally {
+      setLoading(false);
     }
-
-    // 2️⃣ 强校验，防止 min=0 / max=0
-    const minVal = Number(out?.min);
-    const maxVal = Number(out?.max);
-
-    if (
-      !Number.isFinite(minVal) ||
-      !Number.isFinite(maxVal) ||
-      minVal <= 0 ||
-      maxVal <= 0 ||
-      maxVal <= minVal
-    ) {
-      setErr("No estimate available for this selection yet. Please try another area.");
-      return;
-    }
-
-    const params = new URLSearchParams({
-      area,
-      type,
-      beds: String(beds),
-      sizeSqft: String(Number(sizeSqftNum)),
-      min: String(minVal),
-      max: String(maxVal),
-      confidence: String(out?.confidence || "Medium"),
-    });
-
-    window.location.href = `/result?${params.toString()}`;
-  } catch {
-    setErr("Network error. Please try again.");
-  } finally {
-    setLoading(false);
   }
-}
 
   const labelStyle: React.CSSProperties = {
     fontSize: 14,
@@ -134,7 +139,7 @@ async function onSubmit() {
       }}
     >
       <div style={{ maxWidth: 920, margin: "0 auto" }}>
-        {/* ✅ Logo Header */}
+        {/* Logo Header */}
         <div
           style={{
             display: "flex",
@@ -143,14 +148,8 @@ async function onSubmit() {
             marginBottom: 28,
           }}
         >
-          <img
-            src="/logo.png"
-            alt="UAEHomeValue"
-            style={{ height: 36 }}
-          />
-          <div style={{ fontWeight: 900, fontSize: 18 }}>
-            UAEHomeValue
-          </div>
+          <img src="/logo.png" alt="UAEHomeValue" style={{ height: 36 }} />
+          <div style={{ fontWeight: 900, fontSize: 18 }}>UAEHomeValue</div>
         </div>
 
         <h1
@@ -161,7 +160,7 @@ async function onSubmit() {
             margin: 0,
           }}
         >
-          Check your home value in Dubai
+          {tHome("title")}
         </h1>
 
         <p
@@ -172,26 +171,21 @@ async function onSubmit() {
             fontWeight: 700,
           }}
         >
-          Estimate first. Decide better.
+          {tHome("subtitle")}
         </p>
 
         <div
           style={{
             marginTop: 22,
             display: "grid",
-            gridTemplateColumns:
-              "repeat(auto-fit,minmax(220px,1fr))",
+            gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
             gap: 16,
           }}
         >
           {/* Area */}
           <div>
-            <div style={labelStyle}>Area</div>
-            <select
-              value={area}
-              onChange={(e) => setArea(e.target.value)}
-              style={inputStyle}
-            >
+            <div style={labelStyle}>{tHome("area")}</div>
+            <select value={area} onChange={(e) => setArea(e.target.value)} style={inputStyle}>
               {areas.map((a) => (
                 <option key={a} value={a}>
                   {a}
@@ -202,53 +196,40 @@ async function onSubmit() {
 
           {/* Type */}
           <div>
-            <div style={labelStyle}>Property type</div>
+            <div style={labelStyle}>{tHome("type")}</div>
             <select
               value={type}
-              onChange={(e) =>
-                setType(e.target.value as PropertyType)
-              }
+              onChange={(e) => setType(e.target.value as PropertyType)}
               style={inputStyle}
             >
-              <option value="Apartment">Apartment</option>
-              <option value="Villa">Villa</option>
+              <option value="Apartment">{tHome("typeOptions.apartment")}</option>
+              <option value="Villa">{tHome("typeOptions.villa")}</option>
             </select>
           </div>
 
           {/* Beds */}
           <div>
-            <div style={labelStyle}>Bedrooms</div>
-            <select
-              value={beds}
-              onChange={(e) =>
-                setBeds(Number(e.target.value))
-              }
-              style={inputStyle}
-            >
-              <option value={0}>Studio</option>
-              <option value={1}>1</option>
-              <option value={2}>2</option>
-              <option value={3}>3</option>
-              <option value={4}>4+</option>
+            <div style={labelStyle}>{tHome("beds")}</div>
+            <select value={beds} onChange={(e) => setBeds(Number(e.target.value))} style={inputStyle}>
+              <option value={0}>{tHome("bedsOptions.studio")}</option>
+              <option value={1}>{tHome("bedsOptions.1")}</option>
+              <option value={2}>{tHome("bedsOptions.2")}</option>
+              <option value={3}>{tHome("bedsOptions.3")}</option>
+              <option value={4}>{tHome("bedsOptions.4plus")}</option>
             </select>
           </div>
 
           {/* Size */}
           <div>
-            <div style={labelStyle}>Size (sqft)</div>
+            <div style={labelStyle}>{tHome("size")}</div>
             <input
               inputMode="numeric"
               value={sizeSqftText}
-              onChange={(e) => {
-                const v = e.target.value.replace(/[^\d]/g, "");
-                setSizeSqftText(v);
-              }}
-              placeholder="e.g. 1250"
+              onChange={(e) => setSizeSqftText(e.target.value.replace(/[^\d]/g, ""))}
+              placeholder={tHome("sizePlaceholder")}
               style={inputStyle}
             />
-            <div style={helperStyle}>
-              Tip: you can clear the field and type again.
-            </div>
+            <div style={helperStyle}>{tHome("sizeTip")}</div>
           </div>
         </div>
 
@@ -270,7 +251,7 @@ async function onSubmit() {
               opacity: !isValid || loading ? 0.75 : 1,
             }}
           >
-            {loading ? "Calculating…" : "Check My Home Value"}
+            {loading ? tHome("button.loading") : tHome("button.default")}
           </button>
 
           {err && (
@@ -295,7 +276,7 @@ async function onSubmit() {
             fontWeight: 700,
           }}
         >
-          Independent market-based estimate · No listings · No agents
+          {tHome("disclaimer")}
         </div>
       </div>
     </div>

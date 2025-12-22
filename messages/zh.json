@@ -1,0 +1,87 @@
+{
+  "home": {
+    "title": "快速查询迪拜房产估值区间",
+    "subtitle": "先估值，再决策。",
+
+    "area": "区域",
+    "type": "房产类型",
+    "beds": "卧室数量",
+    "size": "面积（平方英尺）",
+
+    "typeOptions": {
+      "apartment": "公寓",
+      "villa": "别墅"
+    },
+
+    "bedsOptions": {
+      "studio": "开间",
+      "1": "1",
+      "2": "2",
+      "3": "3",
+      "4plus": "4+"
+    },
+
+    "sizePlaceholder": "例如：1250",
+    "sizeTip": "提示：可以清空后重新输入。",
+
+    "button": {
+      "default": "查看房产估值",
+      "loading": "计算中…"
+    },
+
+    "error": {
+      "size": "请输入有效的面积（平方英尺）。",
+      "noData": "该选择暂无可用估值数据，请尝试其他区域。",
+      "generic": "估值失败，请稍后再试。",
+      "network": "网络错误，请稍后再试。"
+    },
+
+    "disclaimer": "独立市场区间参考 · 非挂牌价 · 非中介报价"
+  },
+
+  "result": {
+    "title": "市场估值区间",
+    "subtitle": "先估值，再决策。",
+    "likelyRange": "更可能的成交区间（AED）",
+    "conservativeRange": "保守市场区间",
+    "likelyBandWidth": "可能区间宽度",
+    "lastUpdated": "更新时间：今天",
+    "rangeWidth": "区间宽度",
+    "likelyVolatility": "可能波动",
+    "confidence": "置信度"
+  },
+
+  "refine": {
+    "open": "提升准确度（30 秒）",
+    "title": "补充信息以提升估值准确度",
+    "building": "楼名（例如：Marina Gate）",
+    "floor": "楼层",
+    "view": "景观",
+    "condition": "房屋状况",
+    "parking": "停车位",
+    "expectedPrice": "你的预期价格（可选，AED）",
+    "amenitiesTitle": "社区配套（可多选）",
+    "submit": "更新估值",
+    "note": "我们会使用这些信息收紧区间，并改进模型。"
+  },
+
+  "help": {
+    "title": "感觉结果不太对？联系我们",
+    "desc": "我们尊重你的隐私：除非你主动提供，否则不会自动分享任何房产信息或估值结果。",
+    "button": "WhatsApp 联系我们",
+    "tip": "可选：提供楼名、楼层或景观，有助于我们给出更有针对性的建议。"
+  },
+
+  "footer": {
+    "copy": "© UAEHomeValue"
+  },
+
+  "lang": {
+    "label": "语言",
+    "en": "English",
+    "ar": "العربية",
+    "hi": "हिन्दी",
+    "zh": "中文",
+    "ru": "Русский"
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "home": {
+    "title": "Check your home value in Dubai",
+    "subtitle": "Estimate first. Decide better.",
+
+    "area": "Area",
+    "type": "Property type",
+    "beds": "Bedrooms",
+    "size": "Size (sqft)",
+
+    "typeOptions": {
+      "apartment": "Apartment",
+      "villa": "Villa"
+    },
+
+    "bedsOptions": {
+      "studio": "Studio",
+      "1": "1",
+      "2": "2",
+      "3": "3",
+      "4plus": "4+"
+    },
+
+    "sizePlaceholder": "e.g. 1250",
+    "sizeTip": "Tip: you can clear the field and type again.",
+
+    "button": {
+      "default": "Check My Home Value",
+      "loading": "Calculating…"
+    },
+
+    "error": {
+      "size": "Please enter a valid size (sqft).",
+      "noData": "No estimate available for this selection yet. Please try another area.",
+      "generic": "Estimate failed. Please try again.",
+      "network": "Network error. Please try again."
+    },
+
+    "disclaimer": "Independent market-based estimate · No listings · No agents"
+  },
+
+  "result": {
+    "title": "Estimated market value",
+    "subtitle": "Estimate first. Decide better.",
+    "likelyRange": "Likely value range (AED)",
+    "conservativeRange": "Conservative market range",
+    "likelyBandWidth": "Likely band width",
+    "lastUpdated": "Last updated: today",
+    "rangeWidth": "Range width",
+    "likelyVolatility": "Likely volatility",
+    "confidence": "Confidence"
+  },
+
+  "refine": {
+    "open": "Improve accuracy (30 seconds)",
+    "title": "Improve valuation accuracy",
+    "building": "Building name (e.g. Marina Gate)",
+    "floor": "Floor level",
+    "view": "View",
+    "condition": "Condition",
+    "parking": "Parking",
+    "expectedPrice": "Your expected price (optional, AED)",
+    "amenitiesTitle": "Community amenities (select all)",
+    "submit": "Update estimate",
+    "note": "We use this to refine your estimate and improve our model."
+  },
+
+  "help": {
+    "title": "Something looks off? Talk to us",
+    "desc": "We respect your privacy. No estimate or property details are shared unless you choose to.",
+    "button": "Talk to us on WhatsApp",
+    "tip": "Optional: share building name, floor or view to help us guide you better."
+  },
+
+  "footer": {
+    "copy": "© UAEHomeValue"
+  },
+
+  "lang": {
+    "label": "Language",
+    "en": "English",
+    "ar": "Arabic",
+    "hi": "Hindi",
+    "zh": "Chinese",
+    "ru": "Russian"
+  }
+}
