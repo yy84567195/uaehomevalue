@@ -1,18 +1,15 @@
 {
   "home": {
-    "title": "快速查询迪拜房产估值区间",
+    "title": "快速查询你的迪拜房产价值",
     "subtitle": "先估值，再决策。",
-
     "area": "区域",
     "type": "房产类型",
     "beds": "卧室数量",
     "size": "面积（平方英尺）",
-
     "typeOptions": {
       "apartment": "公寓",
       "villa": "别墅"
     },
-
     "bedsOptions": {
       "studio": "开间",
       "1": "1",
@@ -20,62 +17,216 @@
       "3": "3",
       "4plus": "4+"
     },
-
     "sizePlaceholder": "例如：1250",
     "sizeTip": "提示：可以清空后重新输入。",
-
     "button": {
       "default": "查看房产估值",
       "loading": "计算中…"
     },
-
     "error": {
       "size": "请输入有效的面积（平方英尺）。",
       "noData": "该选择暂无可用估值数据，请尝试其他区域。",
       "generic": "估值失败，请稍后再试。",
       "network": "网络错误，请稍后再试。"
     },
-
     "disclaimer": "独立市场区间参考 · 非挂牌价 · 非中介报价"
   },
-
   "result": {
     "title": "市场估值区间",
     "subtitle": "先估值，再决策。",
+    "brandTagline": "迪拜 · 市场估值区间参考",
+    "actions": {
+      "recheck": "重新估另一个房子",
+      "changeInputs": "修改输入条件"
+    },
+    "header": {
+      "beds": "{beds} 卧",
+      "sqft": "平方英尺"
+    },
     "likelyRange": "更可能的成交区间（AED）",
     "conservativeRange": "保守市场区间",
     "likelyBandWidth": "可能区间宽度",
     "lastUpdated": "更新时间：今天",
     "rangeWidth": "区间宽度",
     "likelyVolatility": "可能波动",
-    "confidence": "置信度"
+    "confidence": "置信度",
+    "how": {
+      "title": "估值如何计算",
+      "desc": "本估值基于社区级价格区间，并结合面积（每平方英尺）进行调整。",
+      "factorsTitle": "主要考虑因素：",
+      "factors": {
+        "location": "位置（社区级别定价）",
+        "type": "房产类型（公寓/别墅）",
+        "size": "面积（每平方英尺价格调整）",
+        "activity": "当前市场活跃度（信号）"
+      },
+      "footer": "本结果为市场区间参考，并非正式评估报告。实际成交会受楼名、楼层、景观、装修状况与成交时点等影响。"
+    },
+    "trend": {
+      "title": "价格趋势（90 天）",
+      "now": "当前",
+      "daysAgo": "90 天前",
+      "note": "提示：趋势为基于当前输入的估计信号，仅供参考。"
+    },
+    "rent": {
+      "title": "租金预估（参考）",
+      "monthlyLabel": "月租区间（AED）",
+      "annualLabel": "年租",
+      "yieldLabel": "收益率",
+      "basis": "依据：采用较宽的毛租金收益率带，用于快速筛选。"
+    },
+    "comps": {
+      "title": "相似房源参考",
+      "subtitle": "示例对比 · 估算",
+      "bestMatch": "最匹配",
+      "similarLayout": "相似户型",
+      "nearbyBuilding": "附近楼盘",
+      "recentSignal": "近期信号",
+      "sampleNote": "示例相似房源（估算）",
+      "aedPerSqft": "AED/平方英尺"
+    },
+    "adjustmentsTitle": "哪些因素会让价格上浮或下调",
+    "adjustments": {
+      "seaView": {
+        "label": "海景 / 游艇港景观",
+        "impact": "+6% 到 +12%",
+        "note": "无遮挡水景通常有明显溢价"
+      },
+      "highFloor": {
+        "label": "高楼层",
+        "impact": "+2% 到 +5%",
+        "note": "高楼层通常比低楼层更受欢迎"
+      },
+      "upgraded": {
+        "label": "升级装修 / 翻新",
+        "impact": "+5% 到 +10%",
+        "note": "现代化装修会显著影响价值"
+      },
+      "lowFloorRoad": {
+        "label": "低楼层 / 临街无景观",
+        "impact": "−3% 到 −8%",
+        "note": "噪音与私密性影响导致折价"
+      }
+    },
+    "drivers": {
+      "title": "价值驱动因素",
+      "subtitle": "常见影响幅度（参考）",
+      "items": {
+        "view": {
+          "title": "景观溢价",
+          "band": "+3% 到 +12%",
+          "desc": "海景/游艇港/开阔景观通常能显著抬升价值。"
+        },
+        "floor": {
+          "title": "楼层因素",
+          "band": "-2% 到 +6%",
+          "desc": "在高层塔楼中，高楼层通常更有溢价。"
+        },
+        "condition": {
+          "title": "房屋状况",
+          "band": "-8% 到 +10%",
+          "desc": "装修与维护水平是价格波动的重要因素。"
+        },
+        "parking": {
+          "title": "车位与附加项",
+          "band": "0% 到 +5%",
+          "desc": "车位、储藏间、阳台等可能增加价值。"
+        }
+      }
+    },
+    "map": {
+      "title": "位置地图",
+      "open": "打开"
+    },
+    "snapshot": {
+      "title": "市场快照（估算）",
+      "medianValue": "估算中位价",
+      "pricePerSqft": "单价 / 平方英尺",
+      "activity": "活跃度",
+      "activityHigh": "高",
+      "activityMed": "中",
+      "activityLow": "低",
+      "daysOnMarket": "平均在售天数",
+      "daysOnMarketValue": "约 {days} 天",
+      "mom": "环比变化",
+      "yoy": "同比变化",
+      "note": "快照数据由估值 + 轻量规则推导。接入真实统计数据后会替换为真实指标。"
+    },
+    "inputs": {
+      "title": "你的输入",
+      "area": "区域",
+      "type": "房产类型",
+      "bedrooms": "卧室",
+      "size": "面积（平方英尺）",
+      "parking": "停车位"
+    },
+    "disclaimer": "估值、示例对比与市场快照均为信息参考，可能与真实市场价格存在差异。非正式评估报告。"
   },
-
   "refine": {
     "open": "提升准确度（30 秒）",
     "title": "补充信息以提升估值准确度",
+    "close": "关闭",
+    "helper": "填写你知道的信息（约 30 秒）。信息越充分 → 区间越收紧。",
     "building": "楼名（例如：Marina Gate）",
     "floor": "楼层",
+    "floorOptions": {
+      "low": "低楼层",
+      "mid": "中楼层",
+      "high": "高楼层"
+    },
     "view": "景观",
+    "viewOptions": {
+      "sea": "海景 / 游艇港景观",
+      "city": "城市景观",
+      "road": "临街 / 无景观"
+    },
     "condition": "房屋状况",
+    "conditionOptions": {
+      "original": "原始交付",
+      "good": "良好",
+      "upgraded": "升级装修",
+      "renovated": "全面翻新"
+    },
     "parking": "停车位",
-    "expectedPrice": "你的预期价格（可选，AED）",
+    "parkingOptions": {
+      "none": "无车位",
+      "one": "1 个",
+      "two": "2 个",
+      "threePlus": "3 个以上"
+    },
     "amenitiesTitle": "社区配套（可多选）",
+    "amenities": {
+      "beach": "海滩通达",
+      "mall": "附近商场",
+      "metro": "地铁便利",
+      "park": "公园 / 临水",
+      "schools": "优质学校",
+      "pool": "游泳池",
+      "gym": "健身房",
+      "kids": "儿童游乐区"
+    },
+    "expectedPrice": "你的预期价格（可选，AED）",
     "submit": "更新估值",
-    "note": "我们会使用这些信息收紧区间，并改进模型。"
+    "note": "我们会使用这些信息收紧区间，并改进模型。",
+    "messages": {
+      "notEnoughData": "当前数据不足以收紧区间，请尝试其他区域。",
+      "refinedBadge": "已收紧",
+      "thanks": "感谢！我们已根据你提供的信息收紧区间。"
+    },
+    "modal": {
+      "title": "收紧后的估值",
+      "done": "完成"
+    }
   },
-
   "help": {
     "title": "感觉结果不太对？联系我们",
     "desc": "我们尊重你的隐私：除非你主动提供，否则不会自动分享任何房产信息或估值结果。",
     "button": "WhatsApp 联系我们",
     "tip": "可选：提供楼名、楼层或景观，有助于我们给出更有针对性的建议。"
   },
-
   "footer": {
     "copy": "© UAEHomeValue"
   },
-
   "lang": {
     "label": "语言",
     "en": "English",

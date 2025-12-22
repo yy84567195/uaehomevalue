@@ -1,6 +1,8 @@
 "use client";
 
+import { useTranslations, useLocale } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import { formatAED } from "@/lib/estimator";
 
 function getParam(name: string) {
@@ -48,56 +50,63 @@ function sparkPath(values: number[], w = 220, h = 56, pad = 6) {
     return [x, y] as const;
   });
 
-  return pts.map(([x, y], i) => `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`).join(" ");
+  return pts
+    .map(([x, y], i) => `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`)
+    .join(" ");
 }
 
-function valueAdjustments() {
+function valueAdjustments(t: (key: string) => string) {
   return [
     {
-      label: "Sea / Marina view",
-      impact: "+6% to +12%",
-      note: "Strong premium for unobstructed water views",
+      label: t("result.adjustments.seaView.label"),
+      impact: t("result.adjustments.seaView.impact"),
+      note: t("result.adjustments.seaView.note"),
     },
     {
-      label: "High floor",
-      impact: "+2% to +5%",
-      note: "Higher floors typically trade at a premium",
+      label: t("result.adjustments.highFloor.label"),
+      impact: t("result.adjustments.highFloor.impact"),
+      note: t("result.adjustments.highFloor.note"),
     },
     {
-      label: "Upgraded / renovated",
-      impact: "+5% to +10%",
-      note: "Modern finishes significantly affect value",
+      label: t("result.adjustments.upgraded.label"),
+      impact: t("result.adjustments.upgraded.impact"),
+      note: t("result.adjustments.upgraded.note"),
     },
     {
-      label: "Low floor / road view",
-      impact: "−3% to −8%",
-      note: "Noise and privacy discount",
+      label: t("result.adjustments.lowFloorRoad.label"),
+      impact: t("result.adjustments.lowFloorRoad.impact"),
+      note: t("result.adjustments.lowFloorRoad.note"),
     },
   ];
 }
 
 export default function ResultClient() {
+  const t = useTranslations();
+  const locale = useLocale();
+
   // 🔹 refine form state
-const [showRefine, setShowRefine] = useState(false);
+  const [showRefine, setShowRefine] = useState(false);
 
-const [refineData, setRefineData] = useState({
-  building: "",
-  floor: "",
-  view: "",
-  condition: "",
-  parking: "",
-  expectedPrice: "",
-  amenities: [] as string[],
-});
-const [refineResult, setRefineResult] = useState<null | {
-  min: number;
-  max: number;
-  note: string;
-}>(null);
+  const [refineData, setRefineData] = useState({
+    building: "",
+    floor: "",
+    view: "",
+    condition: "",
+    parking: "",
+    expectedPrice: "",
+    amenities: [] as string[],
+  });
 
-const [minOverride, setMinOverride] = useState<number | null>(null);
-const [maxOverride, setMaxOverride] = useState<number | null>(null);
-const [confidenceOverride, setConfidenceOverride] = useState<string | null>(null);
+  const [refineResult, setRefineResult] = useState<null | {
+    min: number;
+    max: number;
+    note: string;
+  }>(null);
+
+  const [minOverride, setMinOverride] = useState<number | null>(null);
+  const [maxOverride, setMaxOverride] = useState<number | null>(null);
+  const [confidenceOverride, setConfidenceOverride] = useState<string | null>(null);
+
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -115,17 +124,18 @@ const [confidenceOverride, setConfidenceOverride] = useState<string | null>(null
   const min = useMemo(() => Number(getParam("min") || 0), []);
   const max = useMemo(() => Number(getParam("max") || 0), []);
   const confidence = useMemo(() => getParam("confidence") || "High", []);
-  
-const minFinal = minOverride ?? min;
-const maxFinal = maxOverride ?? max;
-const confidenceFinal = confidenceOverride ?? confidence;
-  const sizeSqft = useMemo(() => Number(sizeSqftStr || 0), [sizeSqftStr]);
-const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
 
-  // ✅ 波动范围：直接用 min/max 算，保证换区域一定变
+  const minFinal = minOverride ?? min;
+  const maxFinal = maxOverride ?? max;
+  const confidenceFinal = confidenceOverride ?? confidence;
+
+  const sizeSqft = useMemo(() => Number(sizeSqftStr || 0), [sizeSqftStr]);
+  const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
+
+  // ✅ 波动范围
   const band = useMemo(() => {
-    const lo = Number(min);
-    const hi = Number(max);
+    const lo = Number(minFinal);
+    const hi = Number(maxFinal);
     const m = (lo + hi) / 2;
 
     if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi <= lo || !Number.isFinite(m) || m <= 0) {
@@ -133,35 +143,32 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
     }
 
     const rangePct = ((hi - lo) / m) * 100;
-
-    // “可能波动幅度”用置信度收紧：High 更小、Low 更大
-    const c = String(confidence || "").toLowerCase();
+    const c = String(confidenceFinal || "").toLowerCase();
     const tight = c.includes("high") ? 0.25 : c.includes("med") ? 0.35 : 0.5;
-
     const likelyPct = rangePct * tight;
 
     return { rangePct, likelyPct };
-  }, [min, max, confidence]);
+  }, [minFinal, maxFinal, confidenceFinal]);
 
   // ✅ Likely range（更窄的“可能成交区间”）
   const likely = useMemo(() => {
-    if (!min || !max || !mid || max <= min) {
-      return { likelyMin: min, likelyMax: max, bandPct: 0 };
+    if (!minFinal || !maxFinal || !mid || maxFinal <= minFinal) {
+      return { likelyMin: minFinal, likelyMax: maxFinal, bandPct: 0 };
     }
 
-    const c = (confidence || "").toLowerCase();
+    const c = (confidenceFinal || "").toLowerCase();
     const tight = c.includes("high") ? 0.25 : c.includes("med") ? 0.35 : 0.5;
 
-    const halfBand = ((max - min) * tight) / 2;
+    const halfBand = ((maxFinal - minFinal) * tight) / 2;
 
-    const likelyMin = Math.round(Math.max(min, mid - halfBand));
-    const likelyMax = Math.round(Math.min(max, mid + halfBand));
+    const likelyMin = Math.round(Math.max(minFinal, mid - halfBand));
+    const likelyMax = Math.round(Math.min(maxFinal, mid + halfBand));
     const bandPct = mid > 0 ? ((likelyMax - likelyMin) / mid) * 100 : 0;
 
     return { likelyMin, likelyMax, bandPct };
-  }, [min, max, mid, confidence]);
+  }, [minFinal, maxFinal, mid, confidenceFinal]);
 
-  // ✅ Back-to-input links
+  // ✅ Back-to-input links（带 locale）
   const changeInputsUrl = useMemo(() => {
     const params = new URLSearchParams();
     if (area) params.set("area", area);
@@ -169,23 +176,27 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
     if (beds) params.set("beds", beds);
     if (sizeSqftStr) params.set("sizeSqft", sizeSqftStr);
     const qs = params.toString();
-    return qs ? `/?${qs}` : "/";
-  }, [area, type, beds, sizeSqftStr]);
+    return qs ? `/${locale}/?${qs}` : `/${locale}`;
+  }, [area, type, beds, sizeSqftStr, locale]);
 
+  const homeUrl = useMemo(() => `/${locale}`, [locale]);
 
   // Google Maps (no API key)
   const mapsQuery = useMemo(() => {
-    const q = (area || "Dubai") + ", UAE";
+    const q = `${area || "Dubai"}, UAE`;
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
   }, [area]);
 
   const mapsEmbed = useMemo(() => {
-    const q = (area || "Dubai") + ", UAE";
+    const q = `${area || "Dubai"}, UAE`;
     return `https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
   }, [area]);
 
   // Seeded “market signals”
-  const seed = useMemo(() => `${area}|${type}|${beds}|${sizeSqftStr}|${min}|${max}`, [area, type, beds, sizeSqftStr, min, max]);
+  const seed = useMemo(
+    () => `${area}|${type}|${beds}|${sizeSqftStr}|${minFinal}|${maxFinal}`,
+    [area, type, beds, sizeSqftStr, minFinal, maxFinal]
+  );
   const base01 = useMemo(() => hashTo01(seed), [seed]);
 
   // Trend (90 days) - 12 points
@@ -197,10 +208,10 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
     const start = mid > 0 ? mid * (1 - drift / 2) : 0;
 
     for (let i = 0; i < points; i++) {
-      const t = i / (points - 1);
+      const tt = i / (points - 1);
       const n01 = hashTo01(`${seed}|t${i}`);
       const noise = (n01 - 0.5) * 2; // -1..1
-      const value = start * (1 + drift * t) * (1 + noise * vol);
+      const value = start * (1 + drift * tt) * (1 + noise * vol);
       out.push(Math.max(0, value));
     }
     return out;
@@ -256,124 +267,136 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
       const ppsf = s > 0 ? p / s : 0;
       const delta = ((p - basePrice) / basePrice) * 100;
 
+      const label =
+        i === 0
+          ? t("result.comps.bestMatch")
+          : i === 1
+          ? t("result.comps.similarLayout")
+          : i === 2
+          ? t("result.comps.nearbyBuilding")
+          : t("result.comps.recentSignal");
+
       out.push({
         id: `c${i}`,
-        label: i === 0 ? "Best match" : i === 1 ? "Similar layout" : i === 2 ? "Nearby building" : "Recent signal",
+        label,
         beds: beds || "—",
         size: s,
         price: p,
         ppsf,
         deltaPct: delta,
-        note: "Sample comparable (estimated)",
+        note: t("result.comps.sampleNote"),
       });
     }
 
     out.sort((a, b) => Math.abs(a.size - baseSize) - Math.abs(b.size - baseSize));
     return out;
-  }, [seed, beds, sizeSqft, mid]);
+  }, [seed, beds, sizeSqft, mid, t]);
 
   // Market snapshot (derived)
   const market = useMemo(() => {
     const ppsf = sizeSqft > 0 && mid > 0 ? mid / sizeSqft : 0;
-    const rangeWidthPct = mid > 0 ? ((max - min) / mid) * 100 : 0;
+    const rangeWidthPct = mid > 0 ? ((maxFinal - minFinal) / mid) * 100 : 0;
 
-    const c = (confidence || "").toLowerCase();
+    const c = (confidenceFinal || "").toLowerCase();
     const confScore = c.includes("high") ? 1 : c.includes("med") ? 0.6 : 0.35;
     const tightScore = 1 - Math.min(1, rangeWidthPct / 35);
     const activityScore = confScore * 0.6 + tightScore * 0.4;
-    const activity = activityScore > 0.72 ? "High" : activityScore > 0.5 ? "Medium" : "Low";
+
+    const activity =
+      activityScore > 0.72
+        ? t("result.snapshot.activityHigh")
+        : activityScore > 0.5
+        ? t("result.snapshot.activityMed")
+        : t("result.snapshot.activityLow");
 
     const yoy = (hashTo01(seed + "|yoy") - 0.5) * 12; // -6..+6
     const mom = (hashTo01(seed + "|mom") - 0.5) * 4; // -2..+2
     const dom = Math.round(18 + hashTo01(seed + "|dom") * 45); // 18..63
 
     return { ppsf, rangeWidthPct, activity, yoy, mom, dom };
-  }, [sizeSqft, mid, max, min, confidence, seed]);
+  }, [sizeSqft, mid, maxFinal, minFinal, confidenceFinal, seed, t]);
 
   // Confidence badge style
   const confColor = useMemo(() => {
-    const c = (confidence || "").toLowerCase();
+    const c = (confidenceFinal || "").toLowerCase();
     if (c.includes("high")) return { bg: "#ecfeff", bd: "#a5f3fc", fg: "#0e7490" };
     if (c.includes("med")) return { bg: "#fef9c3", bd: "#fde68a", fg: "#92400e" };
     return { bg: "#fee2e2", bd: "#fecaca", fg: "#991b1b" };
-  }, [confidence]);
+  }, [confidenceFinal]);
 
   const pad = isMobile ? 14 : 18;
   const pagePad = isMobile ? "20px 14px" : "40px 16px";
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "12px 12px",
-  borderRadius: 12,
-  border: "1px solid #e2e8f0",
-  background: "#fff",
-  color: "#0f172a",
-  fontSize: 14,
-  fontWeight: 700,
-  outline: "none",
-};
+
+  const inputStyle: CSSProperties = {
+    width: "100%",
+    padding: "12px 12px",
+    borderRadius: 12,
+    border: "1px solid #e2e8f0",
+    background: "#fff",
+    color: "#0f172a",
+    fontSize: 14,
+    fontWeight: 700,
+    outline: "none",
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#fff", padding: pagePad, color: "#0f172a" }}>
-
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
+        {/* ✅ refine result modal */}
         {refineResult && (
-  <div
-    style={{
-      position: "fixed",
-      inset: 0,
-      background: "rgba(15, 23, 42, 0.45)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: 16,
-      zIndex: 50,
-    }}
-    onClick={() => setRefineResult(null)}
-  >
-    <div
-      style={{
-        width: "100%",
-        maxWidth: 420,
-        background: "#fff",
-        borderRadius: 16,
-        border: "1px solid #e2e8f0",
-        padding: 16,
-        boxShadow: "0 20px 60px rgba(0,0,0,.20)",
-      }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div style={{ fontSize: 14, fontWeight: 950, marginBottom: 8 }}>
-        Refined estimate
-      </div>
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(15, 23, 42, 0.45)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 16,
+              zIndex: 50,
+            }}
+            onClick={() => setRefineResult(null)}
+          >
+            <div
+              style={{
+                width: "100%",
+                maxWidth: 420,
+                background: "#fff",
+                borderRadius: 16,
+                border: "1px solid #e2e8f0",
+                padding: 16,
+                boxShadow: "0 20px 60px rgba(0,0,0,.20)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ fontSize: 14, fontWeight: 950, marginBottom: 8 }}>{t("refine.modal.title")}</div>
 
-      <div style={{ fontSize: 26, fontWeight: 950, letterSpacing: -0.6 }}>
-        {formatAED(refineResult.min)} <span style={{ color: "#94a3b8" }}>–</span>{" "}
-        {formatAED(refineResult.max)}
-      </div>
+              <div style={{ fontSize: 26, fontWeight: 950, letterSpacing: -0.6 }}>
+                {formatAED(refineResult.min)} <span style={{ color: "#94a3b8" }}>–</span> {formatAED(refineResult.max)}
+              </div>
 
-      <div style={{ marginTop: 8, fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>
-        {refineResult.note}
-      </div>
+              <div style={{ marginTop: 8, fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>{refineResult.note}</div>
 
-      <button
-        onClick={() => setRefineResult(null)}
-        style={{
-          marginTop: 12,
-          width: "100%",
-          padding: "12px 12px",
-          borderRadius: 12,
-          border: "1px solid #e2e8f0",
-          background: "#0ea5e9",
-          color: "#fff",
-          fontWeight: 950,
-          cursor: "pointer",
-        }}
-      >
-        Done
-      </button>
-    </div>
-  </div>
-)}
+              <button
+                onClick={() => setRefineResult(null)}
+                style={{
+                  marginTop: 12,
+                  width: "100%",
+                  padding: "12px 12px",
+                  borderRadius: 12,
+                  border: "1px solid #e2e8f0",
+                  background: "#0ea5e9",
+                  color: "#fff",
+                  fontWeight: 950,
+                  cursor: "pointer",
+                }}
+              >
+                {t("refine.modal.done")}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Top bar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           {/* Brand */}
@@ -393,13 +416,13 @@ const inputStyle: React.CSSProperties = {
             />
             <div>
               <div style={{ fontSize: 13, fontWeight: 950, lineHeight: 1.1 }}>UAEHomeValue</div>
-              <div style={{ fontSize: 12, color: "#64748b" }}>Dubai · Estimated value ranges</div>
+              <div style={{ fontSize: 12, color: "#64748b" }}>{t("result.brandTagline")}</div>
             </div>
           </div>
 
           {/* Actions */}
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
-            <a href="/" style={{ textDecoration: "none" }}>
+            <a href={homeUrl} style={{ textDecoration: "none" }}>
               <button
                 style={{
                   border: "1px solid #e2e8f0",
@@ -412,7 +435,7 @@ const inputStyle: React.CSSProperties = {
                   whiteSpace: "nowrap",
                 }}
               >
-                Re-check another home
+                {t("result.actions.recheck")}
               </button>
             </a>
 
@@ -429,21 +452,23 @@ const inputStyle: React.CSSProperties = {
                   whiteSpace: "nowrap",
                 }}
               >
-                Change inputs
+                {t("result.actions.changeInputs")}
               </button>
             </a>
-
           </div>
         </div>
 
         {/* Header */}
         <div style={{ marginTop: 12 }}>
           <h1 style={{ margin: 0, fontSize: isMobile ? 22 : 28, fontWeight: 950, letterSpacing: -0.6, lineHeight: 1.12 }}>
-            Estimated value for your home
+            {t("result.title")}
           </h1>
-          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>Estimate first. Decide better.</div>
+
+          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>{t("result.subtitle")}</div>
+
           <div style={{ marginTop: 6, fontSize: 14, color: "#475569", lineHeight: 1.6 }}>
-            {area || "—"} • {type || "—"} • {beds ? `${beds} bed` : "—"} • {formatSqft(sizeSqft)} sqft
+            {area || "—"} • {type || "—"} • {beds ? t("result.header.beds", { beds }) : "—"} • {formatSqft(sizeSqft)}{" "}
+            {t("result.header.sqft")}
           </div>
         </div>
 
@@ -463,18 +488,23 @@ const inputStyle: React.CSSProperties = {
                 }}
               >
                 <div>
-                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>Likely value range (AED)</div>
+                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>{t("result.likelyRange")}</div>
 
                   <div style={{ fontSize: isMobile ? 32 : 38, fontWeight: 950, letterSpacing: -1, lineHeight: 1.05 }}>
                     {formatAED(likely.likelyMin)} <span style={{ color: "#94a3b8" }}>–</span> {formatAED(likely.likelyMax)}
                   </div>
 
                   <div style={{ marginTop: 10, fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>
-                    Conservative market range: <b>{formatAED(min)} – {formatAED(max)}</b> • Likely band width: {pct(likely.bandPct)}
+                    {t("result.conservativeRange")}:{" "}
+                    <b>
+                      {formatAED(minFinal)} – {formatAED(maxFinal)}
+                    </b>{" "}
+                    • {t("result.likelyBandWidth")}: {pct(likely.bandPct)}
                   </div>
 
                   <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
-                    Last updated: today • Range width: {pct(band.rangePct)} • Likely volatility: {pct(band.likelyPct)}
+                    {t("result.lastUpdated")} • {t("result.rangeWidth")}: {pct(band.rangePct)} • {t("result.likelyVolatility")}:{" "}
+                    {pct(band.likelyPct)}
                   </div>
                 </div>
 
@@ -491,268 +521,249 @@ const inputStyle: React.CSSProperties = {
                       width: "fit-content",
                     }}
                   >
-                    Confidence: {confidence}
+                    {t("result.confidence")}: {confidenceFinal}
                   </div>
 
-<button
-  onClick={() => setShowRefine(true)}
-  style={{
-    border: "1px solid #0ea5e9",
-    background: "#0ea5e9",
-    color: "#fff",
-    padding: "10px 12px",
-    borderRadius: 12,
-    fontWeight: 900,
-    cursor: "pointer",
-  }}
->
-  Improve accuracy (30 seconds)
-</button>
+                  <button
+                    onClick={() => setShowRefine(true)}
+                    style={{
+                      border: "1px solid #0ea5e9",
+                      background: "#0ea5e9",
+                      color: "#fff",
+                      padding: "10px 12px",
+                      borderRadius: 12,
+                      fontWeight: 900,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {t("refine.open")}
+                  </button>
                 </div>
               </div>
-{showRefine && (
-  <div
-    style={{
-      marginTop: 16,
-      border: "1px solid #e2e8f0",
-      borderRadius: 16,
-      padding: 16,
-      background: "#f8fafc",
-    }}
-  >
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-      <div style={{ fontWeight: 950, fontSize: 15 }}>Improve valuation accuracy</div>
-      <button
-        onClick={() => setShowRefine(false)}
-        style={{
-          border: "1px solid #e2e8f0",
-          background: "#fff",
-          padding: "6px 10px",
-          borderRadius: 10,
-          fontWeight: 900,
-          cursor: "pointer",
-        }}
-      >
-        Close
-      </button>
-    </div>
 
-    <div style={{ marginTop: 8, fontSize: 12, color: "#64748b", lineHeight: 1.5 }}>
-      Fill what you know (30 seconds). More details → tighter range.
-    </div>
-
-    <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-      <input
-        placeholder="Building name (e.g. Marina Gate)"
-        value={refineData.building}
-        onChange={(e) => setRefineData({ ...refineData, building: e.target.value })}
-        style={inputStyle}
-      />
-
-      <select
-        value={refineData.floor}
-        onChange={(e) => setRefineData({ ...refineData, floor: e.target.value })}
-        style={inputStyle}
-      >
-        <option value="">Floor level</option>
-        <option value="low">Low floor</option>
-        <option value="mid">Mid floor</option>
-        <option value="high">High floor</option>
-      </select>
-
-      <select
-        value={refineData.view}
-        onChange={(e) => setRefineData({ ...refineData, view: e.target.value })}
-        style={inputStyle}
-      >
-        <option value="">View</option>
-        <option value="sea">Sea / Marina view</option>
-        <option value="city">City view</option>
-        <option value="road">Road / no view</option>
-      </select>
-
-      <select
-        value={refineData.condition}
-        onChange={(e) => setRefineData({ ...refineData, condition: e.target.value })}
-        style={inputStyle}
-      >
-        <option value="">Condition</option>
-        <option value="original">Original</option>
-        <option value="good">Good</option>
-        <option value="upgraded">Upgraded</option>
-        <option value="renovated">Fully renovated</option>
-      </select>
-
-      {/* ✅ Parking (你之前说缺的就是这个) */}
-      <select
-        value={refineData.parking}
-        onChange={(e) => setRefineData({ ...refineData, parking: e.target.value })}
-        style={inputStyle}
-      >
-        <option value="">Parking</option>
-        <option value="0">No parking</option>
-        <option value="1">1 space</option>
-        <option value="2">2 spaces</option>
-        <option value="3+">3+ spaces</option>
-      </select>
-
-      {/* ✅ Amenities multi-select */}
-      <div
-        style={{
-          border: "1px solid #e2e8f0",
-          background: "#fff",
-          borderRadius: 12,
-          padding: 12,
-        }}
-      >
-        <div style={{ fontSize: 12, fontWeight: 900, marginBottom: 8, color: "#0f172a" }}>
-          Community amenities (select all)
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-          {[
-            "Beach access",
-            "Mall nearby",
-            "Metro nearby",
-            "Park / waterfront",
-            "Good schools",
-            "Swimming pool",
-            "Gym",
-            "Kids play area",
-          ].map((a) => {
-            const checked = refineData.amenities?.includes(a);
-            return (
-              <label
-                key={a}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "8px 10px",
-                  borderRadius: 10,
-                  border: checked ? "1px solid #0ea5e9" : "1px solid #e2e8f0",
-                  background: checked ? "#f0f9ff" : "#fff",
-                  cursor: "pointer",
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: "#0f172a",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={!!checked}
-                  onChange={() => {
-                    setRefineData((prev) => {
-                      const list = prev.amenities || [];
-                      return {
-                        ...prev,
-                        amenities: checked ? list.filter((x) => x !== a) : [...list, a],
-                      };
-                    });
+              {/* Refine form */}
+              {showRefine && (
+                <div
+                  style={{
+                    marginTop: 16,
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 16,
+                    padding: 16,
+                    background: "#f8fafc",
                   }}
-                />
-                {a}
-              </label>
-            );
-          })}
-        </div>
-      </div>
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                    <div style={{ fontWeight: 950, fontSize: 15 }}>{t("refine.title")}</div>
+                    <button
+                      onClick={() => setShowRefine(false)}
+                      style={{
+                        border: "1px solid #e2e8f0",
+                        background: "#fff",
+                        padding: "6px 10px",
+                        borderRadius: 10,
+                        fontWeight: 900,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {t("refine.close")}
+                    </button>
+                  </div>
 
-      <input
-        placeholder="Your expected price (optional, AED)"
-        inputMode="numeric"
-        value={refineData.expectedPrice}
-        onChange={(e) =>
-          setRefineData({ ...refineData, expectedPrice: e.target.value.replace(/[^\d]/g, "") })
-        }
-        style={inputStyle}
-      />
-    </div>
+                  <div style={{ marginTop: 8, fontSize: 12, color: "#64748b", lineHeight: 1.5 }}>{t("refine.helper")}</div>
 
-    <button
-      onClick={() => {
-        // ✅ 用最终显示的区间当基准（有 override 就用 override）
-        const lo = Number(minFinal ?? min);
-        const hi = Number(maxFinal ?? max);
+                  <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+                    <input
+                      placeholder={t("refine.building")}
+                      value={refineData.building}
+                      onChange={(e) => setRefineData({ ...refineData, building: e.target.value })}
+                      style={inputStyle}
+                    />
 
-        if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi <= lo) {
-          setRefineResult({
-            min: lo || 0,
-            max: hi || 0,
-            note: "Not enough data to refine yet. Please try another area.",
-          });
-          setShowRefine(false); // ✅ 分支也要收起
-          return;
-        }
+                    <select
+                      value={refineData.floor}
+                      onChange={(e) => setRefineData({ ...refineData, floor: e.target.value })}
+                      style={inputStyle}
+                    >
+                      <option value="">{t("refine.floor")}</option>
+                      <option value="low">{t("refine.floorOptions.low")}</option>
+                      <option value="mid">{t("refine.floorOptions.mid")}</option>
+                      <option value="high">{t("refine.floorOptions.high")}</option>
+                    </select>
 
-        const width = hi - lo;
-        const midLocal = (lo + hi) / 2;
+                    <select
+                      value={refineData.view}
+                      onChange={(e) => setRefineData({ ...refineData, view: e.target.value })}
+                      style={inputStyle}
+                    >
+                      <option value="">{t("refine.view")}</option>
+                      <option value="sea">{t("refine.viewOptions.sea")}</option>
+                      <option value="city">{t("refine.viewOptions.city")}</option>
+                      <option value="road">{t("refine.viewOptions.road")}</option>
+                    </select>
 
-        // ✅ 填得越多越窄（并且 amenities >=2 也加分）
-        const filled =
-          (refineData.building ? 1 : 0) +
-          (refineData.floor ? 1 : 0) +
-          (refineData.view ? 1 : 0) +
-          (refineData.condition ? 1 : 0) +
-          (refineData.parking ? 1 : 0) +
-          (refineData.expectedPrice ? 1 : 0) +
-          ((refineData.amenities?.length || 0) >= 2 ? 1 : 0);
+                    <select
+                      value={refineData.condition}
+                      onChange={(e) => setRefineData({ ...refineData, condition: e.target.value })}
+                      style={inputStyle}
+                    >
+                      <option value="">{t("refine.condition")}</option>
+                      <option value="original">{t("refine.conditionOptions.original")}</option>
+                      <option value="good">{t("refine.conditionOptions.good")}</option>
+                      <option value="upgraded">{t("refine.conditionOptions.upgraded")}</option>
+                      <option value="renovated">{t("refine.conditionOptions.renovated")}</option>
+                    </select>
 
-        // ✅ 更激进一点：保证“Refined 一定更窄”
-        // 原宽度 * factor（<1）
-        const shrinkFactor = filled >= 5 ? 0.40 : filled >= 3 ? 0.50 : 0.65;
+                    <select
+                      value={refineData.parking}
+                      onChange={(e) => setRefineData({ ...refineData, parking: e.target.value })}
+                      style={inputStyle}
+                    >
+                      <option value="">{t("refine.parking")}</option>
+                      <option value="0">{t("refine.parkingOptions.none")}</option>
+                      <option value="1">{t("refine.parkingOptions.one")}</option>
+                      <option value="2">{t("refine.parkingOptions.two")}</option>
+                      <option value="3+">{t("refine.parkingOptions.threePlus")}</option>
+                    </select>
 
-        let newHalf = (width * shrinkFactor) / 2;
-        let newMin = Math.round(midLocal - newHalf);
-        let newMax = Math.round(midLocal + newHalf);
+                    {/* Amenities */}
+                    <div style={{ border: "1px solid #e2e8f0", background: "#fff", borderRadius: 12, padding: 12 }}>
+                      <div style={{ fontSize: 12, fontWeight: 900, marginBottom: 8, color: "#0f172a" }}>
+                        {t("refine.amenitiesTitle")}
+                      </div>
 
-        // ✅ 锁在原区间内（只会更窄）
-        newMin = Math.max(lo, newMin);
-        newMax = Math.min(hi, newMax);
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                        {[
+                          { key: "beach", label: t("refine.amenities.beach") },
+                          { key: "mall", label: t("refine.amenities.mall") },
+                          { key: "metro", label: t("refine.amenities.metro") },
+                          { key: "park", label: t("refine.amenities.park") },
+                          { key: "schools", label: t("refine.amenities.schools") },
+                          { key: "pool", label: t("refine.amenities.pool") },
+                          { key: "gym", label: t("refine.amenities.gym") },
+                          { key: "kids", label: t("refine.amenities.kids") },
+                        ].map((a) => {
+                          const checked = refineData.amenities?.includes(a.key);
+                          return (
+                            <label
+                              key={a.key}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                padding: "8px 10px",
+                                borderRadius: 10,
+                                border: checked ? "1px solid #0ea5e9" : "1px solid #e2e8f0",
+                                background: checked ? "#f0f9ff" : "#fff",
+                                cursor: "pointer",
+                                fontSize: 13,
+                                fontWeight: 700,
+                                color: "#0f172a",
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={!!checked}
+                                onChange={() => {
+                                  setRefineData((prev) => {
+                                    const list = prev.amenities || [];
+                                    return {
+                                      ...prev,
+                                      amenities: checked ? list.filter((x) => x !== a.key) : [...list, a.key],
+                                    };
+                                  });
+                                }}
+                              />
+                              {a.label}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
 
-        // ✅ 再强制至少缩小 25%
-        const newWidth = newMax - newMin;
-        if (newWidth >= width * 0.75) {
-          newHalf = (width * 0.74) / 2;
-          newMin = Math.max(lo, Math.round(midLocal - newHalf));
-          newMax = Math.min(hi, Math.round(midLocal + newHalf));
-        }
+                    <input
+                      placeholder={t("refine.expectedPrice")}
+                      inputMode="numeric"
+                      value={refineData.expectedPrice}
+                      onChange={(e) =>
+                        setRefineData({ ...refineData, expectedPrice: e.target.value.replace(/[^\d]/g, "") })
+                      }
+                      style={inputStyle}
+                    />
+                  </div>
 
-        // ✅ 写入 override（页面价格立刻变成更窄的）
-        setMinOverride(newMin);
-        setMaxOverride(newMax);
-        setConfidenceOverride("Refined");
+                  <button
+                    onClick={() => {
+                      const lo = Number(minFinal ?? min);
+                      const hi = Number(maxFinal ?? max);
 
-        // ✅ 弹窗
-        setRefineResult({
-          min: newMin,
-          max: newMax,
-          note: "Thanks! We used your details to tighten the range.",
-        });
+                      if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi <= lo) {
+                        setRefineResult({
+                          min: lo || 0,
+                          max: hi || 0,
+                          note: t("refine.messages.notEnoughData"),
+                        });
+                        setShowRefine(false);
+                        return;
+                      }
 
-        // ✅ 收起表单
-        setShowRefine(false);
-      }}
-      style={{
-        marginTop: 12,
-        width: "100%",
-        padding: "12px",
-        borderRadius: 12,
-        border: "none",
-        background: "#0ea5e9",
-        color: "#fff",
-        fontWeight: 950,
-        cursor: "pointer",
-      }}
-    >
-      Submit & improve estimate
-    </button>
+                      const width = hi - lo;
+                      const midLocal = (lo + hi) / 2;
 
-    <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
-      We use this to refine your estimate and improve our model.
-    </div>
-  </div>
-)}
+                      const filled =
+                        (refineData.building ? 1 : 0) +
+                        (refineData.floor ? 1 : 0) +
+                        (refineData.view ? 1 : 0) +
+                        (refineData.condition ? 1 : 0) +
+                        (refineData.parking ? 1 : 0) +
+                        (refineData.expectedPrice ? 1 : 0) +
+                        ((refineData.amenities?.length || 0) >= 2 ? 1 : 0);
+
+                      const shrinkFactor = filled >= 5 ? 0.4 : filled >= 3 ? 0.5 : 0.65;
+
+                      let newHalf = (width * shrinkFactor) / 2;
+                      let newMin = Math.round(midLocal - newHalf);
+                      let newMax = Math.round(midLocal + newHalf);
+
+                      newMin = Math.max(lo, newMin);
+                      newMax = Math.min(hi, newMax);
+
+                      const newWidth = newMax - newMin;
+                      if (newWidth >= width * 0.75) {
+                        newHalf = (width * 0.74) / 2;
+                        newMin = Math.max(lo, Math.round(midLocal - newHalf));
+                        newMax = Math.min(hi, Math.round(midLocal + newHalf));
+                      }
+
+                      setMinOverride(newMin);
+                      setMaxOverride(newMax);
+                      setConfidenceOverride(t("refine.messages.refinedBadge"));
+
+                      setRefineResult({
+                        min: newMin,
+                        max: newMax,
+                        note: t("refine.messages.thanks"),
+                      });
+
+                      setShowRefine(false);
+                    }}
+                    style={{
+                      marginTop: 12,
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: 12,
+                      border: "none",
+                      background: "#0ea5e9",
+                      color: "#fff",
+                      fontWeight: 950,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {t("refine.submit")}
+                  </button>
+
+                  <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>{t("refine.note")}</div>
+                </div>
+              )}
 
               {/* B) Explanation module */}
               <div
@@ -767,20 +778,19 @@ const inputStyle: React.CSSProperties = {
                   color: "#334155",
                 }}
               >
-                <div style={{ fontWeight: 900, marginBottom: 6 }}>How this estimate is calculated</div>
+                <div style={{ fontWeight: 900, marginBottom: 6 }}>{t("result.how.title")}</div>
                 <div>
-                  This estimate is generated using community-level pricing ranges and size adjustment.
+                  {t("result.how.desc")}
                   <br />
                   <br />
-                  <b>Key factors considered:</b>
+                  <b>{t("result.how.factorsTitle")}</b>
                   <ul style={{ margin: "6px 0 6px 18px" }}>
-                    <li>Location (community-level pricing)</li>
-                    <li>Property type (apartment or villa)</li>
-                    <li>Size (price-per-sqft adjustment)</li>
-                    <li>Current market activity (signal)</li>
+                    <li>{t("result.how.factors.location")}</li>
+                    <li>{t("result.how.factors.type")}</li>
+                    <li>{t("result.how.factors.size")}</li>
+                    <li>{t("result.how.factors.activity")}</li>
                   </ul>
-                  This is a <b>market-based estimate</b>, not a formal appraisal. Final value may vary depending on building, floor, view,
-                  condition and timing.
+                  {t("result.how.footer")}
                 </div>
               </div>
 
@@ -789,7 +799,7 @@ const inputStyle: React.CSSProperties = {
                 {/* Trend */}
                 <div style={{ border: "1px solid #e2e8f0", borderRadius: 14, padding: 12 }}>
                   <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
-                    <div style={{ fontWeight: 900, fontSize: 13 }}>Price trend (90 days)</div>
+                    <div style={{ fontWeight: 900, fontSize: 13 }}>{t("result.trend.title")}</div>
                     <div style={{ fontSize: 12, color: trendChangePct >= 0 ? "#166534" : "#991b1b", fontWeight: 900 }}>
                       {pct(trendChangePct)}
                     </div>
@@ -801,27 +811,28 @@ const inputStyle: React.CSSProperties = {
                     </svg>
 
                     <div style={{ minWidth: 110, textAlign: "right" }}>
-                      <div style={{ fontSize: 12, color: "#64748b" }}>Now</div>
+                      <div style={{ fontSize: 12, color: "#64748b" }}>{t("result.trend.now")}</div>
                       <div style={{ fontWeight: 950 }}>{formatAedShort(trend[trend.length - 1] || mid)}</div>
-                      <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>90d ago</div>
+                      <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>{t("result.trend.daysAgo")}</div>
                       <div style={{ fontWeight: 900, color: "#334155" }}>{formatAedShort(trend[0] || mid)}</div>
                     </div>
                   </div>
 
-                  <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>Note: trend is an estimated signal for the selected inputs.</div>
+                  <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>{t("result.trend.note")}</div>
                 </div>
 
                 {/* Rent */}
                 <div style={{ border: "1px solid #e2e8f0", borderRadius: 14, padding: 12 }}>
-                  <div style={{ fontWeight: 900, fontSize: 13 }}>Rent estimate (informational)</div>
-                  <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>Monthly rent range (AED)</div>
+                  <div style={{ fontWeight: 900, fontSize: 13 }}>{t("result.rent.title")}</div>
+                  <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>{t("result.rent.monthlyLabel")}</div>
                   <div style={{ marginTop: 6, fontSize: 20, fontWeight: 950, letterSpacing: -0.4 }}>
                     {formatAedShort(rent.monthlyMin)} <span style={{ color: "#94a3b8" }}>–</span> {formatAedShort(rent.monthlyMax)}
                   </div>
                   <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
-                    Annual: {formatAedShort(rent.annualMin)} – {formatAedShort(rent.annualMax)} • Yield: {rent.yieldMinPct}–{rent.yieldMaxPct}%
+                    {t("result.rent.annualLabel")}: {formatAedShort(rent.annualMin)} – {formatAedShort(rent.annualMax)} •{" "}
+                    {t("result.rent.yieldLabel")}: {rent.yieldMinPct}–{rent.yieldMaxPct}%
                   </div>
-                  <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>Basis: a broad gross yield band for quick screening.</div>
+                  <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>{t("result.rent.basis")}</div>
                 </div>
               </div>
             </div>
@@ -829,8 +840,8 @@ const inputStyle: React.CSSProperties = {
             {/* C) Comparable homes */}
             <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
               <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
-                <div style={{ fontSize: 16, fontWeight: 950, letterSpacing: -0.3 }}>Comparable homes</div>
-                <div style={{ fontSize: 12, color: "#64748b" }}>Sample comps • estimated</div>
+                <div style={{ fontSize: 16, fontWeight: 950, letterSpacing: -0.3 }}>{t("result.comps.title")}</div>
+                <div style={{ fontSize: 12, color: "#64748b" }}>{t("result.comps.subtitle")}</div>
               </div>
 
               <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
@@ -855,35 +866,30 @@ const inputStyle: React.CSSProperties = {
                     </div>
 
                     <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
-                      {type || "—"} • {c.beds ? `${c.beds} bed` : "—"} • {formatSqft(c.size)} sqft
+                      {type || "—"} • {c.beds ? t("result.header.beds", { beds: c.beds }) : "—"} • {formatSqft(c.size)}{" "}
+                      {t("result.header.sqft")}
                     </div>
 
                     <div style={{ marginTop: 8, fontSize: 18, fontWeight: 950 }}>
                       {formatAedShort(c.price)}
-                      <span style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}> • {Math.round(c.ppsf).toLocaleString("en-US")} AED/sqft</span>
+                      <span style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}>
+                        {" "}
+                        • {Math.round(c.ppsf).toLocaleString("en-US")} {t("result.comps.aedPerSqft")}
+                      </span>
                     </div>
 
                     <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>{c.note}</div>
                   </div>
                 ))}
               </div>
-
             </div>
 
             {/* Extra: Adjustments card */}
-            <div
-              style={{
-                border: "1px solid #e2e8f0",
-                borderRadius: 16,
-                padding: pad,
-                marginTop: 2,
-                background: "#f8fafc",
-              }}
-            >
-              <div style={{ fontSize: 15, fontWeight: 950, marginBottom: 10 }}>What could move your value up or down</div>
+            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad, marginTop: 2, background: "#f8fafc" }}>
+              <div style={{ fontSize: 15, fontWeight: 950, marginBottom: 10 }}>{t("result.adjustmentsTitle")}</div>
 
               <div style={{ display: "grid", gap: 10 }}>
-                {valueAdjustments().map((v) => (
+                {valueAdjustments(t).map((v) => (
                   <div
                     key={v.label}
                     style={{
@@ -896,35 +902,34 @@ const inputStyle: React.CSSProperties = {
                       border: "1px solid #e2e8f0",
                     }}
                   >
-                    <div>
-                      <div style={{ fontWeight: 900 }}>{v.label}</div>
-                      <div style={{ fontSize: 12, color: "#64748b" }}>{v.note}</div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 900, fontSize: 13 }}>{v.label}</div>
+                      <div style={{ marginTop: 4, fontSize: 12, color: "#64748b" }}>{v.note}</div>
                     </div>
-                    <div style={{ fontWeight: 900 }}>{v.impact}</div>
+
+                    <div style={{ fontSize: 12, fontWeight: 950, color: "#0f172a", whiteSpace: "nowrap" }}>{v.impact}</div>
                   </div>
                 ))}
-              </div>
-
-              <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>
-                Share floor, view and condition on WhatsApp to refine your estimate.
               </div>
             </div>
 
             {/* D) Value drivers */}
             <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
-              <div style={{ fontSize: 16, fontWeight: 950, letterSpacing: -0.3 }}>Value drivers</div>
-              <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>Typical impact ranges (informational)</div>
+              <div style={{ fontSize: 16, fontWeight: 950, letterSpacing: -0.3 }}>{t("result.drivers.title")}</div>
+              <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>{t("result.drivers.subtitle")}</div>
 
               <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
                 {[
-                  ["🪟 View premium", "+3% to +12%", "Sea/Marina/Open views can materially lift value."],
-                  ["🏢 Floor level", "-2% to +6%", "Higher floors often trade at a premium in towers."],
-                  ["🛠 Condition", "-8% to +10%", "Renovation and maintenance are major swing factors."],
-                  ["🚗 Parking & extras", "0% to +5%", "Parking, storage, balcony can add value."],
-                ].map(([t, band, d]) => (
-                  <div key={t} style={{ border: "1px solid #e2e8f0", borderRadius: 14, padding: 12 }}>
+                  ["view", "🪟", "result.drivers.items.view"],
+                  ["floor", "🏢", "result.drivers.items.floor"],
+                  ["condition", "🛠", "result.drivers.items.condition"],
+                  ["parking", "🚗", "result.drivers.items.parking"],
+                ].map(([key, icon, baseKey]) => (
+                  <div key={key} style={{ border: "1px solid #e2e8f0", borderRadius: 14, padding: 12 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                      <div style={{ fontWeight: 900, fontSize: 13 }}>{t}</div>
+                      <div style={{ fontWeight: 900, fontSize: 13 }}>
+                        {icon} {t(`${baseKey}.title`)}
+                      </div>
                       <div
                         style={{
                           fontSize: 12,
@@ -937,10 +942,10 @@ const inputStyle: React.CSSProperties = {
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {band}
+                        {t(`${baseKey}.band`)}
                       </div>
                     </div>
-                    <div style={{ marginTop: 6, fontSize: 12, color: "#64748b", lineHeight: 1.55 }}>{d}</div>
+                    <div style={{ marginTop: 6, fontSize: 12, color: "#64748b", lineHeight: 1.55 }}>{t(`${baseKey}.desc`)}</div>
                   </div>
                 ))}
               </div>
@@ -954,7 +959,7 @@ const inputStyle: React.CSSProperties = {
               <div style={{ padding: pad, borderBottom: "1px solid #e2e8f0" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                   <div>
-                    <div style={{ fontWeight: 950, fontSize: 14 }}>Location map</div>
+                    <div style={{ fontWeight: 950, fontSize: 14 }}>{t("result.map.title")}</div>
                     <div style={{ fontSize: 12, color: "#64748b" }}>{area || "Dubai"}, UAE</div>
                   </div>
                   <a href={mapsQuery} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
@@ -970,7 +975,7 @@ const inputStyle: React.CSSProperties = {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      Open
+                      {t("result.map.open")}
                     </button>
                   </a>
                 </div>
@@ -989,19 +994,24 @@ const inputStyle: React.CSSProperties = {
 
             {/* MARKET SNAPSHOT */}
             <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad, background: "#fafafa" }}>
-              <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Market snapshot (estimated)</div>
+              <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>{t("result.snapshot.title")}</div>
 
               <div style={{ display: "grid", gap: 10 }}>
                 {[
-                  ["Median value", formatAedShort(mid)],
-                  ["Price / sqft", market.ppsf > 0 ? `${Math.round(market.ppsf).toLocaleString("en-US")} AED/sqft` : "—"],
-                  ["Activity", market.activity],
-                  ["Days on market", `${market.dom} days (est.)`],
-                  ["MoM change", pct(market.mom)],
-                  ["YoY change", pct(market.yoy)],
+                  [t("result.snapshot.medianValue"), formatAedShort(mid)],
+                  [
+                    t("result.snapshot.pricePerSqft"),
+                    market.ppsf > 0
+                      ? `${Math.round(market.ppsf).toLocaleString("en-US")} ${t("result.comps.aedPerSqft")}`
+                      : "—",
+                  ],
+                  [t("result.snapshot.activity"), market.activity],
+                  [t("result.snapshot.daysOnMarket"), t("result.snapshot.daysOnMarketValue", { days: market.dom })],
+                  [t("result.snapshot.mom"), pct(market.mom)],
+                  [t("result.snapshot.yoy"), pct(market.yoy)],
                 ].map(([k, v]) => (
                   <div
-                    key={k}
+                    key={String(k)}
                     style={{
                       padding: 12,
                       borderRadius: 12,
@@ -1019,108 +1029,84 @@ const inputStyle: React.CSSProperties = {
                 ))}
               </div>
 
-              <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>
-                Snapshot is derived from the estimate + lightweight heuristics. We’ll replace with real stats once data is integrated.
-              </div>
+              <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>{t("result.snapshot.note")}</div>
             </div>
 
             {/* INPUTS */}
             <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
-              <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Your inputs</div>
+              <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>{t("result.inputs.title")}</div>
 
               <div style={{ display: "grid", gap: 10 }}>
-{[
-  ["Area", area || "—"],
-  ["Property type", type || "—"],
-  ["Bedrooms", beds || "—"],
-  ["Size (sqft)", formatSqft(sizeSqft)],
-  ["Parking", refineData?.parking ? refineData.parking : "—"], // ✅ 新增
-].map(([k, v]) => (
-  <div
-    key={k}
-    style={{
-      padding: 12,
-      borderRadius: 12,
-      background: "#fff",
-      border: "1px solid #e2e8f0",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: 12,
-    }}
-  >
-    <div style={{ fontSize: 12, color: "#64748b" }}>{k}</div>
-    <div style={{ fontWeight: 900, textAlign: "right" }}>{v}</div>
-  </div>
-))}
+                {[
+                  [t("result.inputs.area"), area || "—"],
+                  [t("result.inputs.type"), type || "—"],
+                  [t("result.inputs.bedrooms"), beds || "—"],
+                  [t("result.inputs.size"), formatSqft(sizeSqft)],
+                  [t("result.inputs.parking"), refineData?.parking ? refineData.parking : "—"],
+                ].map(([k, v]) => (
+                  <div
+                    key={String(k)}
+                    style={{
+                      padding: 12,
+                      borderRadius: 12,
+                      background: "#fff",
+                      border: "1px solid #e2e8f0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 12,
+                    }}
+                  >
+                    <div style={{ fontSize: 12, color: "#64748b" }}>{k}</div>
+                    <div style={{ fontWeight: 900, textAlign: "right" }}>{v}</div>
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* Disclaimer */}
-            <div style={{ fontSize: 12, color: "#94a3b8", padding: "0 4px" }}>
-              Estimates, sample comps, and market snapshot are informational and may differ from actual market prices. Not a formal appraisal.
-            </div>
+            <div style={{ fontSize: 12, color: "#94a3b8", padding: "0 4px" }}>{t("result.disclaimer")}</div>
           </div>
         </div>
 
-{/* Help card (single WhatsApp entry, privacy-first) */}
-<div
-  style={{
-    marginTop: 28,
-    border: "1px solid #e2e8f0",
-    borderRadius: 16,
-    padding: 16,
-    background: "#f8fafc",
-    display: "grid",
-    gap: 10,
-    textAlign: "center",
-  }}
->
-  <div style={{ fontSize: 14, fontWeight: 950 }}>
-    Something looks off? Talk to us
-  </div>
+        {/* Help card */}
+        <div
+          style={{
+            marginTop: 28,
+            border: "1px solid #e2e8f0",
+            borderRadius: 16,
+            padding: 16,
+            background: "#f8fafc",
+            display: "grid",
+            gap: 10,
+            textAlign: "center",
+          }}
+        >
+          <div style={{ fontSize: 14, fontWeight: 950 }}>{t("help.title")}</div>
 
-  <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.6 }}>
-    We respect your privacy. No estimate or property details are shared unless you choose to.
-  </div>
+          <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.6 }}>{t("help.desc")}</div>
 
-  <a
-    href="https://wa.me/971581188247"
-    target="_blank"
-    rel="noreferrer"
-    style={{ textDecoration: "none" }}
-  >
-    <button
-      style={{
-        border: "1px solid #0ea5e9",
-        background: "#0ea5e9",
-        color: "#fff",
-        padding: "10px 16px",
-        borderRadius: 12,
-        fontWeight: 900,
-        cursor: "pointer",
-      }}
-    >
-      Talk to us on WhatsApp
-    </button>
-  </a>
+          <a href="https://wa.me/971581188247" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+            <button
+              style={{
+                border: "1px solid #0ea5e9",
+                background: "#0ea5e9",
+                color: "#fff",
+                padding: "10px 16px",
+                borderRadius: 12,
+                fontWeight: 900,
+                cursor: "pointer",
+              }}
+            >
+              {t("help.button")}
+            </button>
+          </a>
 
-  <div style={{ fontSize: 12, color: "#64748b" }}>
-    Optional: share building name, floor or view to help us guide you better.
-  </div>
-</div>
+          <div style={{ fontSize: 12, color: "#64748b" }}>{t("help.tip")}</div>
+        </div>
 
-<div
-  style={{
-    marginTop: 18,
-    fontSize: 12,
-    color: "#94a3b8",
-    textAlign: "center",
-  }}
->
-  © UAEHomeValue
-</div>
-</div>
+        <div style={{ marginTop: 18, fontSize: 12, color: "#94a3b8", textAlign: "center" }}>{t("footer.copy")}</div>
+      </div>
     </div>
   );
 }

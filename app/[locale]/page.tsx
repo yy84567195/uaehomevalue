@@ -2,6 +2,7 @@
 
 import { useTranslations, useLocale } from "next-intl";
 import { useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import data from "@/data/price_ranges.json";
 
 type PropertyType = "Apartment" | "Villa";
@@ -55,7 +56,7 @@ export default function HomePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           area,
-          type,
+          type, // 注意：这里仍然传 Apartment/Villa 给你的 API（不要翻译）
           beds,
           sizeSqft: Number(sizeSqftNum),
         }),
@@ -103,14 +104,14 @@ export default function HomePage() {
     }
   }
 
-  const labelStyle: React.CSSProperties = {
+  const labelStyle: CSSProperties = {
     fontSize: 14,
     fontWeight: 800,
     color: "#0f172a",
     marginBottom: 8,
   };
 
-  const inputStyle: React.CSSProperties = {
+  const inputStyle: CSSProperties = {
     width: "100%",
     padding: "14px 14px",
     borderRadius: 14,
@@ -122,7 +123,7 @@ export default function HomePage() {
     outline: "none",
   };
 
-  const helperStyle: React.CSSProperties = {
+  const helperStyle: CSSProperties = {
     fontSize: 13,
     color: "#334155",
     marginTop: 10,
@@ -197,11 +198,7 @@ export default function HomePage() {
           {/* Type */}
           <div>
             <div style={labelStyle}>{tHome("type")}</div>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value as PropertyType)}
-              style={inputStyle}
-            >
+            <select value={type} onChange={(e) => setType(e.target.value as PropertyType)} style={inputStyle}>
               <option value="Apartment">{tHome("typeOptions.apartment")}</option>
               <option value="Villa">{tHome("typeOptions.villa")}</option>
             </select>

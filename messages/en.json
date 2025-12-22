@@ -2,17 +2,14 @@
   "home": {
     "title": "Check your home value in Dubai",
     "subtitle": "Estimate first. Decide better.",
-
     "area": "Area",
     "type": "Property type",
     "beds": "Bedrooms",
     "size": "Size (sqft)",
-
     "typeOptions": {
       "apartment": "Apartment",
       "villa": "Villa"
     },
-
     "bedsOptions": {
       "studio": "Studio",
       "1": "1",
@@ -20,62 +17,216 @@
       "3": "3",
       "4plus": "4+"
     },
-
     "sizePlaceholder": "e.g. 1250",
     "sizeTip": "Tip: you can clear the field and type again.",
-
     "button": {
       "default": "Check My Home Value",
       "loading": "Calculating…"
     },
-
     "error": {
       "size": "Please enter a valid size (sqft).",
       "noData": "No estimate available for this selection yet. Please try another area.",
       "generic": "Estimate failed. Please try again.",
       "network": "Network error. Please try again."
     },
-
     "disclaimer": "Independent market-based estimate · No listings · No agents"
   },
-
   "result": {
     "title": "Estimated market value",
     "subtitle": "Estimate first. Decide better.",
+    "brandTagline": "Dubai · Estimated value ranges",
+    "actions": {
+      "recheck": "Re-check another home",
+      "changeInputs": "Change inputs"
+    },
+    "header": {
+      "beds": "{beds} bed",
+      "sqft": "sqft"
+    },
     "likelyRange": "Likely value range (AED)",
     "conservativeRange": "Conservative market range",
     "likelyBandWidth": "Likely band width",
     "lastUpdated": "Last updated: today",
     "rangeWidth": "Range width",
     "likelyVolatility": "Likely volatility",
-    "confidence": "Confidence"
+    "confidence": "Confidence",
+    "how": {
+      "title": "How this estimate is calculated",
+      "desc": "This estimate is generated using community-level pricing ranges and size adjustment.",
+      "factorsTitle": "Key factors considered:",
+      "factors": {
+        "location": "Location (community-level pricing)",
+        "type": "Property type (apartment or villa)",
+        "size": "Size (price-per-sqft adjustment)",
+        "activity": "Current market activity (signal)"
+      },
+      "footer": "This is a market-based estimate, not a formal appraisal. Final value may vary depending on building, floor, view, condition and timing."
+    },
+    "trend": {
+      "title": "Price trend (90 days)",
+      "now": "Now",
+      "daysAgo": "90d ago",
+      "note": "Note: trend is an estimated signal for the selected inputs."
+    },
+    "rent": {
+      "title": "Rent estimate (informational)",
+      "monthlyLabel": "Monthly rent range (AED)",
+      "annualLabel": "Annual",
+      "yieldLabel": "Yield",
+      "basis": "Basis: a broad gross yield band for quick screening."
+    },
+    "comps": {
+      "title": "Comparable homes",
+      "subtitle": "Sample comps • estimated",
+      "bestMatch": "Best match",
+      "similarLayout": "Similar layout",
+      "nearbyBuilding": "Nearby building",
+      "recentSignal": "Recent signal",
+      "sampleNote": "Sample comparable (estimated)",
+      "aedPerSqft": "AED/sqft"
+    },
+    "adjustmentsTitle": "What could move your value up or down",
+    "adjustments": {
+      "seaView": {
+        "label": "Sea / Marina view",
+        "impact": "+6% to +12%",
+        "note": "Strong premium for unobstructed water views"
+      },
+      "highFloor": {
+        "label": "High floor",
+        "impact": "+2% to +5%",
+        "note": "Higher floors typically trade at a premium"
+      },
+      "upgraded": {
+        "label": "Upgraded / renovated",
+        "impact": "+5% to +10%",
+        "note": "Modern finishes significantly affect value"
+      },
+      "lowFloorRoad": {
+        "label": "Low floor / road view",
+        "impact": "−3% to −8%",
+        "note": "Noise and privacy discount"
+      }
+    },
+    "drivers": {
+      "title": "Value drivers",
+      "subtitle": "Typical impact ranges (informational)",
+      "items": {
+        "view": {
+          "title": "View premium",
+          "band": "+3% to +12%",
+          "desc": "Sea/Marina/Open views can materially lift value."
+        },
+        "floor": {
+          "title": "Floor level",
+          "band": "-2% to +6%",
+          "desc": "Higher floors often trade at a premium in towers."
+        },
+        "condition": {
+          "title": "Condition",
+          "band": "-8% to +10%",
+          "desc": "Renovation and maintenance are major swing factors."
+        },
+        "parking": {
+          "title": "Parking & extras",
+          "band": "0% to +5%",
+          "desc": "Parking, storage, balcony can add value."
+        }
+      }
+    },
+    "map": {
+      "title": "Location map",
+      "open": "Open"
+    },
+    "snapshot": {
+      "title": "Market snapshot (estimated)",
+      "medianValue": "Median value",
+      "pricePerSqft": "Price / sqft",
+      "activity": "Activity",
+      "activityHigh": "High",
+      "activityMed": "Medium",
+      "activityLow": "Low",
+      "daysOnMarket": "Days on market",
+      "daysOnMarketValue": "{days} days (est.)",
+      "mom": "MoM change",
+      "yoy": "YoY change",
+      "note": "Snapshot is derived from the estimate + lightweight heuristics. We’ll replace with real stats once data is integrated."
+    },
+    "inputs": {
+      "title": "Your inputs",
+      "area": "Area",
+      "type": "Property type",
+      "bedrooms": "Bedrooms",
+      "size": "Size (sqft)",
+      "parking": "Parking"
+    },
+    "disclaimer": "Estimates, sample comps, and market snapshot are informational and may differ from actual market prices. Not a formal appraisal."
   },
-
   "refine": {
     "open": "Improve accuracy (30 seconds)",
     "title": "Improve valuation accuracy",
+    "close": "Close",
+    "helper": "Fill what you know (30 seconds). More details → tighter range.",
     "building": "Building name (e.g. Marina Gate)",
     "floor": "Floor level",
+    "floorOptions": {
+      "low": "Low floor",
+      "mid": "Mid floor",
+      "high": "High floor"
+    },
     "view": "View",
+    "viewOptions": {
+      "sea": "Sea / Marina view",
+      "city": "City view",
+      "road": "Road / no view"
+    },
     "condition": "Condition",
+    "conditionOptions": {
+      "original": "Original",
+      "good": "Good",
+      "upgraded": "Upgraded",
+      "renovated": "Fully renovated"
+    },
     "parking": "Parking",
-    "expectedPrice": "Your expected price (optional, AED)",
+    "parkingOptions": {
+      "none": "No parking",
+      "one": "1 space",
+      "two": "2 spaces",
+      "threePlus": "3+ spaces"
+    },
     "amenitiesTitle": "Community amenities (select all)",
+    "amenities": {
+      "beach": "Beach access",
+      "mall": "Mall nearby",
+      "metro": "Metro nearby",
+      "park": "Park / waterfront",
+      "schools": "Good schools",
+      "pool": "Swimming pool",
+      "gym": "Gym",
+      "kids": "Kids play area"
+    },
+    "expectedPrice": "Your expected price (optional, AED)",
     "submit": "Update estimate",
-    "note": "We use this to refine your estimate and improve our model."
+    "note": "We use this to refine your estimate and improve our model.",
+    "messages": {
+      "notEnoughData": "Not enough data to refine yet. Please try another area.",
+      "refinedBadge": "Refined",
+      "thanks": "Thanks! We used your details to tighten the range."
+    },
+    "modal": {
+      "title": "Refined estimate",
+      "done": "Done"
+    }
   },
-
   "help": {
     "title": "Something looks off? Talk to us",
     "desc": "We respect your privacy. No estimate or property details are shared unless you choose to.",
     "button": "Talk to us on WhatsApp",
     "tip": "Optional: share building name, floor or view to help us guide you better."
   },
-
   "footer": {
     "copy": "© UAEHomeValue"
   },
-
   "lang": {
     "label": "Language",
     "en": "English",
