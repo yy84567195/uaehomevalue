@@ -40,10 +40,14 @@ export default function LanguageSwitcher() {
   return (
     <select
       value={currentLocale}
-      onChange={(e) => {
-        const nextLocale = e.target.value as Locale;
-        router.push(buildTargetPath(nextLocale));
-      }}
+     onChange={(e) => {
+  const nextLocale = e.target.value as Locale;
+
+  // ✅ 切换语言时写入 cookie，保证 default(en) 也能稳定生效
+  document.cookie = `NEXT_LOCALE=${nextLocale}; Path=/; SameSite=Lax; Max-Age=31536000`;
+
+  router.replace(buildTargetPath(nextLocale), { scroll: false });
+}}
       style={{
         height: 32,
         borderRadius: 10,
