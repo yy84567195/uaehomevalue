@@ -836,20 +836,78 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
                   
                   {t("result.how.footer")}
                   {/* ✅ Community 说明（先用英文，后面你再补多语言到 messages） */}
+{/* MATCH BADGE */}
 <div
   style={{
     marginTop: 10,
-    fontSize: 13,
-    color: "#334155",
-    fontWeight: 700,
-    lineHeight: 1.55,
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 8,
+    alignItems: "center",
   }}
 >
-  {community
-    ? matched === "community"
-      ? `{t("result.how.communityMatch")}`
-      : `Community selected, but this estimate used area-level data (no community match found).`
-    : `Tip: Select a Community (optional) to get a more precise, tighter range when available.`}
+  {community ? (
+    matched === "community" ? (
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "8px 10px",
+          borderRadius: 999,
+          border: "1px solid #bbf7d0",
+          background: "#dcfce7",
+          color: "#166534",
+          fontSize: 12,
+          fontWeight: 900,
+          lineHeight: 1,
+        }}
+      >
+        <span style={{ fontSize: 14, lineHeight: 1 }}>✓</span>
+        <span>{t("result.how.communityMatch")}</span>
+      </div>
+    ) : (
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "8px 10px",
+          borderRadius: 999,
+          border: "1px solid #fde68a",
+          background: "#fffbeb",
+          color: "#92400e",
+          fontSize: 12,
+          fontWeight: 900,
+          lineHeight: 1,
+        }}
+      >
+        <span style={{ fontSize: 14, lineHeight: 1 }}>⚠︎</span>
+        <span>{t("result.how.areaMatch")}</span>
+      </div>
+    )
+  ) : (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "8px 10px",
+        borderRadius: 999,
+        border: "1px solid #e2e8f0",
+        background: "#f8fafc",
+        color: "#334155",
+        fontSize: 12,
+        fontWeight: 900,
+        lineHeight: 1,
+      }}
+    >
+      <span style={{ fontSize: 14, lineHeight: 1 }}>ℹ︎</span>
+      <span>
+        {t("home.community")} · {t("home.communityAll")}
+      </span>
+    </div>
+  )}
 </div>
                 </div>
               </div>
@@ -1014,7 +1072,7 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
 
           {/* Right column */}
           <div style={{ display: "grid", gap: 14 }}>
-          {/* E) MAP CARD */}
+{/* E) MAP CARD */}
 <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, overflow: "hidden", background: "#fff" }}>
   <div style={{ padding: pad }}>
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
@@ -1053,6 +1111,16 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
         : "Tip: Tap Open to view this area on Google Maps."}
     </div>
   </div>
+
+  <iframe
+    title="Map"
+    src={`https://www.google.com/maps?q=${encodeURIComponent(`${community || area || "Dubai"} UAE`)}&output=embed`}
+    width="100%"
+    height={isMobile ? 220 : 260}
+    style={{ border: 0, display: "block" }}
+    loading="lazy"
+    referrerPolicy="no-referrer-when-downgrade"
+  />
 </div>
             {/* MARKET SNAPSHOT */}
             <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad, background: "#fafafa" }}>
