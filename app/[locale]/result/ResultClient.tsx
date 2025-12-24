@@ -1087,7 +1087,7 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
         type="button"
         onClick={() => {
           const q = `${community || area || "Dubai"} UAE`;
-          const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+          const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}&hl=en`;
           window.open(url, "_blank", "noopener,noreferrer");
         }}
         style={{
@@ -1114,7 +1114,7 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
 
   <iframe
     title="Map"
-    src={`https://www.google.com/maps?q=${encodeURIComponent(`${community || area || "Dubai"} UAE`)}&output=embed`}
+    src={`https://www.google.com/maps?q=${encodeURIComponent(`${community || area || "Dubai"} UAE`)}&output=embed&hl=en`}
     width="100%"
     height={isMobile ? 220 : 260}
     style={{ border: 0, display: "block" }}
