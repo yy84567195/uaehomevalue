@@ -847,7 +847,7 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
 >
   {community
     ? matched === "community"
-      ? `Community-level match ✓ We prioritized community-specific ranges for a tighter estimate.`
+      ? `{t("result.how.communityMatch")}`
       : `Community selected, but this estimate used area-level data (no community match found).`
     : `Tip: Select a Community (optional) to get a more precise, tighter range when available.`}
 </div>
@@ -1014,44 +1014,46 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
 
           {/* Right column */}
           <div style={{ display: "grid", gap: 14 }}>
-            {/* E) MAP CARD */}
-            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, overflow: "hidden", background: "#fff" }}>
-              <div style={{ padding: pad, borderBottom: "1px solid #e2e8f0" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                  <div>
-                    <div style={{ fontWeight: 950, fontSize: 14 }}>{t("result.map.title")}</div>
-                    <div style={{ fontSize: 12, color: "#64748b" }}>{area || "Dubai"}, UAE</div>
-                  </div>
-                  <a href={mapsQuery} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
-                    <button
-                      style={{
-                        border: "1px solid #e2e8f0",
-                        background: "#ffffff",
-                        color: "#0f172a",
-                        padding: "8px 10px",
-                        borderRadius: 12,
-                        fontWeight: 900,
-                        cursor: "pointer",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {t("result.map.open")}
-                    </button>
-                  </a>
-                </div>
-              </div>
+          {/* E) MAP CARD */}
+<div style={{ border: "1px solid #e2e8f0", borderRadius: 16, overflow: "hidden", background: "#fff" }}>
+  <div style={{ padding: pad }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+      <div>
+        <div style={{ fontWeight: 950, fontSize: 14 }}>{t("result.map.title")}</div>
+        <div style={{ fontSize: 12, color: "#64748b" }}>
+          {(community || area || "Dubai")}, UAE
+        </div>
+      </div>
 
-              <iframe
-                title="Map"
-                src={mapsEmbed}
-                width="100%"
-                height={isMobile ? 220 : 260}
-                style={{ border: 0, display: "block" }}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            </div>
+      <button
+        type="button"
+        onClick={() => {
+          const q = `${community || area || "Dubai"} UAE`;
+          const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+          window.open(url, "_blank", "noopener,noreferrer");
+        }}
+        style={{
+          border: "1px solid #e2e8f0",
+          background: "#ffffff",
+          color: "#0f172a",
+          padding: "8px 10px",
+          borderRadius: 12,
+          fontWeight: 900,
+          cursor: "pointer",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {t("result.map.open")}
+      </button>
+    </div>
 
+    <div style={{ marginTop: 10, fontSize: 12, color: "#64748b", lineHeight: 1.5, fontWeight: 700 }}>
+      {community
+        ? "Tip: Tap Open to view this community on Google Maps."
+        : "Tip: Tap Open to view this area on Google Maps."}
+    </div>
+  </div>
+</div>
             {/* MARKET SNAPSHOT */}
             <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad, background: "#fafafa" }}>
               <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>{t("result.snapshot.title")}</div>
@@ -1217,7 +1219,7 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
       lineHeight: 1.55,
     }}
   >
-    Tip: Share this estimate with a friend to compare prices in the same area or community.
+    {t("result.share.tip")}
   </div>
 </div>
         {/* Help card */}
