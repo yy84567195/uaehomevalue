@@ -1,9 +1,25 @@
 {
   "meta": {
     "currency": "AED",
-    "source_note": "Starter dataset \u2014 replace with your own ranges."
+    "source_note": "Starter dataset - supports area-level and community-level ranges."
   },
   "communities": [
+    {
+      "area": "Downtown Dubai",
+      "community": "Burj Views",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1800000,
+      "max": 2400000
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Burj Views",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2600000,
+      "max": 3600000
+    },
     {
       "area": "Downtown Dubai",
       "type": "Apartment",
@@ -24,6 +40,30 @@
       "beds": 3,
       "min": 3800000,
       "max": 5500000
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Marina Gate",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1500000,
+      "max": 2100000
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Marina Gate",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2400000,
+      "max": 3200000
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Emaar 6 Towers",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2700000,
+      "max": 3800000
     },
     {
       "area": "Dubai Marina",
@@ -48,6 +88,22 @@
     },
     {
       "area": "Business Bay",
+      "community": "DAMAC Towers",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1200000,
+      "max": 1800000
+    },
+    {
+      "area": "Business Bay",
+      "community": "DAMAC Towers",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1900000,
+      "max": 2800000
+    },
+    {
+      "area": "Business Bay",
       "type": "Apartment",
       "beds": 1,
       "min": 1000000,
@@ -66,6 +122,22 @@
       "beds": 3,
       "min": 2800000,
       "max": 4200000
+    },
+    {
+      "area": "JVC",
+      "community": "Belgravia",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 720000,
+      "max": 1050000
+    },
+    {
+      "area": "JVC",
+      "community": "Belgravia",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1150000,
+      "max": 1650000
     },
     {
       "area": "JVC",
@@ -90,6 +162,14 @@
     },
     {
       "area": "JLT",
+      "community": "Cluster X",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1800000,
+      "max": 2600000
+    },
+    {
+      "area": "JLT",
       "type": "Apartment",
       "beds": 1,
       "min": 900000,
@@ -108,6 +188,22 @@
       "beds": 3,
       "min": 2800000,
       "max": 4000000
+    },
+    {
+      "area": "Palm Jumeirah",
+      "community": "Shoreline Apartments",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 2600000,
+      "max": 4200000
+    },
+    {
+      "area": "Palm Jumeirah",
+      "community": "Shoreline Apartments",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 4200000,
+      "max": 7200000
     },
     {
       "area": "Palm Jumeirah",
@@ -134,7 +230,8 @@
   "comps": [
     {
       "area": "Dubai Marina",
-      "label": "Community: Dubai Marina (sample)",
+      "community": "Marina Gate",
+      "label": "Marina Gate (sample)",
       "beds": 2,
       "size_sqft": 1250,
       "price": 2420000,
@@ -142,7 +239,8 @@
     },
     {
       "area": "Dubai Marina",
-      "label": "Community: Dubai Marina (sample)",
+      "community": "Emaar 6 Towers",
+      "label": "Emaar 6 Towers (sample)",
       "beds": 2,
       "size_sqft": 1380,
       "price": 2710000,
@@ -150,7 +248,8 @@
     },
     {
       "area": "Business Bay",
-      "label": "Community: Business Bay (sample)",
+      "community": "DAMAC Towers",
+      "label": "DAMAC Towers (sample)",
       "beds": 1,
       "size_sqft": 820,
       "price": 1190000,
@@ -158,7 +257,8 @@
     },
     {
       "area": "Downtown Dubai",
-      "label": "Community: Downtown Dubai (sample)",
+      "community": "Burj Views",
+      "label": "Burj Views (sample)",
       "beds": 1,
       "size_sqft": 910,
       "price": 2050000,
@@ -166,7 +266,8 @@
     },
     {
       "area": "JVC",
-      "label": "Community: JVC (sample)",
+      "community": "Belgravia",
+      "label": "Belgravia (sample)",
       "beds": 2,
       "size_sqft": 1120,
       "price": 1350000,
@@ -174,7 +275,8 @@
     },
     {
       "area": "JLT",
-      "label": "Community: JLT (sample)",
+      "community": "Cluster X",
+      "label": "Cluster X (sample)",
       "beds": 2,
       "size_sqft": 1340,
       "price": 2100000,

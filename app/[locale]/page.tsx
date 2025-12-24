@@ -11,15 +11,45 @@ export default function HomePage() {
   const locale = useLocale();
   const tHome = useTranslations("home");
 
+  // 读数据行
+  const rows = useMemo<any[]>(() => (data as any)?.communities ?? [], []);
+
+  // Areas（大区域）
   const areas = useMemo<string[]>(() => {
-    const rows = (data as any)?.communities ?? [];
-    const list: string[] = rows
+    const list = rows
       .map((r: any) => String(r?.area ?? "").trim())
       .filter((a: string) => a.length > 0);
     return Array.from(new Set(list)).sort();
-  }, []);
+  }, [rows]);
 
-  const [area, setArea] = useState<string>("Dubai Marina");
+  // ✅ Community map: area -> communities[]
+  // 兼容：如果数据没有 community 字段，就用 area 自己当作 community（不会报错）
+  const communitiesByArea = useMemo<Record<string, string[]>>(() => {
+    const map: Record<string, Set<string>> = {};
+
+    for (const r of rows) {
+      const a = String(r?.area ?? "").trim();
+      const cRaw = (r as any)?.community;
+      const c = String((cRaw ?? a) || "").trim(); // ✅ fallback: 没有 community 就用 area
+
+      if (!a || !c) continue;
+      if (!map[a]) map[a] = new Set();
+      map[a].add(c);
+    }
+
+    const out: Record<string, string[]> = {};
+    for (const a of Object.keys(map)) out[a] = Array.from(map[a]).sort();
+    return out;
+  }, [rows]);
+
+  // 默认值：如果 areas 里有 Dubai Marina 就选它，否则选第一个
+  const defaultArea = useMemo(() => {
+    if (areas.includes("Dubai Marina")) return "Dubai Marina";
+    return areas[0] || "Dubai Marina";
+  }, [areas]);
+
+  const [area, setArea] = useState<string>(defaultArea);
+  const [community, setCommunity] = useState<string>(""); // optional
   const [type, setType] = useState<PropertyType>("Apartment");
   const [beds, setBeds] = useState<number>(2);
 
@@ -29,6 +59,11 @@ export default function HomePage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [err, setErr] = useState<string | undefined>(undefined);
 
+  // 当前 area 下的 communities
+  const communitiesForArea = useMemo<string[]>(() => {
+    return communitiesByArea[area] ?? [];
+  }, [communitiesByArea, area]);
+
   const sizeSqftNum = useMemo(() => {
     const v = sizeSqftText.trim();
     if (!v) return NaN;
@@ -36,10 +71,7 @@ export default function HomePage() {
     return Number.isFinite(n) ? n : NaN;
   }, [sizeSqftText]);
 
-  const isValid = useMemo(
-    () => !!area && Number.isFinite(sizeSqftNum) && sizeSqftNum > 0,
-    [area, sizeSqftNum]
-  );
+  const isValid = useMemo(() => !!area && Number.isFinite(sizeSqftNum) && sizeSqftNum > 0, [area, sizeSqftNum]);
 
   async function onSubmit() {
     setErr(undefined);
@@ -51,51 +83,45 @@ export default function HomePage() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/estimate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          area,
-          type, // 注意：这里仍然传 Apartment/Villa 给你的 API（不要翻译）
-          beds,
-          sizeSqft: Number(sizeSqftNum),
-        }),
-      });
+const res = await fetch("/api/estimate", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    area,
+    community: community || "", // ✅ 新增：可选 community（没有就传空）
+    type, // Apartment / Villa（不要翻译）
+    beds,
+    sizeSqft: Number(sizeSqftNum),
+  }),
+});
 
       const out = await res.json();
 
-      // 1️⃣ API 报错直接停止
       if (!res.ok || out?.error) {
         setErr(out?.error || tHome("error.generic"));
         return;
       }
 
-      // 2️⃣ 强校验，防止 min=0 / max=0
       const minVal = Number(out?.min);
       const maxVal = Number(out?.max);
 
-      if (
-        !Number.isFinite(minVal) ||
-        !Number.isFinite(maxVal) ||
-        minVal <= 0 ||
-        maxVal <= 0 ||
-        maxVal <= minVal
-      ) {
+      if (!Number.isFinite(minVal) || !Number.isFinite(maxVal) || minVal <= 0 || maxVal <= 0 || maxVal <= minVal) {
         setErr(tHome("error.noData"));
         return;
       }
 
       const params = new URLSearchParams({
-        area,
-        type,
-        beds: String(beds),
-        sizeSqft: String(Number(sizeSqftNum)),
-        min: String(minVal),
-        max: String(maxVal),
-        confidence: String(out?.confidence || "Medium"),
-      });
+  area,
+  type,
+  beds: String(beds),
+  sizeSqft: String(Number(sizeSqftNum)),
+  min: String(minVal),
+  max: String(maxVal),
+  confidence: String(out?.confidence || "Medium"),
+  community: String(community || ""),
+  matched: String(out?.meta?.matched || ""),
+});
 
-      // ✅ 关键：带上当前语言前缀
       window.location.href = `/${locale}/result?${params.toString()}`;
     } catch {
       setErr(tHome("error.network"));
@@ -131,49 +157,71 @@ export default function HomePage() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#ffffff",
-        padding: "36px 16px",
-        color: "#0f172a",
-      }}
-    >
+    <div style={{ minHeight: "100vh", background: "#ffffff", padding: "36px 16px", color: "#0f172a" }}>
       <div style={{ maxWidth: 920, margin: "0 auto" }}>
         {/* Logo Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            marginBottom: 28,
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
           <img src="/logo.png" alt="UAEHomeValue" style={{ height: 36 }} />
           <div style={{ fontWeight: 900, fontSize: 18 }}>UAEHomeValue</div>
         </div>
 
-        <h1
-          style={{
-            fontSize: 34,
-            fontWeight: 950,
-            letterSpacing: -0.6,
-            margin: 0,
-          }}
-        >
-          {tHome("title")}
-        </h1>
+       {/* HERO */}
+<h1
+  style={{
+    fontSize: 34,
+    fontWeight: 950,
+    letterSpacing: -0.6,
+    margin: 0,
+    lineHeight: 1.12,
+  }}
+>
+  {tHome("title")}
+</h1>
 
-        <p
-          style={{
-            marginTop: 10,
-            color: "#334155",
-            fontSize: 16,
-            fontWeight: 700,
-          }}
-        >
-          {tHome("subtitle")}
-        </p>
+<p
+  style={{
+    marginTop: 10,
+    color: "#334155",
+    fontSize: 16,
+    fontWeight: 700,
+    lineHeight: 1.45,
+  }}
+>
+  {tHome("subtitle")}
+</p>
+
+{/* Trust badges */}
+<div
+  style={{
+    marginTop: 12,
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 8,
+  }}
+>
+  {[
+    "30s check",
+    "Area + Community",
+    "No agents",
+    "No ads",
+    "No spam",
+  ].map((txt) => (
+    <div
+      key={txt}
+      style={{
+        fontSize: 12,
+        fontWeight: 900,
+        padding: "6px 10px",
+        borderRadius: 999,
+        background: "#f1f5f9",
+        color: "#0f172a",
+        border: "1px solid #e2e8f0",
+      }}
+    >
+      {txt}
+    </div>
+  ))}
+</div>
 
         <div
           style={{
@@ -186,10 +234,31 @@ export default function HomePage() {
           {/* Area */}
           <div>
             <div style={labelStyle}>{tHome("area")}</div>
-            <select value={area} onChange={(e) => setArea(e.target.value)} style={inputStyle}>
+            <select
+              value={area}
+              onChange={(e) => {
+                const nextArea = e.target.value;
+                setArea(nextArea);
+                setCommunity(""); // ✅ 切换大区域清空小区
+              }}
+              style={inputStyle}
+            >
               {areas.map((a) => (
                 <option key={a} value={a}>
                   {a}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Community (optional) */}
+          <div>
+            <div style={labelStyle}>Community (optional)</div>
+            <select value={community} onChange={(e) => setCommunity(e.target.value)} style={inputStyle}>
+              <option value="">All communities</option>
+              {communitiesForArea.map((c) => (
+                <option key={c} value={c}>
+                  {c}
                 </option>
               ))}
             </select>
@@ -252,29 +321,13 @@ export default function HomePage() {
           </button>
 
           {err && (
-            <div
-              style={{
-                marginTop: 12,
-                color: "#991b1b",
-                fontSize: 14,
-                fontWeight: 800,
-              }}
-            >
+            <div style={{ marginTop: 12, color: "#991b1b", fontSize: 14, fontWeight: 800 }}>
               {err}
             </div>
           )}
         </div>
 
-        <div
-          style={{
-            marginTop: 18,
-            fontSize: 13,
-            color: "#64748b",
-            fontWeight: 700,
-          }}
-        >
-          {tHome("disclaimer")}
-        </div>
+        <div style={{ marginTop: 18, fontSize: 13, color: "#64748b", fontWeight: 700 }}>{tHome("disclaimer")}</div>
       </div>
     </div>
   );

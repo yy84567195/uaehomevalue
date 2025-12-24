@@ -3,145 +3,144 @@ import data from "@/data/price_ranges.json";
 
 type Confidence = "High" | "Medium" | "Low";
 
-// 更像 Zillow 的 MVP：
-// 1) 先用数据算社区+类型的 ppsf 中位数 -> anchor
-// 2) 床位微调
-// 3) 区域系数（让“换区域必然变”）
-// 4) 根据 rows 数量决定置信度 & 区间宽度
-// 5) 数据为空时 fallback 也用“区域系数”，避免各区域同价
-
-function median(nums: number[]) {
-  if (!nums.length) return 0;
-  const a = [...nums].sort((x, y) => x - y);
-  return a[Math.floor(a.length / 2)] || 0;
-}
-
-function normalizeArea(s: string) {
+function normalize(s: string) {
   return String(s || "").trim().toLowerCase();
 }
-function normalizeType(s: string) {
-  return String(s || "").trim().toLowerCase();
+
+// 用一个“典型面积”让 sizeSqft 真实影响结果（MVP 必备）
+// 你后续有真实分布数据再替换即可
+function typicalSizeSqft(type: string, beds: number) {
+  const t = normalize(type);
+
+  // Apartment
+  if (t === "apartment") {
+    if (beds <= 0) return 550;
+    if (beds === 1) return 850;
+    if (beds === 2) return 1250;
+    if (beds === 3) return 1700;
+    return 2200; // 4+
+  }
+
+  // Villa（更大）
+  if (beds <= 0) return 1800;
+  if (beds === 1) return 2200;
+  if (beds === 2) return 2800;
+  if (beds === 3) return 3500;
+  return 4500;
+}
+
+// 让“不同区域必然变”，但不会过度夸张
+function areaFactor(area: string) {
+  const m: Record<string, number> = {
+    "palm jumeirah": 1.28,
+    "downtown dubai": 1.22,
+    "dubai marina": 1.12,
+    "business bay": 1.02,
+    "jlt": 0.95,
+    "jumeirah lake towers": 0.95,
+    "jvc": 0.88,
+    "dubai hills": 1.10,
+    "arabian ranches": 1.08,
+  };
+
+  return m[normalize(area)] ?? 1.0;
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const areaRaw = body?.area;
-    const typeRaw = body?.type;
-    const bedsRaw = body?.beds;
-    const sizeSqftRaw = body?.sizeSqft;
 
-    const area = String(areaRaw ?? "").trim();
-    const type = String(typeRaw ?? "").trim();
-    const beds = Number(bedsRaw ?? 0);
-    const sizeSqft = Number(sizeSqftRaw ?? 0);
+    const area = String(body?.area ?? "").trim();
+    const community = String(body?.community ?? "").trim(); // ✅ 新增：可选
+    const type = String(body?.type ?? "").trim(); // "Apartment" | "Villa"
+    const beds = Number(body?.beds ?? 0);
+    const sizeSqft = Number(body?.sizeSqft ?? 0);
 
     if (!area || !type || !Number.isFinite(sizeSqft) || sizeSqft <= 0) {
       return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 });
     }
 
-    // ✅ 关键：区域系数（你可以继续补全）
-    // 先保证几个核心区差异明显，让产品“像 Zillow”
-    const areaFactorMap: Record<string, number> = {
-      "Palm Jumeirah": 1.28,
-      "Downtown Dubai": 1.22,
-      "Dubai Marina": 1.12,
-      "Business Bay": 1.02,
-      "JLT": 0.95,
-      "Jumeirah Lake Towers": 0.95,
-      "JVC": 0.88,
-      "Dubai Hills": 1.10,
-      "Arabian Ranches": 1.08,
-    };
+    const rowsAll = (data as any)?.communities ?? [];
 
-    const areaFactor = areaFactorMap[area] ?? 1.0;
+    // 统一按 area/type/beds 过滤（beds 也要匹配，不然会乱）
+    const baseMatch = (r: any) =>
+      normalize(r?.area) === normalize(area) &&
+      normalize(r?.type) === normalize(type) &&
+      Number(r?.beds) === Number(beds);
 
-    // 数据
-    const communities = (data as any)?.communities ?? [];
+    // ✅ 1) community 优先（如果你的数据里有 community 字段就会命中）
+    const communityRows = community
+      ? rowsAll.filter((r: any) => baseMatch(r) && normalize(r?.community) === normalize(community))
+      : [];
 
-    // ✅ 尽量稳：area + type 严格匹配（忽略大小写）
-    const rows = communities.filter((r: any) => {
-      const a = normalizeArea(r?.area);
-      const t = normalizeType(r?.type);
-      return a === normalizeArea(area) && t === normalizeType(type);
-    });
+    // ✅ 2) fallback 到 area 级别
+    const areaRows = rowsAll.filter((r: any) => baseMatch(r));
 
-    // bedrooms 微调（轻）
-    const bedFactor =
-      beds === 0 ? 0.98 :
-      beds === 1 ? 1.00 :
-      beds === 2 ? 1.02 :
-      beds === 3 ? 1.04 : 1.06;
+    const rows = communityRows.length ? communityRows : areaRows;
 
-    // ===== 1) 有数据：用 ppsf 中位数 =====
-    if (rows.length) {
-      const ppsfList = rows
-        .map((r: any) => Number(r?.ppsf))
-        .filter((n: number) => Number.isFinite(n) && n > 0);
-
-      const medianPpsf = median(ppsfList);
-
-      // 极端：ppsf 没有可用值，走 fallback
-      if (!medianPpsf) {
-        const fallbackPpsf = 1800 * areaFactor; // ✅ fallback 也带区域差
-        const mid = fallbackPpsf * sizeSqft * bedFactor;
-
-        const confidence: Confidence = "Low";
-        const bandPct = 0.22;
-
-        return NextResponse.json({
-          min: Math.round(mid * (1 - bandPct)),
-          max: Math.round(mid * (1 + bandPct)),
-          confidence,
-          meta: { reason: "no_ppsf_in_rows", rows: rows.length },
-        });
-      }
-
-      // ✅ 核心：面积×ppsf×床位×区域系数
-      const mid = medianPpsf * sizeSqft * bedFactor * areaFactor;
-
-      // ===== 2) 置信度：看 rows 数量 =====
-      let confidence: Confidence = "Medium";
-      if (rows.length >= 6) confidence = "High";
-      if (rows.length <= 2) confidence = "Low";
-
-      // ===== 3) 区间宽度（像 Zillow：高置信更窄）=====
-      let bandPct = 0.15;
-      if (confidence === "High") bandPct = 0.10;
-      if (confidence === "Low") bandPct = 0.22;
-
-      const min = Math.round(mid * (1 - bandPct));
-      const max = Math.round(mid * (1 + bandPct));
+    // 没有任何匹配：fallback（仍按区域系数）
+    if (!rows.length) {
+      const af = areaFactor(area);
+      const basePpsf = 1800 * af; // 你可以后续替换成更真实的基准
+      const mid = basePpsf * sizeSqft;
 
       return NextResponse.json({
-        min,
-        max,
-        confidence,
-        meta: {
-          rows: rows.length,
-          medianPpsf,
-          areaFactor,
-          bedFactor,
-          model: "median_ppsf * size * bedFactor * areaFactor",
-        },
+        min: Math.round(mid * 0.75),
+        max: Math.round(mid * 1.25),
+        confidence: "Low" as Confidence,
+        meta: { reason: "no_match_rows", area, community, type, beds, areaFactor: af },
       });
     }
 
-    // ===== 2) 没数据：fallback（也要随区域变化）=====
-    // 用一个“Dubai 基准 ppsf”，乘 areaFactor
-    const fallbackPpsf = 1800 * areaFactor;
-    const mid = fallbackPpsf * sizeSqft * bedFactor;
+    // ✅ 从数据的 min/max 得到“基准区间”
+    const mins = rows.map((r: any) => Number(r?.min)).filter((n: number) => Number.isFinite(n) && n > 0);
+    const maxs = rows.map((r: any) => Number(r?.max)).filter((n: number) => Number.isFinite(n) && n > 0);
 
-    const confidence: Confidence = "Low";
-    const bandPct = 0.25;
+    if (!mins.length || !maxs.length) {
+      return NextResponse.json({
+        min: 0,
+        max: 0,
+        confidence: "Low" as Confidence,
+        meta: { reason: "bad_min_max_in_rows", rows: rows.length },
+      });
+    }
+
+    // 取一个稳的范围：min 取中位附近、max 取中位附近（MVP 简化）
+    mins.sort((a, b) => a - b);
+    maxs.sort((a, b) => a - b);
+    const baseMin = mins[Math.floor(mins.length / 2)];
+    const baseMax = maxs[Math.floor(maxs.length / 2)];
+
+    // ✅ 用“典型面积”把区间按用户输入 sizeSqft 比例缩放
+    const typical = typicalSizeSqft(type, beds);
+    const scale = typical > 0 ? sizeSqft / typical : 1;
+
+    const scaledMin = baseMin * scale;
+    const scaledMax = baseMax * scale;
+
+    // ✅ 置信度：community 命中 = High；只有 area 命中 = Medium；兜底 = Low
+    let confidence: Confidence = "Medium";
+    if (communityRows.length) confidence = "High";
+    if (!areaRows.length) confidence = "Low";
+
+    // 最终保护：max 必须 > min
+    const minOut = Math.round(Math.min(scaledMin, scaledMax * 0.95));
+    const maxOut = Math.round(Math.max(scaledMax, scaledMin * 1.05));
 
     return NextResponse.json({
-      min: Math.round(mid * (1 - bandPct)),
-      max: Math.round(mid * (1 + bandPct)),
+      min: minOut,
+      max: maxOut,
       confidence,
-      meta: { reason: "no_rows_match", areaFactor, bedFactor },
+      meta: {
+        matched: communityRows.length ? "community" : "area",
+        rowsUsed: rows.length,
+        baseMin,
+        baseMax,
+        typicalSizeSqft: typical,
+        scale,
+      },
     });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

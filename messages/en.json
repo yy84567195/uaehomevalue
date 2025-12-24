@@ -1,8 +1,10 @@
 {
   "home": {
-    "title": "Check your home value in Dubai",
-    "subtitle": "Estimate first. Decide better.",
+    "title": "Find Your Real Home Value in Dubai — Instantly",
+    "subtitle": "Independent price ranges based on area & community data.",
     "area": "Area",
+    "community": "Community (optional)",
+    "communityAll": "All communities",
     "type": "Property type",
     "beds": "Bedrooms",
     "size": "Size (sqft)",
@@ -60,7 +62,8 @@
         "size": "Size (price-per-sqft adjustment)",
         "activity": "Current market activity (signal)"
       },
-      "footer": "This is a market-based estimate, not a formal appraisal. Final value may vary depending on building, floor, view, condition and timing."
+      "footer": "This is a market-based estimate, not a formal appraisal. Final value may vary depending on building, floor, view, condition and timing.",
+      "extra": "When community-level ranges are available, we prioritize them; otherwise we fall back to area-level ranges."
     },
     "trend": {
       "title": "Price trend (90 days)",
@@ -155,10 +158,19 @@
     "inputs": {
       "title": "Your inputs",
       "area": "Area",
+      "community": "Community",
       "type": "Property type",
       "bedrooms": "Bedrooms",
       "size": "Size (sqft)",
       "parking": "Parking"
+    },
+    "share": {
+      "title": "Share this estimate",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "copy": "Copy link",
+      "copied": "Copied ✓",
+      "tip": "Tip: Share to a friend on WhatsApp to compare prices in the same community."
     },
     "disclaimer": "Estimates, sample comps, and market snapshot are informational and may differ from actual market prices. Not a formal appraisal."
   },
@@ -222,7 +234,7 @@
     "title": "Something looks off? Talk to us",
     "desc": "We respect your privacy. No estimate or property details are shared unless you choose to.",
     "button": "Talk to us on WhatsApp",
-    "tip": "Optional: share building name, floor or view to help us guide you better."
+    "tip": ""
   },
   "footer": {
     "copy": "© UAEHomeValue"

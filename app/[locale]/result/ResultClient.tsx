@@ -116,22 +116,65 @@ export default function ResultClient() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  // URL params
-  const area = useMemo(() => getParam("area"), []);
-  const type = useMemo(() => getParam("type"), []);
-  const beds = useMemo(() => getParam("beds"), []);
-  const sizeSqftStr = useMemo(() => getParam("sizeSqft"), []);
-  const min = useMemo(() => Number(getParam("min") || 0), []);
-  const max = useMemo(() => Number(getParam("max") || 0), []);
-  const confidence = useMemo(() => getParam("confidence") || "High", []);
+// URL params
+const area = useMemo(() => getParam("area"), []);
+const community = useMemo(() => getParam("community"), []); // ✅ 新增
+const type = useMemo(() => getParam("type"), []);
+const beds = useMemo(() => getParam("beds"), []);
+const sizeSqftStr = useMemo(() => getParam("sizeSqft"), []);
+const min = useMemo(() => Number(getParam("min") || 0), []);
+const max = useMemo(() => Number(getParam("max") || 0), []);
+const confidence = useMemo(() => getParam("confidence") || "Medium", []);
 
-  const minFinal = minOverride ?? min;
-  const maxFinal = maxOverride ?? max;
-  const confidenceFinal = confidenceOverride ?? confidence;
+const matched = useMemo(() => getParam("matched"), []); // "community" | "area"
+const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
-  const sizeSqft = useMemo(() => Number(sizeSqftStr || 0), [sizeSqftStr]);
-  const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
+// ✅ 先计算最终显示值（refine override 优先）
+const minFinal = minOverride ?? min;
+const maxFinal = maxOverride ?? max;
+const confidenceFinal = confidenceOverride ?? confidence;
 
+// Parse numbers (so share text looks good)
+const bedsNum = useMemo(() => Number(beds || 0), [beds]);
+
+// ✅ 只保留这一份 sizeSqft（避免重复声明导致红）
+const sizeSqft = useMemo(() => Number(sizeSqftStr || 0), [sizeSqftStr]);
+
+const shareText = [
+  `UAEHomeValue estimate: ${formatAedShort(minFinal)}–${formatAedShort(maxFinal)}`,
+  community ? `Community: ${community}${matched === "community" ? " ✓" : ""}` : null,
+  `Area: ${area || "—"}`,
+  type ? `Type: ${type}` : null,
+  bedsNum ? `Beds: ${bedsNum}` : null,
+  sizeSqft ? `Size: ${formatSqft(sizeSqft)} sqft` : null,
+].filter(Boolean).join(" | ");
+
+const shareMessage = `${shareText}\n${shareUrl}`;
+
+const [copied, setCopied] = useState(false);
+
+async function onCopyLink() {
+  try {
+    await navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  } catch {
+    window.prompt("Copy link:", shareUrl);
+  }
+}
+
+function onShareWhatsApp() {
+  const url = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+function onShareTelegram() {
+  const url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
+  
   // ✅ 波动范围
   const band = useMemo(() => {
     const lo = Number(minFinal);
@@ -790,7 +833,24 @@ export default function ResultClient() {
                     <li>{t("result.how.factors.size")}</li>
                     <li>{t("result.how.factors.activity")}</li>
                   </ul>
+                  
                   {t("result.how.footer")}
+                  {/* ✅ Community 说明（先用英文，后面你再补多语言到 messages） */}
+<div
+  style={{
+    marginTop: 10,
+    fontSize: 13,
+    color: "#334155",
+    fontWeight: 700,
+    lineHeight: 1.55,
+  }}
+>
+  {community
+    ? matched === "community"
+      ? `Community-level match ✓ We prioritized community-specific ranges for a tighter estimate.`
+      : `Community selected, but this estimate used area-level data (no community match found).`
+    : `Tip: Select a Community (optional) to get a more precise, tighter range when available.`}
+</div>
                 </div>
               </div>
 
@@ -1037,12 +1097,20 @@ export default function ResultClient() {
               <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>{t("result.inputs.title")}</div>
 
               <div style={{ display: "grid", gap: 10 }}>
-                {[
-                  [t("result.inputs.area"), area || "—"],
-                  [t("result.inputs.type"), type || "—"],
-                  [t("result.inputs.bedrooms"), beds || "—"],
-                  [t("result.inputs.size"), formatSqft(sizeSqft)],
-                  [t("result.inputs.parking"), refineData?.parking ? refineData.parking : "—"],
+               {[
+  [t("result.inputs.area"), area || "—"],
+
+  ...(community
+    ? [[
+        "Community",
+        matched === "community" ? `${community} ✓` : community,
+      ]]
+    : []),
+
+  [t("result.inputs.type"), type || "—"],
+  [t("result.inputs.bedrooms"), beds || "—"],
+  [t("result.inputs.size"), formatSqft(sizeSqft)],
+  [t("result.inputs.parking"), refineData?.parking ? refineData.parking : "—"],
                 ].map(([k, v]) => (
                   <div
                     key={String(k)}
@@ -1068,7 +1136,90 @@ export default function ResultClient() {
             <div style={{ fontSize: 12, color: "#94a3b8", padding: "0 4px" }}>{t("result.disclaimer")}</div>
           </div>
         </div>
+{/* SHARE (Brand styled WhatsApp / Telegram / Copy) */}
+<div
+  style={{
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 18,
+    background: "linear-gradient(180deg,#f8fafc,#ffffff)",
+    border: "1px solid #e2e8f0",
+  }}
+>
+  <div
+    style={{
+      fontSize: 13,
+      fontWeight: 900,
+      color: "#0f172a",
+      marginBottom: 12,
+      letterSpacing: -0.2,
+    }}
+  >
+    Share this estimate
+  </div>
 
+  <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+    <button
+      type="button"
+      onClick={onShareWhatsApp}
+      style={{
+        padding: "12px 16px",
+        borderRadius: 14,
+        border: "none",
+        background: "#25D366",
+        color: "#ffffff",
+        fontWeight: 900,
+        cursor: "pointer",
+      }}
+    >
+      WhatsApp
+    </button>
+
+    <button
+      type="button"
+      onClick={onShareTelegram}
+      style={{
+        padding: "12px 16px",
+        borderRadius: 14,
+        border: "none",
+        background: "#229ED9",
+        color: "#ffffff",
+        fontWeight: 900,
+        cursor: "pointer",
+      }}
+    >
+      Telegram
+    </button>
+
+    <button
+      type="button"
+      onClick={onCopyLink}
+      style={{
+        padding: "12px 16px",
+        borderRadius: 14,
+        border: "1px solid #e2e8f0",
+        background: copied ? "#dcfce7" : "#ffffff",
+        color: "#0f172a",
+        fontWeight: 900,
+        cursor: "pointer",
+      }}
+    >
+      {copied ? "Copied ✓" : "Copy link"}
+    </button>
+  </div>
+
+  <div
+    style={{
+      marginTop: 12,
+      fontSize: 12,
+      color: "#64748b",
+      fontWeight: 700,
+      lineHeight: 1.55,
+    }}
+  >
+    Tip: Share this estimate with a friend to compare prices in the same area or community.
+  </div>
+</div>
         {/* Help card */}
         <div
           style={{
