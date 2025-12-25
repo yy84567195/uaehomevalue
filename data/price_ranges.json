@@ -1379,6 +1379,92 @@
       "min": 26000000,
       "max": 52000000
     }
+    ,
+    { "area": "Dubai Marina", "community": "52|42", "type": "Apartment", "beds": 3, "min": 4300000, "max": 6500000 },
+    { "area": "Dubai Marina", "community": "Damac Heights", "type": "Apartment", "beds": 1, "min": 1600000, "max": 2500000 },
+    { "area": "Dubai Marina", "community": "Damac Heights", "type": "Apartment", "beds": 2, "min": 2550000, "max": 3900000 },
+    { "area": "Dubai Marina", "community": "Damac Heights", "type": "Apartment", "beds": 3, "min": 4100000, "max": 6200000 },
+    { "area": "Dubai Marina", "community": "Ocean Heights", "type": "Apartment", "beds": 1, "min": 1300000, "max": 2000000 },
+    { "area": "Dubai Marina", "community": "Ocean Heights", "type": "Apartment", "beds": 2, "min": 2050000, "max": 3200000 },
+    { "area": "Dubai Marina", "community": "Ocean Heights", "type": "Apartment", "beds": 3, "min": 3300000, "max": 5000000 },
+    { "area": "Dubai Marina", "community": "Elite Residence", "type": "Apartment", "beds": 1, "min": 1250000, "max": 1850000 },
+    { "area": "Dubai Marina", "community": "Elite Residence", "type": "Apartment", "beds": 2, "min": 1900000, "max": 2950000 },
+    { "area": "Dubai Marina", "community": "Elite Residence", "type": "Apartment", "beds": 3, "min": 3100000, "max": 4600000 },
+    { "area": "Dubai Marina", "community": "Stella Maris", "type": "Apartment", "beds": 1, "min": 1350000, "max": 2100000 },
+    { "area": "Dubai Marina", "community": "Stella Maris", "type": "Apartment", "beds": 2, "min": 2150000, "max": 3300000 },
+    { "area": "Dubai Marina", "community": "Stella Maris", "type": "Apartment", "beds": 3, "min": 3400000, "max": 5200000 },
+    { "area": "Dubai Marina", "community": "Marina Quays", "type": "Apartment", "beds": 1, "min": 1200000, "max": 1800000 },
+    { "area": "Dubai Marina", "community": "Marina Quays", "type": "Apartment", "beds": 2, "min": 1850000, "max": 2900000 },
+    { "area": "Dubai Marina", "community": "Marina Quays", "type": "Apartment", "beds": 3, "min": 3000000, "max": 4400000 },
+    { "area": "Dubai Marina", "community": "The Address Dubai Marina", "type": "Apartment", "beds": 1, "min": 1700000, "max": 2600000 },
+    { "area": "Dubai Marina", "community": "The Address Dubai Marina", "type": "Apartment", "beds": 2, "min": 2700000, "max": 4200000 },
+    { "area": "Dubai Marina", "community": "The Address Dubai Marina", "type": "Apartment", "beds": 3, "min": 4300000, "max": 6500000 },
+
+    { "area": "Downtown Dubai", "community": "Boulevard Point", "type": "Apartment", "beds": 1, "min": 1700000, "max": 2550000 },
+    { "area": "Downtown Dubai", "community": "Boulevard Point", "type": "Apartment", "beds": 2, "min": 2600000, "max": 3900000 },
+    { "area": "Downtown Dubai", "community": "Boulevard Point", "type": "Apartment", "beds": 3, "min": 4200000, "max": 6100000 },
+    { "area": "Downtown Dubai", "community": "Act One | Act Two", "type": "Apartment", "beds": 1, "min": 1650000, "max": 2450000 },
+    { "area": "Downtown Dubai", "community": "Act One | Act Two", "type": "Apartment", "beds": 2, "min": 2550000, "max": 3850000 },
+    { "area": "Downtown Dubai", "community": "Act One | Act Two", "type": "Apartment", "beds": 3, "min": 4100000, "max": 6000000 },
+    { "area": "Downtown Dubai", "community": "Forte", "type": "Apartment", "beds": 1, "min": 1500000, "max": 2250000 },
+    { "area": "Downtown Dubai", "community": "Forte", "type": "Apartment", "beds": 2, "min": 2350000, "max": 3600000 },
+    { "area": "Downtown Dubai", "community": "Forte", "type": "Apartment", "beds": 3, "min": 3900000, "max": 5700000 },
+    { "area": "Downtown Dubai", "community": "Claren Towers", "type": "Apartment", "beds": 1, "min": 1400000, "max": 2100000 },
+    { "area": "Downtown Dubai", "community": "Claren Towers", "type": "Apartment", "beds": 2, "min": 2200000, "max": 3300000 },
+    { "area": "Downtown Dubai", "community": "Claren Towers", "type": "Apartment", "beds": 3, "min": 3600000, "max": 5200000 },
+    { "area": "Downtown Dubai", "community": "Old Town (Reehan/Zanzabeel)", "type": "Apartment", "beds": 1, "min": 1600000, "max": 2450000 },
+    { "area": "Downtown Dubai", "community": "Old Town (Reehan/Zanzabeel)", "type": "Apartment", "beds": 2, "min": 2600000, "max": 3900000 },
+    { "area": "Downtown Dubai", "community": "Old Town (Reehan/Zanzabeel)", "type": "Apartment", "beds": 3, "min": 4200000, "max": 6500000 },
+
+    { "area": "Business Bay", "community": "Canal Crown", "type": "Apartment", "beds": 1, "min": 1200000, "max": 1850000 },
+    { "area": "Business Bay", "community": "Canal Crown", "type": "Apartment", "beds": 2, "min": 1950000, "max": 3000000 },
+    { "area": "Business Bay", "community": "Canal Crown", "type": "Apartment", "beds": 3, "min": 3150000, "max": 4700000 },
+    { "area": "Business Bay", "community": "Aykon City", "type": "Apartment", "beds": 1, "min": 1050000, "max": 1650000 },
+    { "area": "Business Bay", "community": "Aykon City", "type": "Apartment", "beds": 2, "min": 1750000, "max": 2750000 },
+    { "area": "Business Bay", "community": "Aykon City", "type": "Apartment", "beds": 3, "min": 2850000, "max": 4300000 },
+    { "area": "Business Bay", "community": "Peninsula", "type": "Apartment", "beds": 1, "min": 1150000, "max": 1750000 },
+    { "area": "Business Bay", "community": "Peninsula", "type": "Apartment", "beds": 2, "min": 1850000, "max": 2850000 },
+    { "area": "Business Bay", "community": "Peninsula", "type": "Apartment", "beds": 3, "min": 3000000, "max": 4600000 },
+
+    { "area": "JBR", "community": "Murjan", "type": "Apartment", "beds": 1, "min": 1550000, "max": 2400000 },
+    { "area": "JBR", "community": "Murjan", "type": "Apartment", "beds": 2, "min": 2650000, "max": 4200000 },
+    { "area": "JBR", "community": "Murjan", "type": "Apartment", "beds": 3, "min": 4300000, "max": 6800000 },
+
+    { "area": "JLT", "community": "Cluster K", "type": "Apartment", "beds": 1, "min": 920000, "max": 1420000 },
+    { "area": "JLT", "community": "Cluster K", "type": "Apartment", "beds": 2, "min": 1600000, "max": 2500000 },
+    { "area": "JLT", "community": "Cluster K", "type": "Apartment", "beds": 3, "min": 2800000, "max": 4100000 },
+
+    { "area": "DIFC", "community": "Index Tower", "type": "Apartment", "beds": 1, "min": 1750000, "max": 2650000 },
+    { "area": "DIFC", "community": "Index Tower", "type": "Apartment", "beds": 2, "min": 2950000, "max": 4700000 },
+    { "area": "DIFC", "community": "Index Tower", "type": "Apartment", "beds": 3, "min": 5100000, "max": 8200000 },
+    { "area": "DIFC", "community": "Central Park Towers", "type": "Apartment", "beds": 1, "min": 1650000, "max": 2550000 },
+    { "area": "DIFC", "community": "Central Park Towers", "type": "Apartment", "beds": 2, "min": 2850000, "max": 4500000 },
+    { "area": "DIFC", "community": "Central Park Towers", "type": "Apartment", "beds": 3, "min": 4900000, "max": 8000000 },
+
+    { "area": "Dubai Creek Harbour", "community": "Creek Rise", "type": "Apartment", "beds": 3, "min": 3100000, "max": 4700000 },
+    { "area": "Dubai Creek Harbour", "community": "Harbour Views", "type": "Apartment", "beds": 3, "min": 3250000, "max": 4900000 },
+    { "area": "Dubai Creek Harbour", "community": "Creek Gate", "type": "Apartment", "beds": 3, "min": 3200000, "max": 4850000 },
+
+    { "area": "Dubai Harbour", "type": "Apartment", "beds": 3, "min": 4600000, "max": 7600000 },
+    { "area": "Dubai Harbour", "community": "Emaar Beachfront (General)", "type": "Apartment", "beds": 1, "min": 1650000, "max": 2550000 },
+    { "area": "Dubai Harbour", "community": "Emaar Beachfront (General)", "type": "Apartment", "beds": 2, "min": 2750000, "max": 4400000 },
+    { "area": "Dubai Harbour", "community": "Emaar Beachfront (General)", "type": "Apartment", "beds": 3, "min": 4500000, "max": 7400000 },
+
+    { "area": "Bluewaters Island", "type": "Apartment", "beds": 3, "min": 6000000, "max": 9500000 },
+    { "area": "Bluewaters Island", "community": "Bluewaters Residences", "type": "Apartment", "beds": 3, "min": 6300000, "max": 9800000 },
+
+    { "area": "City Walk", "type": "Apartment", "beds": 3, "min": 4200000, "max": 6800000 },
+
+    { "area": "MBR City", "type": "Apartment", "beds": 1, "min": 1250000, "max": 1900000 },
+    { "area": "MBR City", "type": "Apartment", "beds": 2, "min": 2000000, "max": 3200000 },
+    { "area": "MBR City", "type": "Apartment", "beds": 3, "min": 3300000, "max": 5200000 },
+    { "area": "MBR City", "community": "Sobha Hartland", "type": "Apartment", "beds": 1, "min": 1200000, "max": 1850000 },
+    { "area": "MBR City", "community": "Sobha Hartland", "type": "Apartment", "beds": 2, "min": 1950000, "max": 3100000 },
+    { "area": "MBR City", "community": "Sobha Hartland", "type": "Apartment", "beds": 3, "min": 3250000, "max": 5100000 },
+
+    { "area": "Palm Jumeirah", "community": "Golden Mile", "type": "Apartment", "beds": 1, "min": 2400000, "max": 4000000 },
+    { "area": "Palm Jumeirah", "community": "Golden Mile", "type": "Apartment", "beds": 2, "min": 3900000, "max": 7000000 },
+    { "area": "Palm Jumeirah", "community": "Golden Mile", "type": "Apartment", "beds": 3, "min": 7200000, "max": 12000000 }
   ],
   "comps": [
     {
@@ -1552,5 +1638,21 @@
       "price": 31500000,
       "date": "2025-09"
     }
+    ,
+    { "area": "Dubai Marina", "community": "52|42", "label": "52|42 (sample)", "beds": 2, "size_sqft": 1285, "price": 3350000, "date": "2025-08" },
+    { "area": "Dubai Marina", "community": "Cayan Tower", "label": "Cayan Tower (sample)", "beds": 2, "size_sqft": 1400, "price": 2950000, "date": "2025-09" },
+    { "area": "Dubai Marina", "community": "Damac Heights", "label": "Damac Heights (sample)", "beds": 1, "size_sqft": 890, "price": 1950000, "date": "2025-10" },
+    { "area": "Dubai Marina", "community": "Stella Maris", "label": "Stella Maris (sample)", "beds": 1, "size_sqft": 760, "price": 1550000, "date": "2025-09" },
+
+    { "area": "Downtown Dubai", "community": "Forte", "label": "Forte (sample)", "beds": 2, "size_sqft": 1100, "price": 3050000, "date": "2025-10" },
+    { "area": "Downtown Dubai", "community": "Claren Towers", "label": "Claren Towers (sample)", "beds": 1, "size_sqft": 780, "price": 1650000, "date": "2025-08" },
+    { "area": "Downtown Dubai", "community": "The Residences", "label": "The Residences (sample)", "beds": 3, "size_sqft": 1950, "price": 5650000, "date": "2025-07" },
+
+    { "area": "DIFC", "community": "Index Tower", "label": "Index Tower (sample)", "beds": 2, "size_sqft": 1650, "price": 3950000, "date": "2025-09" },
+
+    { "area": "Dubai Harbour", "community": "Beach Vista", "label": "Beach Vista (sample)", "beds": 2, "size_sqft": 1320, "price": 3550000, "date": "2025-09" },
+    { "area": "Dubai Harbour", "community": "Sunrise Bay", "label": "Sunrise Bay (sample)", "beds": 1, "size_sqft": 760, "price": 1850000, "date": "2025-08" },
+
+    { "area": "Palm Jumeirah", "community": "Golden Mile", "label": "Golden Mile (sample)", "beds": 1, "size_sqft": 1150, "price": 3150000, "date": "2025-10" }
   ]
 }
