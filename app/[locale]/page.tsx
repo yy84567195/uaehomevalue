@@ -2,8 +2,8 @@
 
 import { useTranslations, useLocale } from "next-intl";
 import { useMemo, useState } from "react";
-import type { CSSProperties } from "react";
 import data from "@/data/price_ranges.json";
+import styles from "./HomePage.module.css";
 
 type PropertyType = "Apartment" | "Villa";
 
@@ -30,8 +30,7 @@ export default function HomePage() {
     for (const r of rows) {
       const a = String(r?.area ?? "").trim();
       const cRaw = (r as any)?.community;
-      const c = String((cRaw ?? a) || "").trim(); // fallback: 没有 community 就用 area
-
+      const c = String((cRaw ?? a) || "").trim(); // fallback
       if (!a || !c) continue;
       if (!map[a]) map[a] = new Set();
       map[a].add(c);
@@ -52,10 +51,7 @@ export default function HomePage() {
   const [community, setCommunity] = useState<string>(""); // optional
   const [type, setType] = useState<PropertyType>("Apartment");
   const [beds, setBeds] = useState<number>(2);
-
-  // 用 string 存面积，允许清空
   const [sizeSqftText, setSizeSqftText] = useState<string>("1250");
-
   const [loading, setLoading] = useState<boolean>(false);
 
   // ✅ 用 error code 存储，更稳：不会出现 NO_DATA 直接展示出来
@@ -113,7 +109,6 @@ export default function HomePage() {
       if (!res.ok || out?.error) {
         const e = String(out?.error || "");
 
-        // 兼容：后端如果直接返回英文句子，也能映射到 code
         if (e === "NO_DATA" || e.includes("No estimate available")) {
           setErrCode("NO_DATA_AREA_COMMUNITY");
         } else if (e === "INVALID_INPUT" || e.includes("Invalid")) {
@@ -153,189 +148,129 @@ export default function HomePage() {
     }
   }
 
-  const labelStyle: CSSProperties = {
-    fontSize: 14,
-    fontWeight: 800,
-    color: "#0f172a",
-    marginBottom: 8,
-  };
-
-  const inputStyle: CSSProperties = {
-    width: "100%",
-    padding: "14px 14px",
-    borderRadius: 14,
-    border: "1px solid #cbd5e1",
-    background: "#ffffff",
-    color: "#0f172a",
-    fontSize: 16,
-    fontWeight: 700,
-    outline: "none",
-  };
-
-  const helperStyle: CSSProperties = {
-    fontSize: 13,
-    color: "#334155",
-    marginTop: 10,
-    lineHeight: 1.55,
-  };
-
   return (
-    <div style={{ minHeight: "100vh", background: "#ffffff", padding: "36px 16px", color: "#0f172a" }}>
-      <div style={{ maxWidth: 920, margin: "0 auto" }}>
-        {/* Logo Header */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
-          <img src="/logo.png" alt="UAEHomeValue" style={{ height: 36 }} />
-          <div style={{ fontWeight: 900, fontSize: 18 }}>UAEHomeValue</div>
+    <div className={styles.page}>
+      <div className={styles.container}>
+        {/* Top bar */}
+        <div className={styles.topBar}>
+          <div className={styles.brand}>
+            <img src="/logo.png" alt="UAEHomeValue" className={styles.logo} />
+            <div className={styles.brandTitle}>UAEHomeValue</div>
+          </div>
+          {/* 如果你的 LanguageSwitcher 已在 layout 右上角，这里不用放 */}
         </div>
 
-        {/* HERO */}
-        <h1 style={{ fontSize: 34, fontWeight: 950, letterSpacing: -0.6, margin: 0, lineHeight: 1.12 }}>
-          {tHome("title")}
-        </h1>
+        <div className={styles.heroGrid}>
+          {/* Left */}
+          <section className={`${styles.card} ${styles.heroLeft}`}>
+            <h1 className={styles.h1}>{tHome("title")}</h1>
+            <p className={styles.p}>{tHome("subtitle")}</p>
 
-        <p style={{ marginTop: 10, color: "#334155", fontSize: 16, fontWeight: 700, lineHeight: 1.45 }}>
-          {tHome("subtitle")}
-        </p>
-
-        {/* Trust badges */}
-        <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {[
-            tHome("badges.fast"),
-            tHome("badges.areaCommunity"),
-            tHome("badges.noAgents"),
-            tHome("badges.noAds"),
-            tHome("badges.noSpam"),
-          ].map((txt) => (
-            <div
-              key={txt}
-              style={{
-                fontSize: 12,
-                fontWeight: 900,
-                padding: "6px 10px",
-                borderRadius: 999,
-                background: "#f1f5f9",
-                color: "#0f172a",
-                border: "1px solid #e2e8f0",
-              }}
-            >
-              {txt}
-            </div>
-          ))}
-        </div>
-
-        <div
-          style={{
-            marginTop: 22,
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-            gap: 16,
-          }}
-        >
-          {/* Area */}
-          <div>
-            <div style={labelStyle}>{tHome("area")}</div>
-            <select
-              value={area}
-              onChange={(e) => {
-                const nextArea = e.target.value;
-                setArea(nextArea);
-                setCommunity(""); // 切换大区域清空小区
-              }}
-              style={inputStyle}
-            >
-              {areas.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
+            <div className={styles.heroBadges}>
+              {[
+                tHome("badges.fast"),
+                tHome("badges.areaCommunity"),
+                tHome("badges.noAgents"),
+                tHome("badges.noAds"),
+                tHome("badges.noSpam"),
+              ].map((txt) => (
+                <span key={txt} className={styles.badge}>
+                  {txt}
+                </span>
               ))}
-            </select>
-          </div>
-
-          {/* Community (optional) */}
-          <div>
-            <div style={labelStyle}>{tHome("community")}</div>
-            <select value={community} onChange={(e) => setCommunity(e.target.value)} style={inputStyle}>
-              <option value="">{tHome("communityAll")}</option>
-              {communitiesForArea.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Type */}
-          <div>
-            <div style={labelStyle}>{tHome("type")}</div>
-            <select value={type} onChange={(e) => setType(e.target.value as PropertyType)} style={inputStyle}>
-              <option value="Apartment">{tHome("typeOptions.apartment")}</option>
-              <option value="Villa">{tHome("typeOptions.villa")}</option>
-            </select>
-          </div>
-
-          {/* Bedrooms */}
-          <div>
-            <div style={labelStyle}>{tHome("beds")}</div>
-            <select
-              value={beds === 6 ? "4plus" : String(beds)}
-              onChange={(e) => {
-                const v = e.target.value;
-                // ✅ 4+ → 直接当 6 传给后端（后端做 fallback）
-                setBeds(v === "4plus" ? 6 : Number(v));
-              }}
-              style={inputStyle}
-            >
-              <option value="0">{tHome("bedsOptions.studio")}</option>
-              <option value="1">{tHome("bedsOptions.1")}</option>
-              <option value="2">{tHome("bedsOptions.2")}</option>
-              <option value="3">{tHome("bedsOptions.3")}</option>
-              <option value="4plus">{tHome("bedsOptions.4plus")}</option>
-            </select>
-          </div>
-
-          {/* Size */}
-          <div>
-            <div style={labelStyle}>{tHome("size")}</div>
-            <input
-              inputMode="numeric"
-              value={sizeSqftText}
-              onChange={(e) => setSizeSqftText(e.target.value.replace(/[^\d]/g, ""))}
-              placeholder={tHome("sizePlaceholder")}
-              style={inputStyle}
-            />
-            <div style={helperStyle}>{tHome("sizeTip")}</div>
-          </div>
-        </div>
-
-        <div style={{ marginTop: 22 }}>
-          <button
-            onClick={onSubmit}
-            disabled={!isValid || loading}
-            style={{
-              width: "100%",
-              padding: "16px 16px",
-              borderRadius: 16,
-              border: "none",
-              background: "#0ea5e9",
-              color: "#ffffff",
-              fontWeight: 950,
-              cursor: "pointer",
-              fontSize: 16,
-              letterSpacing: -0.2,
-              opacity: !isValid || loading ? 0.75 : 1,
-            }}
-          >
-            {loading ? tHome("button.loading") : tHome("button.default")}
-          </button>
-
-          {errText ? (
-            <div style={{ marginTop: 12, color: "#b91c1c", fontWeight: 800 }}>
-              {errText}
             </div>
-          ) : null}
-        </div>
 
-        <div style={{ marginTop: 18, fontSize: 13, color: "#64748b", fontWeight: 700 }}>{tHome("disclaimer")}</div>
+            <div className={styles.disclaimer}>{tHome("disclaimer")}</div>
+          </section>
+
+          {/* Right */}
+          <section className={`${styles.card} ${styles.formCard}`}>
+            <div className={styles.formGrid}>
+              {/* Area */}
+              <div className={styles.field}>
+                <div className={styles.label}>{tHome("area")}</div>
+                <select
+                  className={styles.control}
+                  value={area}
+                  onChange={(e) => {
+                    const nextArea = e.target.value;
+                    setArea(nextArea);
+                    setCommunity("");
+                  }}
+                >
+                  {areas.map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Community */}
+              <div className={styles.field}>
+                <div className={styles.label}>{tHome("community")}</div>
+                <select className={styles.control} value={community} onChange={(e) => setCommunity(e.target.value)}>
+                  <option value="">{tHome("communityAll")}</option>
+                  {communitiesForArea.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Type */}
+              <div className={styles.field}>
+                <div className={styles.label}>{tHome("type")}</div>
+                <select className={styles.control} value={type} onChange={(e) => setType(e.target.value as PropertyType)}>
+                  <option value="Apartment">{tHome("typeOptions.apartment")}</option>
+                  <option value="Villa">{tHome("typeOptions.villa")}</option>
+                </select>
+              </div>
+
+              {/* Bedrooms */}
+              <div className={styles.field}>
+                <div className={styles.label}>{tHome("beds")}</div>
+                <select
+                  className={styles.control}
+                  value={beds === 6 ? "4plus" : String(beds)}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setBeds(v === "4plus" ? 6 : Number(v));
+                  }}
+                >
+                  <option value="0">{tHome("bedsOptions.studio")}</option>
+                  <option value="1">{tHome("bedsOptions.1")}</option>
+                  <option value="2">{tHome("bedsOptions.2")}</option>
+                  <option value="3">{tHome("bedsOptions.3")}</option>
+                  <option value="4plus">{tHome("bedsOptions.4plus")}</option>
+                </select>
+              </div>
+
+              {/* Size */}
+              <div className={`${styles.field} ${styles.fullRow}`}>
+                <div className={styles.label}>{tHome("size")}</div>
+                <input
+                  className={styles.control}
+                  inputMode="numeric"
+                  value={sizeSqftText}
+                  onChange={(e) => setSizeSqftText(e.target.value.replace(/[^\d]/g, ""))}
+                  placeholder={tHome("sizePlaceholder")}
+                />
+                <div className={styles.helper}>{tHome("sizeTip")}</div>
+              </div>
+
+              {/* Submit */}
+              <div className={`${styles.fullRow} ${styles.actions}`}>
+                <button className={styles.btnPrimary} onClick={onSubmit} disabled={!isValid || loading}>
+                  {loading ? tHome("button.loading") : tHome("button.default")}
+                </button>
+
+                {errText ? <div className={styles.error}>{errText}</div> : null}
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );

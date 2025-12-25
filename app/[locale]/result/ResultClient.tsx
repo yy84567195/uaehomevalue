@@ -2,7 +2,7 @@
 
 import { useTranslations, useLocale } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
-import type { CSSProperties } from "react";
+import styles from "./ResultClient.module.css";
 import { formatAED } from "@/lib/estimator";
 
 function getParam(name: string) {
@@ -57,26 +57,10 @@ function sparkPath(values: number[], w = 220, h = 56, pad = 6) {
 
 function valueAdjustments(t: (key: string) => string) {
   return [
-    {
-      label: t("result.adjustments.seaView.label"),
-      impact: t("result.adjustments.seaView.impact"),
-      note: t("result.adjustments.seaView.note"),
-    },
-    {
-      label: t("result.adjustments.highFloor.label"),
-      impact: t("result.adjustments.highFloor.impact"),
-      note: t("result.adjustments.highFloor.note"),
-    },
-    {
-      label: t("result.adjustments.upgraded.label"),
-      impact: t("result.adjustments.upgraded.impact"),
-      note: t("result.adjustments.upgraded.note"),
-    },
-    {
-      label: t("result.adjustments.lowFloorRoad.label"),
-      impact: t("result.adjustments.lowFloorRoad.impact"),
-      note: t("result.adjustments.lowFloorRoad.note"),
-    },
+    { label: t("result.adjustments.seaView.label"), impact: t("result.adjustments.seaView.impact"), note: t("result.adjustments.seaView.note") },
+    { label: t("result.adjustments.highFloor.label"), impact: t("result.adjustments.highFloor.impact"), note: t("result.adjustments.highFloor.note") },
+    { label: t("result.adjustments.upgraded.label"), impact: t("result.adjustments.upgraded.impact"), note: t("result.adjustments.upgraded.note") },
+    { label: t("result.adjustments.lowFloorRoad.label"), impact: t("result.adjustments.lowFloorRoad.impact"), note: t("result.adjustments.lowFloorRoad.note") },
   ];
 }
 
@@ -86,7 +70,6 @@ export default function ResultClient() {
 
   // 🔹 refine form state
   const [showRefine, setShowRefine] = useState(false);
-
   const [refineData, setRefineData] = useState({
     building: "",
     floor: "",
@@ -96,95 +79,98 @@ export default function ResultClient() {
     expectedPrice: "",
     amenities: [] as string[],
   });
+const [showMap, setShowMap] = useState(false);
 
-  const [refineResult, setRefineResult] = useState<null | {
-    min: number;
-    max: number;
-    note: string;
-  }>(null);
+useEffect(() => {
+  const el = document.getElementById("map-anchor");
+  if (!el) return;
+
+  const io = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        setShowMap(true);
+        io.disconnect();
+      }
+    },
+    { rootMargin: "300px" }
+  );
+
+  io.observe(el);
+  return () => io.disconnect();
+}, []);
+  const [refineResult, setRefineResult] = useState<null | { min: number; max: number; note: string }>(null);
 
   const [minOverride, setMinOverride] = useState<number | null>(null);
   const [maxOverride, setMaxOverride] = useState<number | null>(null);
   const [confidenceOverride, setConfidenceOverride] = useState<string | null>(null);
 
-  const [isMobile, setIsMobile] = useState(false);
 
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
+  // URL params
+  const area = useMemo(() => getParam("area"), []);
+  const community = useMemo(() => getParam("community"), []);
+  const building = useMemo(() => getParam("building"), []);
+  const type = useMemo(() => getParam("type"), []);
+  const beds = useMemo(() => getParam("beds"), []);
+  const bedsLabel = useMemo(() => {
+    const b = Number(beds);
+    if (!Number.isFinite(b)) return "";
+    if (b === 0) return "Studio";
+    if (b >= 4) return "4+";
+    return String(b);
+  }, [beds]);
 
-// URL params
-const area = useMemo(() => getParam("area"), []);
-const community = useMemo(() => getParam("community"), []);
-const building = useMemo(() => getParam("building"), []); // ✅ 新增：building
-const type = useMemo(() => getParam("type"), []);
-const beds = useMemo(() => getParam("beds"), []);
-// ✅ beds label for display (0 => Studio, 6 => 4+)
-const bedsLabel = useMemo(() => {
-  const b = Number(beds);
-  if (!Number.isFinite(b)) return "";
-  if (b === 0) return "Studio";
-  if (b >= 4) return "4+";
-  return String(b);
-}, [beds]);
-const sizeSqftStr = useMemo(() => getParam("sizeSqft"), []);
-const min = useMemo(() => Number(getParam("min") || 0), []);
-const max = useMemo(() => Number(getParam("max") || 0), []);
-const confidence = useMemo(() => getParam("confidence") || "Medium", []);
-const matched = useMemo(() => getParam("matched"), []);
+  const sizeSqftStr = useMemo(() => getParam("sizeSqft"), []);
+  const min = useMemo(() => Number(getParam("min") || 0), []);
+  const max = useMemo(() => Number(getParam("max") || 0), []);
+  const confidence = useMemo(() => getParam("confidence") || "Medium", []);
+  const matched = useMemo(() => getParam("matched"), []);
 
-const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
-// ✅ 先计算最终显示值（refine override 优先）
-const minFinal = minOverride ?? min;
-const maxFinal = maxOverride ?? max;
-const confidenceFinal = confidenceOverride ?? confidence;
+  // ✅ refine override 优先
+  const minFinal = minOverride ?? min;
+  const maxFinal = maxOverride ?? max;
+  const confidenceFinal = confidenceOverride ?? confidence;
 
-// Parse numbers (so share text looks good)
-const bedsNum = useMemo(() => Number(beds || 0), [beds]);
+  const bedsNum = useMemo(() => Number(beds || 0), [beds]);
+  const sizeSqft = useMemo(() => Number(sizeSqftStr || 0), [sizeSqftStr]);
 
-// ✅ 只保留这一份 sizeSqft（避免重复声明导致红）
-const sizeSqft = useMemo(() => Number(sizeSqftStr || 0), [sizeSqftStr]);
+  const shareText = [
+    `UAEHomeValue estimate: ${formatAedShort(minFinal)}–${formatAedShort(maxFinal)}`,
+    community ? `Community: ${community}${matched === "community" ? " ✓" : ""}` : null,
+    `Area: ${area || "—"}`,
+    type ? `Type: ${type}` : null,
+    bedsNum ? `Beds: ${bedsNum}` : null,
+    sizeSqft ? `Size: ${formatSqft(sizeSqft)} sqft` : null,
+  ]
+    .filter(Boolean)
+    .join(" | ");
 
-const shareText = [
-  `UAEHomeValue estimate: ${formatAedShort(minFinal)}–${formatAedShort(maxFinal)}`,
-  community ? `Community: ${community}${matched === "community" ? " ✓" : ""}` : null,
-  `Area: ${area || "—"}`,
-  type ? `Type: ${type}` : null,
-  bedsNum ? `Beds: ${bedsNum}` : null,
-  sizeSqft ? `Size: ${formatSqft(sizeSqft)} sqft` : null,
-].filter(Boolean).join(" | ");
+  const shareMessage = `${shareText}\n${shareUrl}`;
+  const [copied, setCopied] = useState(false);
 
-const shareMessage = `${shareText}\n${shareUrl}`;
-
-const [copied, setCopied] = useState(false);
-
-async function onCopyLink() {
-  try {
-    await navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  } catch {
-    window.prompt("Copy link:", shareUrl);
+  async function onCopyLink() {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      window.prompt("Copy link:", shareUrl);
+    }
   }
-}
 
-function onShareWhatsApp() {
-  const url = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`;
-  window.open(url, "_blank", "noopener,noreferrer");
-}
+  function onShareWhatsApp() {
+    const url = `https://wa.me/?text=${encodeURIComponent(shareMessage)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
 
-function onShareTelegram() {
-  const url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
-  window.open(url, "_blank", "noopener,noreferrer");
-}
+  function onShareTelegram() {
+    const url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
 
-const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
-  
-  // ✅ 波动范围
+  const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
+
   const band = useMemo(() => {
     const lo = Number(minFinal);
     const hi = Number(maxFinal);
@@ -202,7 +188,6 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
     return { rangePct, likelyPct };
   }, [minFinal, maxFinal, confidenceFinal]);
 
-  // ✅ Likely range（更窄的“可能成交区间”）
   const likely = useMemo(() => {
     if (!minFinal || !maxFinal || !mid || maxFinal <= minFinal) {
       return { likelyMin: minFinal, likelyMax: maxFinal, bandPct: 0 };
@@ -220,7 +205,6 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
     return { likelyMin, likelyMax, bandPct };
   }, [minFinal, maxFinal, mid, confidenceFinal]);
 
-  // ✅ Back-to-input links（带 locale）
   const changeInputsUrl = useMemo(() => {
     const params = new URLSearchParams();
     if (area) params.set("area", area);
@@ -233,30 +217,18 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
 
   const homeUrl = useMemo(() => `/${locale}`, [locale]);
 
-  // Google Maps (no API key)
-  const mapsQuery = useMemo(() => {
-    const q = `${area || "Dubai"}, UAE`;
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
-  }, [area]);
-
-  const mapsEmbed = useMemo(() => {
-    const q = `${area || "Dubai"}, UAE`;
-    return `https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
-  }, [area]);
-
-  // Seeded “market signals”
   const seed = useMemo(
     () => `${area}|${type}|${beds}|${sizeSqftStr}|${minFinal}|${maxFinal}`,
     [area, type, beds, sizeSqftStr, minFinal, maxFinal]
   );
+
   const base01 = useMemo(() => hashTo01(seed), [seed]);
 
-  // Trend (90 days) - 12 points
   const trend = useMemo(() => {
     const points = 12;
     const out: number[] = [];
-    const drift = (base01 - 0.5) * 0.06; // -3%..+3% drift
-    const vol = 0.012 + base01 * 0.01; // 1.2%..2.2% wiggle
+    const drift = (base01 - 0.5) * 0.06; // -3%..+3%
+    const vol = 0.012 + base01 * 0.01; // 1.2%..2.2%
     const start = mid > 0 ? mid * (1 - drift / 2) : 0;
 
     for (let i = 0; i < points; i++) {
@@ -278,7 +250,6 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
 
   const trendPath = useMemo(() => sparkPath(trend, 240, 64, 6), [trend]);
 
-  // Rent estimate (rough)
   const rent = useMemo(() => {
     const lo = mid * 0.05;
     const hi = mid * 0.07;
@@ -292,27 +263,17 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
     };
   }, [mid]);
 
-  // Sample comps (deterministic)
   const comps = useMemo(() => {
     const count = 4;
-    const out: Array<{
-      id: string;
-      label: string;
-      beds: string;
-      size: number;
-      price: number;
-      ppsf: number;
-      deltaPct: number;
-      note: string;
-    }> = [];
+    const out: Array<{ id: string; label: string; beds: string; size: number; price: number; ppsf: number; deltaPct: number; note: string }> = [];
 
     const baseSize = sizeSqft > 0 ? sizeSqft : 1200;
     const basePrice = mid > 0 ? mid : 2_000_000;
 
     for (let i = 0; i < count; i++) {
       const r01 = hashTo01(`${seed}|comp${i}`);
-      const sizeFactor = 0.9 + r01 * 0.22; // 0.90..1.12
-      const priceFactor = 0.92 + hashTo01(`${seed}|p${i}`) * 0.22; // 0.92..1.14
+      const sizeFactor = 0.9 + r01 * 0.22;
+      const priceFactor = 0.92 + hashTo01(`${seed}|p${i}`) * 0.22;
 
       const s = Math.round(baseSize * sizeFactor);
       const p = Math.round(basePrice * priceFactor);
@@ -320,31 +281,18 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
       const delta = ((p - basePrice) / basePrice) * 100;
 
       const label =
-        i === 0
-          ? t("result.comps.bestMatch")
-          : i === 1
-          ? t("result.comps.similarLayout")
-          : i === 2
-          ? t("result.comps.nearbyBuilding")
-          : t("result.comps.recentSignal");
+        i === 0 ? t("result.comps.bestMatch") :
+        i === 1 ? t("result.comps.similarLayout") :
+        i === 2 ? t("result.comps.nearbyBuilding") :
+        t("result.comps.recentSignal");
 
-      out.push({
-        id: `c${i}`,
-        label,
-        beds: beds || "—",
-        size: s,
-        price: p,
-        ppsf,
-        deltaPct: delta,
-        note: t("result.comps.sampleNote"),
-      });
+      out.push({ id: `c${i}`, label, beds: beds || "—", size: s, price: p, ppsf, deltaPct: delta, note: t("result.comps.sampleNote") });
     }
 
     out.sort((a, b) => Math.abs(a.size - baseSize) - Math.abs(b.size - baseSize));
     return out;
   }, [seed, beds, sizeSqft, mid, t]);
 
-  // Market snapshot (derived)
   const market = useMemo(() => {
     const ppsf = sizeSqft > 0 && mid > 0 ? mid / sizeSqft : 0;
     const rangeWidthPct = mid > 0 ? ((maxFinal - minFinal) / mid) * 100 : 0;
@@ -355,52 +303,48 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
     const activityScore = confScore * 0.6 + tightScore * 0.4;
 
     const activity =
-      activityScore > 0.72
-        ? t("result.snapshot.activityHigh")
-        : activityScore > 0.5
-        ? t("result.snapshot.activityMed")
-        : t("result.snapshot.activityLow");
+      activityScore > 0.72 ? t("result.snapshot.activityHigh") :
+      activityScore > 0.5 ? t("result.snapshot.activityMed") :
+      t("result.snapshot.activityLow");
 
-    const yoy = (hashTo01(seed + "|yoy") - 0.5) * 12; // -6..+6
-    const mom = (hashTo01(seed + "|mom") - 0.5) * 4; // -2..+2
-    const dom = Math.round(18 + hashTo01(seed + "|dom") * 45); // 18..63
+    const yoy = (hashTo01(seed + "|yoy") - 0.5) * 12;
+    const mom = (hashTo01(seed + "|mom") - 0.5) * 4;
+    const dom = Math.round(18 + hashTo01(seed + "|dom") * 45);
 
     return { ppsf, rangeWidthPct, activity, yoy, mom, dom };
   }, [sizeSqft, mid, maxFinal, minFinal, confidenceFinal, seed, t]);
 
-  // Confidence badge style
-  const confColor = useMemo(() => {
+  // (保留你原本的颜色逻辑，但用“暗色可读”的值)
+  const confTone = useMemo(() => {
     const c = (confidenceFinal || "").toLowerCase();
-    if (c.includes("high")) return { bg: "#ecfeff", bd: "#a5f3fc", fg: "#0e7490" };
-    if (c.includes("med")) return { bg: "#fef9c3", bd: "#fde68a", fg: "#92400e" };
-    return { bg: "#fee2e2", bd: "#fecaca", fg: "#991b1b" };
+    if (c.includes("high")) return { cls: styles.pillPos };
+    if (c.includes("med")) return { cls: styles.badge };
+    return { cls: styles.pillNeg };
   }, [confidenceFinal]);
 
-  const pad = isMobile ? 14 : 18;
-  const pagePad = isMobile ? "20px 14px" : "40px 16px";
-
-  const inputStyle: CSSProperties = {
+  // input style（保留少量 inline，避免再建很多 class；也可以以后继续 module 化）
+  const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "12px 12px",
     borderRadius: 12,
-    border: "1px solid #e2e8f0",
-    background: "#fff",
-    color: "#0f172a",
+    border: "1px solid var(--border)",
+    background: "rgba(255,255,255,.04)",
+    color: "var(--text)",
     fontSize: 14,
     fontWeight: 700,
     outline: "none",
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#fff", padding: pagePad, color: "#0f172a" }}>
-      <div style={{ maxWidth: 980, margin: "0 auto" }}>
-        {/* ✅ refine result modal */}
+    <div className={styles.page}>
+      <div className={styles.wrap}>
+        {/* ✅ refine result modal（保留，但改暗色遮罩/卡片） */}
         {refineResult && (
           <div
             style={{
               position: "fixed",
               inset: 0,
-              background: "rgba(15, 23, 42, 0.45)",
+              background: "rgba(0,0,0,.55)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -410,39 +354,16 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
             onClick={() => setRefineResult(null)}
           >
             <div
-              style={{
-                width: "100%",
-                maxWidth: 420,
-                background: "#fff",
-                borderRadius: 16,
-                border: "1px solid #e2e8f0",
-                padding: 16,
-                boxShadow: "0 20px 60px rgba(0,0,0,.20)",
-              }}
+              className={`${styles.card} ${styles.cardPad}`}
+              style={{ width: "100%", maxWidth: 460 }}
               onClick={(e) => e.stopPropagation()}
             >
               <div style={{ fontSize: 14, fontWeight: 950, marginBottom: 8 }}>{t("refine.modal.title")}</div>
-
               <div style={{ fontSize: 26, fontWeight: 950, letterSpacing: -0.6 }}>
-                {formatAED(refineResult.min)} <span style={{ color: "#94a3b8" }}>–</span> {formatAED(refineResult.max)}
+                {formatAED(refineResult.min)} <span style={{ color: "var(--text-muted)" }}>–</span> {formatAED(refineResult.max)}
               </div>
-
-              <div style={{ marginTop: 8, fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>{refineResult.note}</div>
-
-              <button
-                onClick={() => setRefineResult(null)}
-                style={{
-                  marginTop: 12,
-                  width: "100%",
-                  padding: "12px 12px",
-                  borderRadius: 12,
-                  border: "1px solid #e2e8f0",
-                  background: "#0ea5e9",
-                  color: "#fff",
-                  fontWeight: 950,
-                  cursor: "pointer",
-                }}
-              >
+              <div style={{ marginTop: 8, fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6 }}>{refineResult.note}</div>
+              <button className={styles.btnPrimary} style={{ marginTop: 12 }} onClick={() => setRefineResult(null)}>
                 {t("refine.modal.done")}
               </button>
             </div>
@@ -450,221 +371,100 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
         )}
 
         {/* Top bar */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-          {/* Brand */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <img
-              src="/logo.png"
-              alt="UAEHomeValue"
-              style={{
-                width: 32,
-                height: 32,
-                objectFit: "contain",
-                borderRadius: 10,
-                border: "1px solid #e2e8f0",
-                background: "#ffffff",
-                padding: 4,
-              }}
-            />
+        <div className={styles.topBar}>
+          <div className={styles.brand}>
+            <img src="/logo.png" alt="UAEHomeValue" className={styles.logo} />
             <div>
-              <div style={{ fontSize: 13, fontWeight: 950, lineHeight: 1.1 }}>UAEHomeValue</div>
-              <div style={{ fontSize: 12, color: "#64748b" }}>{t("result.brandTagline")}</div>
+              <div className={styles.brandTitle}>UAEHomeValue</div>
+              <div className={styles.brandTagline}>{t("result.brandTagline")}</div>
             </div>
           </div>
 
-          {/* Actions */}
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
-            <a href={homeUrl} style={{ textDecoration: "none" }}>
-              <button
-                style={{
-                  border: "1px solid #e2e8f0",
-                  background: "#ffffff",
-                  color: "#0f172a",
-                  padding: "10px 12px",
-                  borderRadius: 12,
-                  fontWeight: 900,
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {t("result.actions.recheck")}
-              </button>
+          <div className={styles.actions}>
+            <a href={homeUrl}>
+              <button className={styles.btnGhost}>{t("result.actions.recheck")}</button>
             </a>
-
-            <a href={changeInputsUrl} style={{ textDecoration: "none" }}>
-              <button
-                style={{
-                  border: "1px solid #0ea5e9",
-                  background: "#ffffff",
-                  color: "#0ea5e9",
-                  padding: "10px 12px",
-                  borderRadius: 12,
-                  fontWeight: 900,
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {t("result.actions.changeInputs")}
-              </button>
+            <a href={changeInputsUrl}>
+              <button className={styles.btnOutline}>{t("result.actions.changeInputs")}</button>
             </a>
           </div>
         </div>
 
         {/* Header */}
-        <div style={{ marginTop: 12 }}>
-          <h1 style={{ margin: 0, fontSize: isMobile ? 22 : 28, fontWeight: 950, letterSpacing: -0.6, lineHeight: 1.12 }}>
-            {t("result.title")}
-          </h1>
+        <div className={styles.header}>
+          <h1 className={styles.h1}>{t("result.title")}</h1>
+          <div className={styles.sub}>{t("result.subtitle")}</div>
 
-          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>{t("result.subtitle")}</div>
-
-      <div style={{ marginTop: 6, fontSize: 14, color: "#475569", lineHeight: 1.6 }}>
-  {area || "—"} • {type || "—"} •{" "}
-  {bedsLabel
-    ? bedsLabel === "studio"
-      ? t("result.header.studio")
-      : bedsLabel === "4plus"
-      ? t("result.header.bedsPlus")
-      : t("result.header.beds", { beds: bedsLabel })
-    : "—"}{" "}
-  • {formatSqft(sizeSqft)} {t("result.header.sqft")}
-</div>
+          <div className={styles.metaLine}>
+            {area || "—"} • {type || "—"} •{" "}
+            {bedsLabel ? (bedsLabel === "Studio" ? t("result.header.studio") : bedsLabel === "4+" ? t("result.header.bedsPlus") : t("result.header.beds", { beds: bedsLabel })) : "—"}{" "}
+            • {formatSqft(sizeSqft)} {t("result.header.sqft")}
+          </div>
         </div>
 
         {/* Main layout */}
-        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1.3fr 0.7fr", gap: 14, marginTop: 16 }}>
+        <div className={styles.mainGrid}>
           {/* Left column */}
-          <div style={{ display: "grid", gap: 14 }}>
+          <div className={styles.col}>
             {/* A) Value card */}
-            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: isMobile ? "column" : "row",
-                  alignItems: isMobile ? "stretch" : "center",
-                  justifyContent: "space-between",
-                  gap: 12,
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>{t("result.likelyRange")}</div>
-
-                  <div style={{ fontSize: isMobile ? 32 : 38, fontWeight: 950, letterSpacing: -1, lineHeight: 1.05 }}>
-                    {formatAED(likely.likelyMin)} <span style={{ color: "#94a3b8" }}>–</span> {formatAED(likely.likelyMax)}
+            <div className={`${styles.card} ${styles.cardPad} ${styles.cardHover}`}>
+              <div className={styles.kpiTop}>
+                <div style={{ minWidth: 0 }}>
+                  <div className={styles.kpiLabel}>{t("result.likelyRange")}</div>
+                  <div className={styles.kpiVal}>
+                    {formatAED(likely.likelyMin)} <span style={{ color: "var(--text-muted)" }}>–</span> {formatAED(likely.likelyMax)}
                   </div>
 
-                  <div style={{ marginTop: 10, fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>
-                    {t("result.conservativeRange")}:{" "}
-                    <b>
-                      {formatAED(minFinal)} – {formatAED(maxFinal)}
-                    </b>{" "}
-                    • {t("result.likelyBandWidth")}: {pct(likely.bandPct)}
+                  <div className={styles.kpiNote}>
+                    {t("result.conservativeRange")}: <b>{formatAED(minFinal)} – {formatAED(maxFinal)}</b> • {t("result.likelyBandWidth")}: {pct(likely.bandPct)}
                   </div>
 
-                  <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
-                    {t("result.lastUpdated")} • {t("result.rangeWidth")}: {pct(band.rangePct)} • {t("result.likelyVolatility")}:{" "}
-                    {pct(band.likelyPct)}
+                  <div className={styles.kpiTiny}>
+                    {t("result.lastUpdated")} • {t("result.rangeWidth")}: {pct(band.rangePct)} • {t("result.likelyVolatility")}: {pct(band.likelyPct)}
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gap: 10 }}>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      background: confColor.bg,
-                      border: `1px solid ${confColor.bd}`,
-                      color: confColor.fg,
-                      padding: "6px 10px",
-                      borderRadius: 999,
-                      fontWeight: 900,
-                      width: "fit-content",
-                    }}
-                  >
+                <div style={{ display: "grid", gap: 10, minWidth: 220 }}>
+                  <div className={confTone.cls}>
                     {t("result.confidence")}: {confidenceFinal}
                   </div>
 
-                  <button
-                    onClick={() => setShowRefine(true)}
-                    style={{
-                      border: "1px solid #0ea5e9",
-                      background: "#0ea5e9",
-                      color: "#fff",
-                      padding: "10px 12px",
-                      borderRadius: 12,
-                      fontWeight: 900,
-                      cursor: "pointer",
-                    }}
-                  >
+                  <button className={styles.btnPrimary} onClick={() => setShowRefine(true)}>
                     {t("refine.open")}
                   </button>
                 </div>
               </div>
 
-              {/* Refine form */}
+              {/* Refine form（保留功能，外观改成暗色 softCard） */}
               {showRefine && (
-                <div
-                  style={{
-                    marginTop: 16,
-                    border: "1px solid #e2e8f0",
-                    borderRadius: 16,
-                    padding: 16,
-                    background: "#f8fafc",
-                  }}
-                >
+                <div style={{ marginTop: 16 }} className={styles.softCard}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                     <div style={{ fontWeight: 950, fontSize: 15 }}>{t("refine.title")}</div>
-                    <button
-                      onClick={() => setShowRefine(false)}
-                      style={{
-                        border: "1px solid #e2e8f0",
-                        background: "#fff",
-                        padding: "6px 10px",
-                        borderRadius: 10,
-                        fontWeight: 900,
-                        cursor: "pointer",
-                      }}
-                    >
+                    <button className={styles.btnGhost} onClick={() => setShowRefine(false)} style={{ padding: "6px 10px" }}>
                       {t("refine.close")}
                     </button>
                   </div>
 
-                  <div style={{ marginTop: 8, fontSize: 12, color: "#64748b", lineHeight: 1.5 }}>{t("refine.helper")}</div>
+                  <div style={{ marginTop: 8, fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>{t("refine.helper")}</div>
 
                   <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-                    <input
-                      placeholder={t("refine.building")}
-                      value={refineData.building}
-                      onChange={(e) => setRefineData({ ...refineData, building: e.target.value })}
-                      style={inputStyle}
-                    />
+                    <input placeholder={t("refine.building")} value={refineData.building} onChange={(e) => setRefineData({ ...refineData, building: e.target.value })} style={inputStyle} />
 
-                    <select
-                      value={refineData.floor}
-                      onChange={(e) => setRefineData({ ...refineData, floor: e.target.value })}
-                      style={inputStyle}
-                    >
+                    <select value={refineData.floor} onChange={(e) => setRefineData({ ...refineData, floor: e.target.value })} style={inputStyle}>
                       <option value="">{t("refine.floor")}</option>
                       <option value="low">{t("refine.floorOptions.low")}</option>
                       <option value="mid">{t("refine.floorOptions.mid")}</option>
                       <option value="high">{t("refine.floorOptions.high")}</option>
                     </select>
 
-                    <select
-                      value={refineData.view}
-                      onChange={(e) => setRefineData({ ...refineData, view: e.target.value })}
-                      style={inputStyle}
-                    >
+                    <select value={refineData.view} onChange={(e) => setRefineData({ ...refineData, view: e.target.value })} style={inputStyle}>
                       <option value="">{t("refine.view")}</option>
                       <option value="sea">{t("refine.viewOptions.sea")}</option>
                       <option value="city">{t("refine.viewOptions.city")}</option>
                       <option value="road">{t("refine.viewOptions.road")}</option>
                     </select>
 
-                    <select
-                      value={refineData.condition}
-                      onChange={(e) => setRefineData({ ...refineData, condition: e.target.value })}
-                      style={inputStyle}
-                    >
+                    <select value={refineData.condition} onChange={(e) => setRefineData({ ...refineData, condition: e.target.value })} style={inputStyle}>
                       <option value="">{t("refine.condition")}</option>
                       <option value="original">{t("refine.conditionOptions.original")}</option>
                       <option value="good">{t("refine.conditionOptions.good")}</option>
@@ -672,11 +472,7 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
                       <option value="renovated">{t("refine.conditionOptions.renovated")}</option>
                     </select>
 
-                    <select
-                      value={refineData.parking}
-                      onChange={(e) => setRefineData({ ...refineData, parking: e.target.value })}
-                      style={inputStyle}
-                    >
+                    <select value={refineData.parking} onChange={(e) => setRefineData({ ...refineData, parking: e.target.value })} style={inputStyle}>
                       <option value="">{t("refine.parking")}</option>
                       <option value="0">{t("refine.parkingOptions.none")}</option>
                       <option value="1">{t("refine.parkingOptions.one")}</option>
@@ -684,9 +480,9 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
                       <option value="3+">{t("refine.parkingOptions.threePlus")}</option>
                     </select>
 
-                    {/* Amenities */}
-                    <div style={{ border: "1px solid #e2e8f0", background: "#fff", borderRadius: 12, padding: 12 }}>
-                      <div style={{ fontSize: 12, fontWeight: 900, marginBottom: 8, color: "#0f172a" }}>
+                    {/* Amenities（保留你原逻辑，样式稍后你要更“科技”我再给你升级） */}
+                    <div style={{ border: "1px solid var(--border)", background: "rgba(255,255,255,.04)", borderRadius: 12, padding: 12 }}>
+                      <div style={{ fontSize: 12, fontWeight: 900, marginBottom: 8, color: "var(--text)" }}>
                         {t("refine.amenitiesTitle")}
                       </div>
 
@@ -711,12 +507,12 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
                                 gap: 8,
                                 padding: "8px 10px",
                                 borderRadius: 10,
-                                border: checked ? "1px solid #0ea5e9" : "1px solid #e2e8f0",
-                                background: checked ? "#f0f9ff" : "#fff",
+                                border: checked ? "1px solid rgba(88,166,255,.55)" : "1px solid var(--border)",
+                                background: checked ? "rgba(88,166,255,.14)" : "rgba(255,255,255,.04)",
                                 cursor: "pointer",
                                 fontSize: 13,
                                 fontWeight: 700,
-                                color: "#0f172a",
+                                color: "var(--text)",
                               }}
                             >
                               <input
@@ -743,24 +539,20 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
                       placeholder={t("refine.expectedPrice")}
                       inputMode="numeric"
                       value={refineData.expectedPrice}
-                      onChange={(e) =>
-                        setRefineData({ ...refineData, expectedPrice: e.target.value.replace(/[^\d]/g, "") })
-                      }
+                      onChange={(e) => setRefineData({ ...refineData, expectedPrice: e.target.value.replace(/[^\d]/g, "") })}
                       style={inputStyle}
                     />
                   </div>
 
                   <button
+                    className={styles.btnPrimary}
+                    style={{ marginTop: 12 }}
                     onClick={() => {
                       const lo = Number(minFinal ?? min);
                       const hi = Number(maxFinal ?? max);
 
                       if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi <= lo) {
-                        setRefineResult({
-                          min: lo || 0,
-                          max: hi || 0,
-                          note: t("refine.messages.notEnoughData"),
-                        });
+                        setRefineResult({ min: lo || 0, max: hi || 0, note: t("refine.messages.notEnoughData") });
                         setShowRefine(false);
                         return;
                       }
@@ -797,51 +589,23 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
                       setMaxOverride(newMax);
                       setConfidenceOverride(t("refine.messages.refinedBadge"));
 
-                      setRefineResult({
-                        min: newMin,
-                        max: newMax,
-                        note: t("refine.messages.thanks"),
-                      });
-
+                      setRefineResult({ min: newMin, max: newMax, note: t("refine.messages.thanks") });
                       setShowRefine(false);
-                    }}
-                    style={{
-                      marginTop: 12,
-                      width: "100%",
-                      padding: "12px",
-                      borderRadius: 12,
-                      border: "none",
-                      background: "#0ea5e9",
-                      color: "#fff",
-                      fontWeight: 950,
-                      cursor: "pointer",
                     }}
                   >
                     {t("refine.submit")}
                   </button>
 
-                  <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>{t("refine.note")}</div>
+                  <div style={{ marginTop: 8, fontSize: 12, color: "var(--text-muted)" }}>{t("refine.note")}</div>
                 </div>
               )}
 
-              {/* B) Explanation module */}
-              <div
-                style={{
-                  marginTop: 16,
-                  padding: 16,
-                  borderRadius: 14,
-                  background: "#f8fafc",
-                  border: "1px solid #e2e8f0",
-                  fontSize: 13,
-                  lineHeight: 1.7,
-                  color: "#334155",
-                }}
-              >
-                <div style={{ fontWeight: 900, marginBottom: 6 }}>{t("result.how.title")}</div>
-                <div>
+              {/* How it’s calculated + match badge */}
+              <div style={{ marginTop: 16 }} className={styles.softCard}>
+                <div className={styles.softTitle}>{t("result.how.title")}</div>
+                <div style={{ fontSize: 13, lineHeight: 1.7, color: "var(--text-secondary)" }}>
                   {t("result.how.desc")}
-                  <br />
-                  <br />
+                  <br /><br />
                   <b>{t("result.how.factorsTitle")}</b>
                   <ul style={{ margin: "6px 0 6px 18px" }}>
                     <li>{t("result.how.factors.location")}</li>
@@ -849,237 +613,134 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
                     <li>{t("result.how.factors.size")}</li>
                     <li>{t("result.how.factors.activity")}</li>
                   </ul>
-                  
                   {t("result.how.footer")}
-                  {/* ✅ Community 说明（先用英文，后面你再补多语言到 messages） */}
-{/* MATCH BADGE */}
-<div
-  style={{
-    marginTop: 10,
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 8,
-    alignItems: "center",
-  }}
->
-  {community ? (
-    matched === "community" ? (
-      <div
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "8px 10px",
-          borderRadius: 999,
-          border: "1px solid #bbf7d0",
-          background: "#dcfce7",
-          color: "#166534",
-          fontSize: 12,
-          fontWeight: 900,
-          lineHeight: 1,
-        }}
-      >
-        <span style={{ fontSize: 14, lineHeight: 1 }}>✓</span>
-        <span>{t("result.how.communityMatch")}</span>
-      </div>
-    ) : (
-      <div
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "8px 10px",
-          borderRadius: 999,
-          border: "1px solid #fde68a",
-          background: "#fffbeb",
-          color: "#92400e",
-          fontSize: 12,
-          fontWeight: 900,
-          lineHeight: 1,
-        }}
-      >
-        <span style={{ fontSize: 14, lineHeight: 1 }}>⚠︎</span>
-        <span>{t("result.how.areaMatch")}</span>
-      </div>
-    )
-  ) : (
-    <div
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 8,
-        padding: "8px 10px",
-        borderRadius: 999,
-        border: "1px solid #e2e8f0",
-        background: "#f8fafc",
-        color: "#334155",
-        fontSize: 12,
-        fontWeight: 900,
-        lineHeight: 1,
-      }}
-    >
-      <span style={{ fontSize: 14, lineHeight: 1 }}>ℹ︎</span>
-      <span>
-        {t("home.community")} · {t("home.communityAll")}
-      </span>
-    </div>
-  )}
-</div>
+                </div>
+
+                <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                  {community ? (
+                    matched === "community" ? (
+                      <div className={styles.pillPos}>
+                        ✓ {t("result.how.communityMatch")}
+                      </div>
+                    ) : (
+                      <div className={styles.badge}>
+                        ⚠︎ {t("result.how.areaMatch")}
+                      </div>
+                    )
+                  ) : (
+                    <div className={styles.badge}>
+                      ℹ︎ {t("home.community")} · {t("home.communityAll")}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Trend + Rent row */}
-              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12, marginTop: 14 }}>
-                {/* Trend */}
-                <div style={{ border: "1px solid #e2e8f0", borderRadius: 14, padding: 12 }}>
-                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
-                    <div style={{ fontWeight: 900, fontSize: 13 }}>{t("result.trend.title")}</div>
-                    <div style={{ fontSize: 12, color: trendChangePct >= 0 ? "#166534" : "#991b1b", fontWeight: 900 }}>
-                      {pct(trendChangePct)}
-                    </div>
+              {/* Trend + Rent */}
+              <div className={styles.rowCards} style={{ marginTop: 14 }}>
+                <div className={`${styles.card} ${styles.cardPad}`}>
+                  <div className={styles.miniTop}>
+                    <div className={styles.miniTitle}>{t("result.trend.title")}</div>
+                    <div className={trendChangePct >= 0 ? styles.pillPos : styles.pillNeg}>{pct(trendChangePct)}</div>
                   </div>
 
                   <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                     <svg width="240" height="64" viewBox="0 0 240 64" style={{ maxWidth: "100%", height: "auto" }}>
-                      <path d={trendPath} fill="none" stroke="#0ea5e9" strokeWidth="2.5" strokeLinecap="round" />
+                      <path d={trendPath} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" />
                     </svg>
 
                     <div style={{ minWidth: 110, textAlign: "right" }}>
-                      <div style={{ fontSize: 12, color: "#64748b" }}>{t("result.trend.now")}</div>
+                      <div className={styles.k}>{t("result.trend.now")}</div>
                       <div style={{ fontWeight: 950 }}>{formatAedShort(trend[trend.length - 1] || mid)}</div>
-                      <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>{t("result.trend.daysAgo")}</div>
-                      <div style={{ fontWeight: 900, color: "#334155" }}>{formatAedShort(trend[0] || mid)}</div>
+                      <div className={styles.k} style={{ marginTop: 6 }}>{t("result.trend.daysAgo")}</div>
+                      <div style={{ fontWeight: 900, color: "var(--text-secondary)" }}>{formatAedShort(trend[0] || mid)}</div>
                     </div>
                   </div>
 
-                  <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>{t("result.trend.note")}</div>
+                  <div className={styles.miniSub}>{t("result.trend.note")}</div>
                 </div>
 
-                {/* Rent */}
-                <div style={{ border: "1px solid #e2e8f0", borderRadius: 14, padding: 12 }}>
-                  <div style={{ fontWeight: 900, fontSize: 13 }}>{t("result.rent.title")}</div>
-                  <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>{t("result.rent.monthlyLabel")}</div>
+                <div className={`${styles.card} ${styles.cardPad}`}>
+                  <div className={styles.miniTitle}>{t("result.rent.title")}</div>
+                  <div className={styles.k} style={{ marginTop: 8 }}>{t("result.rent.monthlyLabel")}</div>
                   <div style={{ marginTop: 6, fontSize: 20, fontWeight: 950, letterSpacing: -0.4 }}>
-                    {formatAedShort(rent.monthlyMin)} <span style={{ color: "#94a3b8" }}>–</span> {formatAedShort(rent.monthlyMax)}
+                    {formatAedShort(rent.monthlyMin)} <span style={{ color: "var(--text-muted)" }}>–</span> {formatAedShort(rent.monthlyMax)}
                   </div>
-                  <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
-                    {t("result.rent.annualLabel")}: {formatAedShort(rent.annualMin)} – {formatAedShort(rent.annualMax)} •{" "}
-                    {t("result.rent.yieldLabel")}: {rent.yieldMinPct}–{rent.yieldMaxPct}%
+                  <div className={styles.miniSub} style={{ marginTop: 8 }}>
+                    {t("result.rent.annualLabel")}: {formatAedShort(rent.annualMin)} – {formatAedShort(rent.annualMax)} • {t("result.rent.yieldLabel")}: {rent.yieldMinPct}–{rent.yieldMaxPct}%
                   </div>
-                  <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>{t("result.rent.basis")}</div>
+                  <div className={styles.miniSub} style={{ marginTop: 10 }}>{t("result.rent.basis")}</div>
                 </div>
               </div>
             </div>
 
-            {/* C) Comparable homes */}
-            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
-              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
+            {/* C) Comps */}
+            <div className={`${styles.card} ${styles.cardPad} ${styles.cardHover}`}>
+              <div className={styles.miniTop}>
                 <div style={{ fontSize: 16, fontWeight: 950, letterSpacing: -0.3 }}>{t("result.comps.title")}</div>
-                <div style={{ fontSize: 12, color: "#64748b" }}>{t("result.comps.subtitle")}</div>
+                <div className={styles.k}>{t("result.comps.subtitle")}</div>
               </div>
 
-              <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
+              <div className={styles.list2} style={{ marginTop: 10 }}>
                 {comps.map((c) => (
-                  <div key={c.id} style={{ border: "1px solid #e2e8f0", borderRadius: 14, padding: 12 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                      <div style={{ fontWeight: 900, fontSize: 13 }}>{c.label}</div>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 900,
-                          color: c.deltaPct >= 0 ? "#166534" : "#991b1b",
-                          background: c.deltaPct >= 0 ? "#dcfce7" : "#fee2e2",
-                          border: `1px solid ${c.deltaPct >= 0 ? "#bbf7d0" : "#fecaca"}`,
-                          padding: "4px 8px",
-                          borderRadius: 999,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {pct(c.deltaPct)}
-                      </div>
+                  <div key={c.id} className={styles.miniCard}>
+                    <div className={styles.miniTop}>
+                      <div className={styles.miniTitle}>{c.label}</div>
+                      <div className={c.deltaPct >= 0 ? styles.pillPos : styles.pillNeg}>{pct(c.deltaPct)}</div>
                     </div>
 
-                    <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
-                      {type || "—"} • {c.beds ? t("result.header.beds", { beds: c.beds }) : "—"} • {formatSqft(c.size)}{" "}
-                      {t("result.header.sqft")}
+                    <div className={styles.miniSub}>
+                      {type || "—"} • {c.beds ? t("result.header.beds", { beds: c.beds }) : "—"} • {formatSqft(c.size)} {t("result.header.sqft")}
                     </div>
 
-                    <div style={{ marginTop: 8, fontSize: 18, fontWeight: 950 }}>
+                    <div className={styles.miniPrice}>
                       {formatAedShort(c.price)}
-                      <span style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}>
-                        {" "}
-                        • {Math.round(c.ppsf).toLocaleString("en-US")} {t("result.comps.aedPerSqft")}
+                      <span className={styles.k} style={{ fontWeight: 700 }}>
+                        {" "}• {Math.round(c.ppsf).toLocaleString("en-US")} {t("result.comps.aedPerSqft")}
                       </span>
                     </div>
 
-                    <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>{c.note}</div>
+                    <div className={styles.miniSub}>{c.note}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Extra: Adjustments card */}
-            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad, marginTop: 2, background: "#f8fafc" }}>
+            {/* Adjustments */}
+            <div className={`${styles.card} ${styles.cardPad} ${styles.cardHover}`}>
               <div style={{ fontSize: 15, fontWeight: 950, marginBottom: 10 }}>{t("result.adjustmentsTitle")}</div>
-
               <div style={{ display: "grid", gap: 10 }}>
                 {valueAdjustments(t).map((v) => (
-                  <div
-                    key={v.label}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: 12,
-                      padding: "10px 12px",
-                      background: "#fff",
-                      borderRadius: 12,
-                      border: "1px solid #e2e8f0",
-                    }}
-                  >
+                  <div key={v.label} className={styles.inputRow}>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: 900, fontSize: 13 }}>{v.label}</div>
-                      <div style={{ marginTop: 4, fontSize: 12, color: "#64748b" }}>{v.note}</div>
+                      <div className={styles.k} style={{ marginTop: 4 }}>{v.note}</div>
                     </div>
-
-                    <div style={{ fontSize: 12, fontWeight: 950, color: "#0f172a", whiteSpace: "nowrap" }}>{v.impact}</div>
+                    <div style={{ fontSize: 12, fontWeight: 950, whiteSpace: "nowrap" }}>{v.impact}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* D) Value drivers */}
-            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
+            {/* Value drivers */}
+            <div className={`${styles.card} ${styles.cardPad} ${styles.cardHover}`}>
               <div style={{ fontSize: 16, fontWeight: 950, letterSpacing: -0.3 }}>{t("result.drivers.title")}</div>
-              <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>{t("result.drivers.subtitle")}</div>
+              <div className={styles.k} style={{ marginTop: 8 }}>{t("result.drivers.subtitle")}</div>
 
-              <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 10 }}>
+              <div className={styles.list2} style={{ marginTop: 10 }}>
                 {[
                   ["view", "🪟", "result.drivers.items.view"],
                   ["floor", "🏢", "result.drivers.items.floor"],
                   ["condition", "🛠", "result.drivers.items.condition"],
                   ["parking", "🚗", "result.drivers.items.parking"],
                 ].map(([key, icon, baseKey]) => (
-                  <div key={key} style={{ border: "1px solid #e2e8f0", borderRadius: 14, padding: 12 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                      <div style={{ fontWeight: 900, fontSize: 13 }}>
+                  <div key={String(key)} className={styles.miniCard}>
+                    <div className={styles.miniTop}>
+                      <div className={styles.miniTitle}>
                         {icon} {t(`${baseKey}.title`)}
                       </div>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 900,
-                          color: "#0f172a",
-                          background: "#f8fafc",
-                          border: "1px solid #e2e8f0",
-                          padding: "4px 8px",
-                          borderRadius: 999,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {t(`${baseKey}.band`)}
-                      </div>
+                      <div className={styles.badge}>{t(`${baseKey}.band`)}</div>
                     </div>
-                    <div style={{ marginTop: 6, fontSize: 12, color: "#64748b", lineHeight: 1.55 }}>{t(`${baseKey}.desc`)}</div>
+                    <div className={styles.miniSub}>{t(`${baseKey}.desc`)}</div>
                   </div>
                 ))}
               </div>
@@ -1087,262 +748,139 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
           </div>
 
           {/* Right column */}
-          <div style={{ display: "grid", gap: 14 }}>
-{/* E) MAP CARD */}
-<div style={{ border: "1px solid #e2e8f0", borderRadius: 16, overflow: "hidden", background: "#fff" }}>
-  <div style={{ padding: pad }}>
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+          <div className={styles.col}>
+{/* Map */}
+<div className={`${styles.card} ${styles.cardHover}`} style={{ overflow: "hidden" }}>
+  <div className={styles.cardPad}>
+    <div className={styles.miniTop}>
       <div>
-        <div style={{ fontWeight: 950, fontSize: 14 }}>{t("result.map.title")}</div>
-        <div style={{ fontSize: 12, color: "#64748b" }}>
+        <div style={{ fontWeight: 950, fontSize: 14 }}>
+          {t("result.map.title")}
+        </div>
+        <div className={styles.k}>
           {(community || area || "Dubai")}, UAE
         </div>
       </div>
 
       <button
         type="button"
+        className={styles.btnGhost}
         onClick={() => {
           const q = `${community || area || "Dubai"} UAE`;
           const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}&hl=en`;
           window.open(url, "_blank", "noopener,noreferrer");
-        }}
-        style={{
-          border: "1px solid #e2e8f0",
-          background: "#ffffff",
-          color: "#0f172a",
-          padding: "8px 10px",
-          borderRadius: 12,
-          fontWeight: 900,
-          cursor: "pointer",
-          whiteSpace: "nowrap",
         }}
       >
         {t("result.map.open")}
       </button>
     </div>
 
-    <div style={{ marginTop: 10, fontSize: 12, color: "#64748b", lineHeight: 1.5, fontWeight: 700 }}>
+    <div className={styles.k} style={{ marginTop: 10 }}>
       {community
         ? "Tip: Tap Open to view this community on Google Maps."
         : "Tip: Tap Open to view this area on Google Maps."}
     </div>
   </div>
 
-  <iframe
-    title="Map"
-    src={`https://www.google.com/maps?q=${encodeURIComponent(`${community || area || "Dubai"} UAE`)}&output=embed&hl=en`}
-    width="100%"
-    height={isMobile ? 220 : 260}
-    style={{ border: 0, display: "block" }}
-    loading="lazy"
-    referrerPolicy="no-referrer-when-downgrade"
-  />
+  {/* 👇👇👇 新增这行 anchor */}
+  <div id="map-anchor" />
+
+  {/* 👇👇👇 延迟加载 iframe */}
+  {showMap ? (
+    <iframe
+      title="Map"
+      className={styles.mapFrame}
+      src={`https://www.google.com/maps?q=${encodeURIComponent(
+        `${community || area || "Dubai"} UAE`
+      )}&output=embed&hl=en`}
+      height={260}
+      loading="lazy"
+      referrerPolicy="no-referrer-when-downgrade"
+    />
+  ) : (
+    <div style={{ height: 260 }} />
+  )}
 </div>
-            {/* MARKET SNAPSHOT */}
-            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad, background: "#fafafa" }}>
-              <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>{t("result.snapshot.title")}</div>
+
+            {/* Market snapshot */}
+            <div className={`${styles.card} ${styles.cardPad} ${styles.cardHover}`}>
+              <div className={styles.k} style={{ marginBottom: 10 }}>{t("result.snapshot.title")}</div>
 
               <div style={{ display: "grid", gap: 10 }}>
                 {[
                   [t("result.snapshot.medianValue"), formatAedShort(mid)],
                   [
                     t("result.snapshot.pricePerSqft"),
-                    market.ppsf > 0
-                      ? `${Math.round(market.ppsf).toLocaleString("en-US")} ${t("result.comps.aedPerSqft")}`
-                      : "—",
+                    market.ppsf > 0 ? `${Math.round(market.ppsf).toLocaleString("en-US")} ${t("result.comps.aedPerSqft")}` : "—",
                   ],
                   [t("result.snapshot.activity"), market.activity],
                   [t("result.snapshot.daysOnMarket"), t("result.snapshot.daysOnMarketValue", { days: market.dom })],
                   [t("result.snapshot.mom"), pct(market.mom)],
                   [t("result.snapshot.yoy"), pct(market.yoy)],
                 ].map(([k, v]) => (
-                  <div
-                    key={String(k)}
-                    style={{
-                      padding: 12,
-                      borderRadius: 12,
-                      background: "#fff",
-                      border: "1px solid #e2e8f0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 12,
-                    }}
-                  >
-                    <div style={{ fontSize: 12, color: "#64748b" }}>{k}</div>
+                  <div key={String(k)} className={styles.inputRow}>
+                    <div className={styles.k}>{k}</div>
                     <div style={{ fontWeight: 950, textAlign: "right" }}>{v}</div>
                   </div>
                 ))}
               </div>
 
-              <div style={{ marginTop: 10, fontSize: 12, color: "#64748b" }}>{t("result.snapshot.note")}</div>
+              <div className={styles.k} style={{ marginTop: 10 }}>{t("result.snapshot.note")}</div>
             </div>
 
-            {/* INPUTS */}
-            <div style={{ border: "1px solid #e2e8f0", borderRadius: 16, padding: pad }}>
-              <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>{t("result.inputs.title")}</div>
+            {/* Inputs */}
+            <div className={`${styles.card} ${styles.cardPad} ${styles.cardHover}`}>
+              <div className={styles.k} style={{ marginBottom: 10 }}>{t("result.inputs.title")}</div>
 
               <div style={{ display: "grid", gap: 10 }}>
-               {[
-  [t("result.inputs.area"), area || "—"],
-
-  ...(community
-    ? [[
-        "Community",
-        matched === "community" ? `${community} ✓` : community,
-      ]]
-    : []),
-
-  [t("result.inputs.type"), type || "—"],
-  [t("result.inputs.bedrooms"), beds || "—"],
-  [t("result.inputs.size"), formatSqft(sizeSqft)],
-  [t("result.inputs.parking"), refineData?.parking ? refineData.parking : "—"],
+                {[
+                  [t("result.inputs.area"), area || "—"],
+                  ...(community ? [[t("home.community"), matched === "community" ? `${community} ✓` : community]] : []),
+                  [t("result.inputs.type"), type || "—"],
+                  [t("result.inputs.bedrooms"), beds || "—"],
+                  [t("result.inputs.size"), formatSqft(sizeSqft)],
+                  [t("result.inputs.parking"), refineData?.parking ? refineData.parking : "—"],
                 ].map(([k, v]) => (
-                  <div
-                    key={String(k)}
-                    style={{
-                      padding: 12,
-                      borderRadius: 12,
-                      background: "#fff",
-                      border: "1px solid #e2e8f0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 12,
-                    }}
-                  >
-                    <div style={{ fontSize: 12, color: "#64748b" }}>{k}</div>
-                    <div style={{ fontWeight: 900, textAlign: "right" }}>{v}</div>
+                  <div key={String(k)} className={styles.inputRow}>
+                    <div className={styles.k}>{k}</div>
+                    <div className={styles.v}>{v}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Disclaimer */}
-            <div style={{ fontSize: 12, color: "#94a3b8", padding: "0 4px" }}>{t("result.disclaimer")}</div>
+            <div className={styles.k}>{t("result.disclaimer")}</div>
           </div>
         </div>
-{/* SHARE (Brand styled WhatsApp / Telegram / Copy) */}
-<div
-  style={{
-    marginTop: 16,
-    padding: 16,
-    borderRadius: 18,
-    background: "linear-gradient(180deg,#f8fafc,#ffffff)",
-    border: "1px solid #e2e8f0",
-  }}
->
-  <div
-    style={{
-      fontSize: 13,
-      fontWeight: 900,
-      color: "#0f172a",
-      marginBottom: 12,
-      letterSpacing: -0.2,
-    }}
-  >
-    Share this estimate
-  </div>
 
-  <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-    <button
-      type="button"
-      onClick={onShareWhatsApp}
-      style={{
-        padding: "12px 16px",
-        borderRadius: 14,
-        border: "none",
-        background: "#25D366",
-        color: "#ffffff",
-        fontWeight: 900,
-        cursor: "pointer",
-      }}
-    >
-      WhatsApp
-    </button>
+        {/* Share */}
+        <div className={styles.shareBox}>
+          <div className={styles.shareTitle}>{t("result.share.title") ?? "Share this estimate"}</div>
 
-    <button
-      type="button"
-      onClick={onShareTelegram}
-      style={{
-        padding: "12px 16px",
-        borderRadius: 14,
-        border: "none",
-        background: "#229ED9",
-        color: "#ffffff",
-        fontWeight: 900,
-        cursor: "pointer",
-      }}
-    >
-      Telegram
-    </button>
-
-    <button
-      type="button"
-      onClick={onCopyLink}
-      style={{
-        padding: "12px 16px",
-        borderRadius: 14,
-        border: "1px solid #e2e8f0",
-        background: copied ? "#dcfce7" : "#ffffff",
-        color: "#0f172a",
-        fontWeight: 900,
-        cursor: "pointer",
-      }}
-    >
-      {copied ? "Copied ✓" : "Copy link"}
-    </button>
-  </div>
-
-  <div
-    style={{
-      marginTop: 12,
-      fontSize: 12,
-      color: "#64748b",
-      fontWeight: 700,
-      lineHeight: 1.55,
-    }}
-  >
-    {t("result.share.tip")}
-  </div>
-</div>
-        {/* Help card */}
-        <div
-          style={{
-            marginTop: 28,
-            border: "1px solid #e2e8f0",
-            borderRadius: 16,
-            padding: 16,
-            background: "#f8fafc",
-            display: "grid",
-            gap: 10,
-            textAlign: "center",
-          }}
-        >
-          <div style={{ fontSize: 14, fontWeight: 950 }}>{t("help.title")}</div>
-
-          <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.6 }}>{t("help.desc")}</div>
-
-          <a href="https://wa.me/971581188247" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
-            <button
-              style={{
-                border: "1px solid #0ea5e9",
-                background: "#0ea5e9",
-                color: "#fff",
-                padding: "10px 16px",
-                borderRadius: 12,
-                fontWeight: 900,
-                cursor: "pointer",
-              }}
-            >
-              {t("help.button")}
+          <div className={styles.shareBtns}>
+            <button type="button" onClick={onShareWhatsApp} className={styles.btnWA}>WhatsApp</button>
+            <button type="button" onClick={onShareTelegram} className={styles.btnTG}>Telegram</button>
+            <button type="button" onClick={onCopyLink} className={styles.btnCopy}>
+              {copied ? (t("result.share.copied") ?? "Copied ✓") : (t("result.share.copy") ?? "Copy link")}
             </button>
-          </a>
+          </div>
 
-          <div style={{ fontSize: 12, color: "#64748b" }}>{t("help.tip")}</div>
+          <div className={styles.shareTip}>{t("result.share.tip")}</div>
         </div>
 
-        <div style={{ marginTop: 18, fontSize: 12, color: "#94a3b8", textAlign: "center" }}>{t("footer.copy")}</div>
+        {/* Help card */}
+        <div className={styles.helpCard}>
+          <div style={{ fontSize: 14, fontWeight: 950 }}>{t("help.title")}</div>
+          <div className={styles.k} style={{ lineHeight: 1.6 }}>{t("help.desc")}</div>
+
+          <a href="https://wa.me/971581188247" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+            <button className={styles.btnPrimary}>{t("help.button")}</button>
+          </a>
+
+          <div className={styles.k}>{t("help.tip")}</div>
+        </div>
+
+        <div className={styles.footer}>{t("footer.copy")}</div>
       </div>
     </div>
   );
