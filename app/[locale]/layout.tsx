@@ -138,7 +138,7 @@ export default async function LocaleLayout({
                 <div>
                   <div style={{ fontWeight: 900 }}>UAEHomeValue</div>
                   <div style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}>
-                    Dubai · Estimated value ranges
+                    Estimate first · Decide better
                   </div>
                 </div>
               </div>

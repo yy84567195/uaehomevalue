@@ -272,7 +272,9 @@ return (
   <div>
     <div className={styles.footerTitle}>UAEHomeValue</div>
     <div className={styles.footerCopy}>
-      © {new Date().getFullYear()} UAEHomeValue · {t("footer.copy")}
+      <div className={styles.footerCopy}>
+  Estimate first · Decide better  © {new Date().getFullYear()} UAEHomeValue
+</div>
     </div>
   </div>
 </div>

@@ -882,7 +882,9 @@ useEffect(() => {
   <div>
     <div className={styles.footerTitle}>UAEHomeValue</div>
     <div className={styles.footerCopy}>
-      © {new Date().getFullYear()} UAEHomeValue · {t("footer.copy")}
+      <div className={styles.footerCopy}>
+  Track your Dubai property value growth — anytime, anywhere   © {new Date().getFullYear()} UAEHomeValue
+</div>
     </div>
   </div>
 </div>
