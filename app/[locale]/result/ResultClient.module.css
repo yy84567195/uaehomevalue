@@ -656,6 +656,25 @@
   grid-template-columns: 1fr auto;
   align-items: center;
 }
+/* ✅ Force-align title with actions (desktop) */
+.headerRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  align-items: start;
+  margin-top: 14px;
+}
+
+.headerLeft {
+  min-width: 0;
+}
+
+/* mobile: stack nicely */
+@media (max-width: 980px) {
+  .headerRow {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* ✅ Footer brand (if you haven't added these yet) */
 .footerBrand {

@@ -371,9 +371,25 @@ useEffect(() => {
           </div>
         )}
 
-{/* Top bar (only actions on top, aligned with header) */}
-<div className={styles.topBar}>
-  <div className={styles.topLeftSpacer} />
+{/* Header row (title left + actions right) */}
+<div className={styles.headerRow}>
+  <div className={styles.headerLeft}>
+    <h1 className={styles.h1}>{t("result.title")}</h1>
+    <div className={styles.sub}>{t("result.subtitle")}</div>
+
+    <div className={styles.metaLine}>
+      {area || "—"} • {type || "—"} •{" "}
+      {bedsLabel
+        ? bedsLabel === "Studio"
+          ? t("result.header.studio")
+          : bedsLabel === "4+"
+          ? t("result.header.bedsPlus")
+          : t("result.header.beds", { beds: bedsLabel })
+        : "—"}{" "}
+      • {formatSqft(sizeSqft)} {t("result.header.sqft")}
+    </div>
+  </div>
+
   <div className={styles.actions}>
     <a href={homeUrl}>
       <button className={styles.btnGhost}>{t("result.actions.recheck")}</button>
@@ -383,19 +399,6 @@ useEffect(() => {
     </a>
   </div>
 </div>
-
-        {/* Header */}
-        <div className={styles.header}>
-          <h1 className={styles.h1}>{t("result.title")}</h1>
-          <div className={styles.sub}>{t("result.subtitle")}</div>
-
-          <div className={styles.metaLine}>
-            {area || "—"} • {type || "—"} •{" "}
-            {bedsLabel ? (bedsLabel === "Studio" ? t("result.header.studio") : bedsLabel === "4+" ? t("result.header.bedsPlus") : t("result.header.beds", { beds: bedsLabel })) : "—"}{" "}
-            • {formatSqft(sizeSqft)} {t("result.header.sqft")}
-          </div>
-        </div>
-
         {/* Main layout */}
         <div className={styles.mainGrid}>
           {/* Left column */}
