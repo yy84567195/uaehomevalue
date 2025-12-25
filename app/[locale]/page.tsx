@@ -10,6 +10,7 @@ type PropertyType = "Apartment" | "Villa";
 export default function HomePage() {
   const locale = useLocale();
   const tHome = useTranslations("home");
+  const t = useTranslations(); 
 
   // 读数据行
   const rows = useMemo<any[]>(() => (data as any)?.communities ?? [], []);
@@ -148,19 +149,12 @@ export default function HomePage() {
     }
   }
 
-  return (
-    <div className={styles.page}>
-      <div className={styles.container}>
-        {/* Top bar */}
-        <div className={styles.topBar}>
-          <div className={styles.brand}>
-            <img src="/logo.png" alt="UAEHomeValue" className={styles.logo} />
-            <div className={styles.brandTitle}>UAEHomeValue</div>
-          </div>
-          {/* 如果你的 LanguageSwitcher 已在 layout 右上角，这里不用放 */}
-        </div>
+return (
+  <div className={styles.page}>
+    <div className={styles.container}>
 
-        <div className={styles.heroGrid}>
+      <div className={styles.heroGrid}>
+        {/* 你的 hero 内容保持不动 */}
           {/* Left */}
           <section className={`${styles.card} ${styles.heroLeft}`}>
             <h1 className={styles.h1}>{tHome("title")}</h1>
@@ -272,6 +266,17 @@ export default function HomePage() {
           </section>
         </div>
       </div>
+{/* Footer brand (same as Result page) */}
+<div className={styles.footerBrand}>
+  <img src="/logo.png" alt="UAEHomeValue" className={styles.footerLogo} />
+  <div>
+    <div className={styles.footerTitle}>UAEHomeValue</div>
+    <div className={styles.footerCopy}>
+      © {new Date().getFullYear()} UAEHomeValue · {t("footer.copy")}
+    </div>
+  </div>
+</div>
     </div>
   );
+
 }

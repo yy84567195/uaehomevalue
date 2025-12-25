@@ -224,3 +224,45 @@
   .heroGrid{ grid-template-columns: 1fr; }
   .formGrid{ grid-template-columns: 1fr; }
 }
+/* ===== Footer brand (shared with Result page) ===== */
+.footerBrand {
+  margin-top: 48px;
+  padding: 20px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: left;
+}
+
+.footerLogo {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.06);
+  padding: 6px;
+}
+
+.footerTitle {
+  font-size: 13px;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.footerCopy {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Mobile: center nicely */
+@media (max-width: 520px) {
+  .footerBrand {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+}

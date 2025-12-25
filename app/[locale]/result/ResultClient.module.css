@@ -22,7 +22,7 @@
 
 .topBar {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* ✅ 关键：不要居中 */
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
@@ -451,7 +451,20 @@
   flex: 0 0 auto;
   white-space: nowrap;
 }
+/* Desktop: nudge actions down to align with left header copy */
+@media (min-width: 981px) {
+  .actions {
+    margin-top: 18px; /* ✅ 关键：让右上按钮下移，对齐左侧卡片标题 */
+  }
 
+  .header {
+    margin-top: 8px; /* 原来 14px，收紧一点 */
+  }
+
+  .mainGrid {
+    margin-top: 12px; /* 原来 16px，收紧一点 */
+  }
+}
 .btnWA {
   padding: 12px 16px;
   border-radius: 14px;
@@ -594,4 +607,86 @@
   font-size: 12px;
   color: var(--text-muted);
   margin-top: 2px;
+}
+/* ===== Mobile: make buttons always fully visible (no cut off) ===== */
+@media (max-width: 520px) {
+  /* 顶部两个按钮：强制 2 列同一行 */
+  .actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    justify-content: stretch;
+  }
+
+  .btnGhost,
+  .btnOutline {
+    width: 100%;
+    padding: 10px 10px;
+    font-size: 13px;
+    line-height: 1.1;
+  }
+
+  /* 底部 3 个分享按钮：强制 3 列同一行 */
+  .shareBtns {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .btnWA,
+  .btnTG,
+  .btnCopy {
+    width: 100%;
+    padding: 11px 8px;
+    font-size: 13px;
+    line-height: 1.1;
+  }
+}
+/* ✅ Top bar alignment helper */
+.topLeftSpacer {
+  height: 1px; /* just a spacer */
+}
+
+/* ✅ Make top bar align with header width and baseline */
+.topBar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+/* ✅ Footer brand (if you haven't added these yet) */
+.footerBrand {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  text-align: left;
+}
+
+.footerLogo {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 6px;
+}
+
+.footerTitle {
+  font-size: 13px;
+  font-weight: 950;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.footerCopy {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
 }

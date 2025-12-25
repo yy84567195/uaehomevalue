@@ -4,6 +4,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import styles from "./ResultClient.module.css";
 import { formatAED } from "@/lib/estimator";
+import FooterBrand from "../components/FooterBrand";
 
 function getParam(name: string) {
   if (typeof window === "undefined") return "";
@@ -370,9 +371,9 @@ useEffect(() => {
           </div>
         )}
 
-        {/* Top bar */}
+{/* Top bar (only actions on top, aligned with header) */}
 <div className={styles.topBar}>
-  <div /> {/* 左侧占位，避免结构塌 */}
+  <div className={styles.topLeftSpacer} />
   <div className={styles.actions}>
     <a href={homeUrl}>
       <button className={styles.btnGhost}>{t("result.actions.recheck")}</button>
