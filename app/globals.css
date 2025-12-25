@@ -157,3 +157,28 @@ body {
     padding: 13px 14px;
   }
 }
+/* ===== Fix: font unify + iOS + overflow ===== */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  /* 统一字体：电脑/手机都一致（系统字体栈，最稳） */
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial,
+    "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+img, svg, iframe {
+  max-width: 100%;
+}
