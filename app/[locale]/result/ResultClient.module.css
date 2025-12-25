@@ -55,12 +55,17 @@
   color: var(--text-muted);
 }
 
+/* 顶栏右侧按钮：永远一行，不换行，空间不够就横向滑动 */
 .actions {
   display: flex;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.actions::-webkit-scrollbar { display: none; }
 
 /* ✅ Recheck another (更清晰、更像 dashboard 按钮) */
 .btnGhost {
@@ -429,10 +434,22 @@
   letter-spacing: -0.2px;
 }
 
+/* Share 三个按钮：永远一行，不换行，空间不够就横向滑动 */
 .shareBtns {
   display: flex;
-  flex-wrap: wrap;
   gap: 12px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.shareBtns::-webkit-scrollbar { display: none; }
+
+/* 按钮不被压扁 */
+.actions button,
+.shareBtns button {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .btnWA {
@@ -542,4 +559,39 @@
 /* Safety: if a link wraps a button, ensure button text doesn't take link blue */
 .page a button {
   color: inherit !important;
+}
+/* Footer brand (replaces plain copyright) */
+.footerBrand {
+  margin-top: 28px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.footerLogo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.06);
+  padding: 6px;
+}
+
+.footerTitle {
+  font-size: 13px;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.footerCopy {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
 }

@@ -371,24 +371,17 @@ useEffect(() => {
         )}
 
         {/* Top bar */}
-        <div className={styles.topBar}>
-          <div className={styles.brand}>
-            <img src="/logo.png" alt="UAEHomeValue" className={styles.logo} />
-            <div>
-              <div className={styles.brandTitle}>UAEHomeValue</div>
-              <div className={styles.brandTagline}>{t("result.brandTagline")}</div>
-            </div>
-          </div>
-
-          <div className={styles.actions}>
-            <a href={homeUrl}>
-              <button className={styles.btnGhost}>{t("result.actions.recheck")}</button>
-            </a>
-            <a href={changeInputsUrl}>
-              <button className={styles.btnOutline}>{t("result.actions.changeInputs")}</button>
-            </a>
-          </div>
-        </div>
+<div className={styles.topBar}>
+  <div /> {/* 左侧占位，避免结构塌 */}
+  <div className={styles.actions}>
+    <a href={homeUrl}>
+      <button className={styles.btnGhost}>{t("result.actions.recheck")}</button>
+    </a>
+    <a href={changeInputsUrl}>
+      <button className={styles.btnOutline}>{t("result.actions.changeInputs")}</button>
+    </a>
+  </div>
+</div>
 
         {/* Header */}
         <div className={styles.header}>
@@ -880,7 +873,15 @@ useEffect(() => {
           <div className={styles.k}>{t("help.tip")}</div>
         </div>
 
-        <div className={styles.footer}>{t("footer.copy")}</div>
+        <div className={styles.footerBrand}>
+  <img src="/logo.png" alt="UAEHomeValue" className={styles.footerLogo} />
+  <div>
+    <div className={styles.footerTitle}>UAEHomeValue</div>
+    <div className={styles.footerCopy}>
+      © {new Date().getFullYear()} UAEHomeValue · {t("footer.copy")}
+    </div>
+  </div>
+</div>
       </div>
     </div>
   );
