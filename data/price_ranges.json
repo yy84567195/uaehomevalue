@@ -1,7 +1,7 @@
 {
   "meta": {
     "currency": "AED",
-    "source_note": "Starter dataset - supports area-level and community-level ranges."
+    "source_note": "Starter dataset - supports area-level and community-level ranges. Expanded with high-frequency Dubai core areas & popular communities for Apartment + Villa (incl. townhouse grouped into Villa for MVP)."
   },
   "communities": [
     {
@@ -41,6 +41,88 @@
       "min": 3800000,
       "max": 5500000
     },
+
+    {
+      "area": "Downtown Dubai",
+      "community": "Boulevard Central",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1650000,
+      "max": 2200000
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Boulevard Central",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2450000,
+      "max": 3350000
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "South Ridge",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1700000,
+      "max": 2300000
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "South Ridge",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2600000,
+      "max": 3600000
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "The Residences",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2750000,
+      "max": 3950000
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "The Residences",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 4200000,
+      "max": 6200000
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "29 Boulevard",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1750000,
+      "max": 2400000
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "29 Boulevard",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2650000,
+      "max": 3700000
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Standpoint",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1600000,
+      "max": 2250000
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Standpoint",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2450000,
+      "max": 3500000
+    },
+
     {
       "area": "Dubai Marina",
       "community": "Marina Gate",
@@ -86,6 +168,104 @@
       "min": 3200000,
       "max": 4800000
     },
+
+    {
+      "area": "Dubai Marina",
+      "community": "Marina Promenade",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1400000,
+      "max": 2000000
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Marina Promenade",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2300000,
+      "max": 3150000
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Princess Tower",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1300000,
+      "max": 1850000
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Princess Tower",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2050000,
+      "max": 2850000
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Cayan Tower",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1350000,
+      "max": 1950000
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Cayan Tower",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2150000,
+      "max": 3050000
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Silverene",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1250000,
+      "max": 1750000
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Silverene",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1950000,
+      "max": 2750000
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "The Torch",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1150000,
+      "max": 1650000
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "The Torch",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1800000,
+      "max": 2600000
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "52|42",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1600000,
+      "max": 2300000
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "52|42",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2600000,
+      "max": 3600000
+    },
+
     {
       "area": "Business Bay",
       "community": "DAMAC Towers",
@@ -123,6 +303,56 @@
       "min": 2800000,
       "max": 4200000
     },
+
+    {
+      "area": "Business Bay",
+      "community": "Executive Towers",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1150000,
+      "max": 1650000
+    },
+    {
+      "area": "Business Bay",
+      "community": "Executive Towers",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1850000,
+      "max": 2600000
+    },
+    {
+      "area": "Business Bay",
+      "community": "Bay Square",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1100000,
+      "max": 1600000
+    },
+    {
+      "area": "Business Bay",
+      "community": "Bay Square",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1750000,
+      "max": 2500000
+    },
+    {
+      "area": "Business Bay",
+      "community": "Paramount Towers",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1050000,
+      "max": 1600000
+    },
+    {
+      "area": "Business Bay",
+      "community": "Paramount Towers",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1750000,
+      "max": 2550000
+    },
+
     {
       "area": "JVC",
       "community": "Belgravia",
@@ -160,6 +390,56 @@
       "min": 1600000,
       "max": 2400000
     },
+
+    {
+      "area": "JVC",
+      "community": "Bloom Heights",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 700000,
+      "max": 1050000
+    },
+    {
+      "area": "JVC",
+      "community": "Bloom Heights",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1100000,
+      "max": 1600000
+    },
+    {
+      "area": "JVC",
+      "community": "Oxford Residence",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 680000,
+      "max": 980000
+    },
+    {
+      "area": "JVC",
+      "community": "Oxford Residence",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1050000,
+      "max": 1550000
+    },
+    {
+      "area": "JVC",
+      "community": "Five JVC",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 750000,
+      "max": 1150000
+    },
+    {
+      "area": "JVC",
+      "community": "Five JVC",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1200000,
+      "max": 1750000
+    },
+
     {
       "area": "JLT",
       "community": "Cluster X",
@@ -189,6 +469,56 @@
       "min": 2800000,
       "max": 4000000
     },
+
+    {
+      "area": "JLT",
+      "community": "Cluster S",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 950000,
+      "max": 1450000
+    },
+    {
+      "area": "JLT",
+      "community": "Cluster S",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1650000,
+      "max": 2400000
+    },
+    {
+      "area": "JLT",
+      "community": "Cluster D",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 920000,
+      "max": 1400000
+    },
+    {
+      "area": "JLT",
+      "community": "Cluster D",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1600000,
+      "max": 2350000
+    },
+    {
+      "area": "JLT",
+      "community": "Cluster A",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 980000,
+      "max": 1500000
+    },
+    {
+      "area": "JLT",
+      "community": "Cluster A",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1700000,
+      "max": 2550000
+    },
+
     {
       "area": "Palm Jumeirah",
       "community": "Shoreline Apartments",
@@ -225,6 +555,829 @@
       "beds": 3,
       "min": 7000000,
       "max": 12000000
+    },
+
+    {
+      "area": "Palm Jumeirah",
+      "community": "Oceana Residences",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 2800000,
+      "max": 4500000
+    },
+    {
+      "area": "Palm Jumeirah",
+      "community": "Oceana Residences",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 4500000,
+      "max": 7800000
+    },
+    {
+      "area": "Palm Jumeirah",
+      "community": "Tiara Residences",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 2600000,
+      "max": 4200000
+    },
+    {
+      "area": "Palm Jumeirah",
+      "community": "Tiara Residences",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 4300000,
+      "max": 7500000
+    },
+
+    {
+      "area": "Dubai Creek Harbour",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1400000,
+      "max": 2100000
+    },
+    {
+      "area": "Dubai Creek Harbour",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2100000,
+      "max": 3200000
+    },
+    {
+      "area": "Dubai Creek Harbour",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 3000000,
+      "max": 4800000
+    },
+    {
+      "area": "Dubai Creek Harbour",
+      "community": "Harbour Views",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1550000,
+      "max": 2300000
+    },
+    {
+      "area": "Dubai Creek Harbour",
+      "community": "Harbour Views",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2350000,
+      "max": 3500000
+    },
+    {
+      "area": "Dubai Creek Harbour",
+      "community": "Creek Rise",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1500000,
+      "max": 2250000
+    },
+    {
+      "area": "Dubai Creek Harbour",
+      "community": "Creek Rise",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2300000,
+      "max": 3400000
+    },
+    {
+      "area": "Dubai Creek Harbour",
+      "community": "Creek Gate",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1450000,
+      "max": 2150000
+    },
+    {
+      "area": "Dubai Creek Harbour",
+      "community": "Creek Gate",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2200000,
+      "max": 3300000
+    },
+
+    {
+      "area": "Dubai Hills Estate",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1050000,
+      "max": 1650000
+    },
+    {
+      "area": "Dubai Hills Estate",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1650000,
+      "max": 2550000
+    },
+    {
+      "area": "Dubai Hills Estate",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 2400000,
+      "max": 3800000
+    },
+    {
+      "area": "Dubai Hills Estate",
+      "community": "Park Heights",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1150000,
+      "max": 1750000
+    },
+    {
+      "area": "Dubai Hills Estate",
+      "community": "Park Heights",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1750000,
+      "max": 2700000
+    },
+    {
+      "area": "Dubai Hills Estate",
+      "community": "Mulberry",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1850000,
+      "max": 2850000
+    },
+    {
+      "area": "Dubai Hills Estate",
+      "community": "Acacia",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1100000,
+      "max": 1700000
+    },
+    {
+      "area": "Dubai Hills Estate",
+      "community": "Acacia",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1750000,
+      "max": 2700000
+    },
+
+    {
+      "area": "DIFC",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1600000,
+      "max": 2500000
+    },
+    {
+      "area": "DIFC",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2600000,
+      "max": 4200000
+    },
+    {
+      "area": "DIFC",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 4200000,
+      "max": 7000000
+    },
+    {
+      "area": "DIFC",
+      "community": "Park Towers",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1700000,
+      "max": 2600000
+    },
+    {
+      "area": "DIFC",
+      "community": "Park Towers",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2800000,
+      "max": 4500000
+    },
+    {
+      "area": "DIFC",
+      "community": "Sky Gardens",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1650000,
+      "max": 2550000
+    },
+    {
+      "area": "DIFC",
+      "community": "Sky Gardens",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2700000,
+      "max": 4300000
+    },
+    {
+      "area": "DIFC",
+      "community": "Burj Daman",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1750000,
+      "max": 2700000
+    },
+    {
+      "area": "DIFC",
+      "community": "Burj Daman",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2900000,
+      "max": 4600000
+    },
+
+    {
+      "area": "JBR",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1500000,
+      "max": 2300000
+    },
+    {
+      "area": "JBR",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2400000,
+      "max": 3700000
+    },
+    {
+      "area": "JBR",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 3600000,
+      "max": 6000000
+    },
+    {
+      "area": "JBR",
+      "community": "Sadaf",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2500000,
+      "max": 3800000
+    },
+    {
+      "area": "JBR",
+      "community": "Rimal",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2550000,
+      "max": 3900000
+    },
+    {
+      "area": "JBR",
+      "community": "Bahar",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2450000,
+      "max": 3800000
+    },
+
+    {
+      "area": "City Walk",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1700000,
+      "max": 2600000
+    },
+    {
+      "area": "City Walk",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2800000,
+      "max": 4300000
+    },
+    {
+      "area": "City Walk",
+      "community": "Central Park at City Walk",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1800000,
+      "max": 2700000
+    },
+    {
+      "area": "City Walk",
+      "community": "Central Park at City Walk",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 3000000,
+      "max": 4600000
+    },
+
+    {
+      "area": "The Greens",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 950000,
+      "max": 1450000
+    },
+    {
+      "area": "The Greens",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1500000,
+      "max": 2300000
+    },
+    {
+      "area": "The Greens",
+      "community": "Al Ghozlan",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 980000,
+      "max": 1500000
+    },
+    {
+      "area": "The Greens",
+      "community": "Al Ghozlan",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1550000,
+      "max": 2350000
+    },
+    {
+      "area": "The Greens",
+      "community": "Al Thayyal",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 950000,
+      "max": 1450000
+    },
+    {
+      "area": "The Greens",
+      "community": "Al Thayyal",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1500000,
+      "max": 2300000
+    },
+
+    {
+      "area": "The Views",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1050000,
+      "max": 1650000
+    },
+    {
+      "area": "The Views",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1700000,
+      "max": 2600000
+    },
+    {
+      "area": "The Views",
+      "community": "The Links",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1100000,
+      "max": 1700000
+    },
+    {
+      "area": "The Views",
+      "community": "The Links",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1800000,
+      "max": 2700000
+    },
+    {
+      "area": "The Views",
+      "community": "The Fairways",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1150000,
+      "max": 1750000
+    },
+    {
+      "area": "The Views",
+      "community": "The Fairways",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1850000,
+      "max": 2800000
+    },
+
+    {
+      "area": "Dubai Harbour",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1700000,
+      "max": 2600000
+    },
+    {
+      "area": "Dubai Harbour",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2800000,
+      "max": 4300000
+    },
+    {
+      "area": "Dubai Harbour",
+      "community": "Beach Vista",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1850000,
+      "max": 2800000
+    },
+    {
+      "area": "Dubai Harbour",
+      "community": "Beach Vista",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 3000000,
+      "max": 4600000
+    },
+    {
+      "area": "Dubai Harbour",
+      "community": "Sunrise Bay",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1800000,
+      "max": 2750000
+    },
+    {
+      "area": "Dubai Harbour",
+      "community": "Sunrise Bay",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2950000,
+      "max": 4500000
+    },
+
+    {
+      "area": "Bluewaters Island",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 2600000,
+      "max": 4200000
+    },
+    {
+      "area": "Bluewaters Island",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 4300000,
+      "max": 7500000
+    },
+    {
+      "area": "Bluewaters Island",
+      "community": "Bluewaters Residences",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 2800000,
+      "max": 4500000
+    },
+    {
+      "area": "Bluewaters Island",
+      "community": "Bluewaters Residences",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 4700000,
+      "max": 8200000
+    },
+
+
+    {
+      "area": "Dubai Hills Estate",
+      "type": "Villa",
+      "beds": 3,
+      "min": 5200000,
+      "max": 8200000
+    },
+    {
+      "area": "Dubai Hills Estate",
+      "type": "Villa",
+      "beds": 4,
+      "min": 7000000,
+      "max": 11500000
+    },
+    {
+      "area": "Dubai Hills Estate",
+      "type": "Villa",
+      "beds": 5,
+      "min": 9500000,
+      "max": 17000000
+    },
+    {
+      "area": "Dubai Hills Estate",
+      "community": "Maple",
+      "type": "Villa",
+      "beds": 3,
+      "min": 4200000,
+      "max": 6200000
+    },
+    {
+      "area": "Dubai Hills Estate",
+      "community": "Maple",
+      "type": "Villa",
+      "beds": 4,
+      "min": 5200000,
+      "max": 7800000
+    },
+    {
+      "area": "Dubai Hills Estate",
+      "community": "Sidra Villas",
+      "type": "Villa",
+      "beds": 3,
+      "min": 5600000,
+      "max": 8500000
+    },
+    {
+      "area": "Dubai Hills Estate",
+      "community": "Sidra Villas",
+      "type": "Villa",
+      "beds": 4,
+      "min": 7600000,
+      "max": 12000000
+    },
+    {
+      "area": "Dubai Hills Estate",
+      "community": "Golf Place",
+      "type": "Villa",
+      "beds": 5,
+      "min": 14000000,
+      "max": 24000000
+    },
+
+    {
+      "area": "Arabian Ranches",
+      "type": "Villa",
+      "beds": 3,
+      "min": 4200000,
+      "max": 6800000
+    },
+    {
+      "area": "Arabian Ranches",
+      "type": "Villa",
+      "beds": 4,
+      "min": 5600000,
+      "max": 9500000
+    },
+    {
+      "area": "Arabian Ranches",
+      "type": "Villa",
+      "beds": 5,
+      "min": 7800000,
+      "max": 13500000
+    },
+    {
+      "area": "Arabian Ranches",
+      "community": "Al Reem",
+      "type": "Villa",
+      "beds": 3,
+      "min": 3900000,
+      "max": 6100000
+    },
+    {
+      "area": "Arabian Ranches",
+      "community": "Palmera",
+      "type": "Villa",
+      "beds": 3,
+      "min": 4200000,
+      "max": 6600000
+    },
+    {
+      "area": "Arabian Ranches",
+      "community": "Saheel",
+      "type": "Villa",
+      "beds": 4,
+      "min": 6500000,
+      "max": 10500000
+    },
+    {
+      "area": "Arabian Ranches",
+      "community": "Aseel",
+      "type": "Villa",
+      "beds": 5,
+      "min": 9000000,
+      "max": 15000000
+    },
+
+    {
+      "area": "Arabian Ranches 2",
+      "type": "Villa",
+      "beds": 3,
+      "min": 3800000,
+      "max": 6200000
+    },
+    {
+      "area": "Arabian Ranches 2",
+      "type": "Villa",
+      "beds": 4,
+      "min": 5200000,
+      "max": 8800000
+    },
+    {
+      "area": "Arabian Ranches 2",
+      "community": "Lila",
+      "type": "Villa",
+      "beds": 3,
+      "min": 3900000,
+      "max": 6300000
+    },
+    {
+      "area": "Arabian Ranches 2",
+      "community": "Rasha",
+      "type": "Villa",
+      "beds": 4,
+      "min": 6500000,
+      "max": 10500000
+    },
+    {
+      "area": "Arabian Ranches 2",
+      "community": "Palma",
+      "type": "Villa",
+      "beds": 5,
+      "min": 8200000,
+      "max": 13500000
+    },
+
+    {
+      "area": "The Springs",
+      "type": "Villa",
+      "beds": 2,
+      "min": 2500000,
+      "max": 3900000
+    },
+    {
+      "area": "The Springs",
+      "type": "Villa",
+      "beds": 3,
+      "min": 3200000,
+      "max": 5200000
+    },
+    {
+      "area": "The Springs",
+      "type": "Villa",
+      "beds": 4,
+      "min": 4300000,
+      "max": 7000000
+    },
+
+    {
+      "area": "The Meadows",
+      "type": "Villa",
+      "beds": 4,
+      "min": 8200000,
+      "max": 13500000
+    },
+    {
+      "area": "The Meadows",
+      "type": "Villa",
+      "beds": 5,
+      "min": 10500000,
+      "max": 18000000
+    },
+
+    {
+      "area": "The Lakes",
+      "type": "Villa",
+      "beds": 4,
+      "min": 9000000,
+      "max": 15000000
+    },
+    {
+      "area": "The Lakes",
+      "type": "Villa",
+      "beds": 5,
+      "min": 11500000,
+      "max": 19500000
+    },
+
+    {
+      "area": "Jumeirah Golf Estates",
+      "type": "Villa",
+      "beds": 4,
+      "min": 8500000,
+      "max": 15000000
+    },
+    {
+      "area": "Jumeirah Golf Estates",
+      "type": "Villa",
+      "beds": 5,
+      "min": 12000000,
+      "max": 22000000
+    },
+    {
+      "area": "Jumeirah Golf Estates",
+      "community": "Sienna Lakes",
+      "type": "Villa",
+      "beds": 5,
+      "min": 14000000,
+      "max": 26000000
+    },
+    {
+      "area": "Jumeirah Golf Estates",
+      "community": "Orange Lake",
+      "type": "Villa",
+      "beds": 4,
+      "min": 9500000,
+      "max": 17500000
+    },
+
+    {
+      "area": "DAMAC Hills",
+      "type": "Villa",
+      "beds": 3,
+      "min": 3000000,
+      "max": 5200000
+    },
+    {
+      "area": "DAMAC Hills",
+      "type": "Villa",
+      "beds": 4,
+      "min": 4200000,
+      "max": 7600000
+    },
+    {
+      "area": "DAMAC Hills",
+      "type": "Villa",
+      "beds": 5,
+      "min": 5800000,
+      "max": 10500000
+    },
+
+    {
+      "area": "MBR City",
+      "type": "Villa",
+      "beds": 4,
+      "min": 11000000,
+      "max": 20000000
+    },
+    {
+      "area": "MBR City",
+      "type": "Villa",
+      "beds": 5,
+      "min": 15000000,
+      "max": 28000000
+    },
+    {
+      "area": "MBR City",
+      "community": "District One",
+      "type": "Villa",
+      "beds": 4,
+      "min": 14000000,
+      "max": 25000000
+    },
+    {
+      "area": "MBR City",
+      "community": "District One",
+      "type": "Villa",
+      "beds": 5,
+      "min": 20000000,
+      "max": 35000000
+    },
+
+    {
+      "area": "Palm Jumeirah",
+      "type": "Villa",
+      "beds": 4,
+      "min": 18000000,
+      "max": 35000000
+    },
+    {
+      "area": "Palm Jumeirah",
+      "type": "Villa",
+      "beds": 5,
+      "min": 26000000,
+      "max": 55000000
+    },
+    {
+      "area": "Palm Jumeirah",
+      "community": "Garden Homes",
+      "type": "Villa",
+      "beds": 4,
+      "min": 22000000,
+      "max": 42000000
+    },
+    {
+      "area": "Palm Jumeirah",
+      "community": "Signature Villas",
+      "type": "Villa",
+      "beds": 5,
+      "min": 35000000,
+      "max": 80000000
+    },
+
+    {
+      "area": "Al Barari",
+      "type": "Villa",
+      "beds": 5,
+      "min": 18000000,
+      "max": 38000000
+    },
+    {
+      "area": "Al Barari",
+      "community": "The Residences (Al Barari)",
+      "type": "Villa",
+      "beds": 6,
+      "min": 26000000,
+      "max": 52000000
     }
   ],
   "comps": [
@@ -281,6 +1434,123 @@
       "size_sqft": 1340,
       "price": 2100000,
       "date": "2025-06"
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Marina Promenade",
+      "label": "Marina Promenade (sample)",
+      "beds": 2,
+      "size_sqft": 1320,
+      "price": 2650000,
+      "date": "2025-08"
+    },
+    {
+      "area": "Business Bay",
+      "community": "Executive Towers",
+      "label": "Executive Towers (sample)",
+      "beds": 1,
+      "size_sqft": 880,
+      "price": 1280000,
+      "date": "2025-09"
+    },
+    {
+      "area": "Dubai Creek Harbour",
+      "community": "Creek Rise",
+      "label": "Creek Rise (sample)",
+      "beds": 2,
+      "size_sqft": 1200,
+      "price": 2850000,
+      "date": "2025-08"
+    },
+    {
+      "area": "Dubai Hills Estate",
+      "community": "Park Heights",
+      "label": "Park Heights (sample)",
+      "beds": 2,
+      "size_sqft": 1180,
+      "price": 2250000,
+      "date": "2025-09"
+    },
+    {
+      "area": "DIFC",
+      "community": "Sky Gardens",
+      "label": "Sky Gardens (sample)",
+      "beds": 1,
+      "size_sqft": 980,
+      "price": 2250000,
+      "date": "2025-07"
+    },
+    {
+      "area": "JBR",
+      "community": "Sadaf",
+      "label": "Sadaf (sample)",
+      "beds": 2,
+      "size_sqft": 1380,
+      "price": 3250000,
+      "date": "2025-08"
+    },
+    {
+      "area": "Palm Jumeirah",
+      "community": "Tiara Residences",
+      "label": "Tiara Residences (sample)",
+      "beds": 2,
+      "size_sqft": 1700,
+      "price": 5850000,
+      "date": "2025-09"
+    },
+    {
+      "area": "Bluewaters Island",
+      "community": "Bluewaters Residences",
+      "label": "Bluewaters Residences (sample)",
+      "beds": 2,
+      "size_sqft": 1550,
+      "price": 6900000,
+      "date": "2025-08"
+    },
+
+    {
+      "area": "Dubai Hills Estate",
+      "community": "Maple",
+      "label": "Maple (Villa sample)",
+      "beds": 4,
+      "size_sqft": 2500,
+      "price": 6400000,
+      "date": "2025-08"
+    },
+    {
+      "area": "Arabian Ranches",
+      "community": "Al Reem",
+      "label": "Al Reem (Villa sample)",
+      "beds": 3,
+      "size_sqft": 2200,
+      "price": 4850000,
+      "date": "2025-09"
+    },
+    {
+      "area": "The Springs",
+      "label": "The Springs (Villa sample)",
+      "beds": 3,
+      "size_sqft": 2000,
+      "price": 4100000,
+      "date": "2025-07"
+    },
+    {
+      "area": "Jumeirah Golf Estates",
+      "community": "Orange Lake",
+      "label": "Orange Lake (Villa sample)",
+      "beds": 4,
+      "size_sqft": 4300,
+      "price": 13200000,
+      "date": "2025-08"
+    },
+    {
+      "area": "Palm Jumeirah",
+      "community": "Garden Homes",
+      "label": "Garden Homes (Villa sample)",
+      "beds": 4,
+      "size_sqft": 5000,
+      "price": 31500000,
+      "date": "2025-09"
     }
   ]
 }

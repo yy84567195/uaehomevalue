@@ -118,15 +118,24 @@ export default function ResultClient() {
 
 // URL params
 const area = useMemo(() => getParam("area"), []);
-const community = useMemo(() => getParam("community"), []); // ✅ 新增
+const community = useMemo(() => getParam("community"), []);
+const building = useMemo(() => getParam("building"), []); // ✅ 新增：building
 const type = useMemo(() => getParam("type"), []);
 const beds = useMemo(() => getParam("beds"), []);
+// ✅ beds label for display (0 => Studio, 6 => 4+)
+const bedsLabel = useMemo(() => {
+  const b = Number(beds);
+  if (!Number.isFinite(b)) return "";
+  if (b === 0) return "Studio";
+  if (b >= 4) return "4+";
+  return String(b);
+}, [beds]);
 const sizeSqftStr = useMemo(() => getParam("sizeSqft"), []);
 const min = useMemo(() => Number(getParam("min") || 0), []);
 const max = useMemo(() => Number(getParam("max") || 0), []);
 const confidence = useMemo(() => getParam("confidence") || "Medium", []);
+const matched = useMemo(() => getParam("matched"), []);
 
-const matched = useMemo(() => getParam("matched"), []); // "community" | "area"
 const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
 // ✅ 先计算最终显示值（refine override 优先）
@@ -509,10 +518,17 @@ const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
 
           <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>{t("result.subtitle")}</div>
 
-          <div style={{ marginTop: 6, fontSize: 14, color: "#475569", lineHeight: 1.6 }}>
-            {area || "—"} • {type || "—"} • {beds ? t("result.header.beds", { beds }) : "—"} • {formatSqft(sizeSqft)}{" "}
-            {t("result.header.sqft")}
-          </div>
+      <div style={{ marginTop: 6, fontSize: 14, color: "#475569", lineHeight: 1.6 }}>
+  {area || "—"} • {type || "—"} •{" "}
+  {bedsLabel
+    ? bedsLabel === "studio"
+      ? t("result.header.studio")
+      : bedsLabel === "4plus"
+      ? t("result.header.bedsPlus")
+      : t("result.header.beds", { beds: bedsLabel })
+    : "—"}{" "}
+  • {formatSqft(sizeSqft)} {t("result.header.sqft")}
+</div>
         </div>
 
         {/* Main layout */}

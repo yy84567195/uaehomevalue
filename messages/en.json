@@ -2,6 +2,13 @@
   "home": {
     "title": "Find Your Real Home Value in Dubai — Instantly",
     "subtitle": "Independent price ranges based on area & community data.",
+   "badges": {
+  "fast": "30s check",
+  "areaCommunity": "Area + Community",
+  "noAgents": "No agents",
+  "noAds": "No ads",
+  "noSpam": "No spam"
+},
     "area": "Area",
     "community": "Community (optional)",
     "communityAll": "All communities",
@@ -27,10 +34,11 @@
     },
     "error": {
       "size": "Please enter a valid size (sqft).",
-      "noData": "No estimate available for this selection yet. Please try another area.",
+      "noData": "We don’t have enough market data to produce a reliable estimate for this selection yet. Please try another area or community.",
       "generic": "Estimate failed. Please try again.",
       "network": "Network error. Please try again."
     },
+    
     "disclaimer": "Independent market-based estimate · No listings · No agents"
   },
   "result": {
@@ -41,10 +49,12 @@
       "recheck": "Re-check another home",
       "changeInputs": "Change inputs"
     },
-    "header": {
-      "beds": "{beds} bed",
-      "sqft": "sqft"
-    },
+"header": {
+  "beds": "{beds} bed",
+  "bedsPlus": "4+ bed",
+  "studio": "Studio",
+  "sqft": "sqft"
+},
     "likelyRange": "Likely value range (AED)",
     "conservativeRange": "Conservative market range",
     "likelyBandWidth": "Likely band width",
@@ -55,6 +65,7 @@
     "how": {
       "title": "How this estimate is calculated",
       "desc": "This estimate is generated using community-level pricing ranges and size adjustment.",
+      "areaMatch": "This estimate is based on recent transactions in the same area.",
       "factorsTitle": "Key factors considered:",
       "factors": {
         "location": "Location (community-level pricing)",

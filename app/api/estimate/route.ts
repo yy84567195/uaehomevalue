@@ -1,146 +1,202 @@
-import { NextResponse } from "next/server";
+// app/api/estimate/route.ts
+import { NextRequest, NextResponse } from "next/server";
 import data from "@/data/price_ranges.json";
 
-type Confidence = "High" | "Medium" | "Low";
+type Row = {
+  area: string;
+  community?: string;
+  type: "Apartment" | "Villa";
+  beds: number;
+  min: number;
+  max: number;
+};
 
-function normalize(s: string) {
-  return String(s || "").trim().toLowerCase();
+function normalizeStr(v: any) {
+  return String(v ?? "").trim();
 }
 
-// 用一个“典型面积”让 sizeSqft 真实影响结果（MVP 必备）
-// 你后续有真实分布数据再替换即可
-function typicalSizeSqft(type: string, beds: number) {
-  const t = normalize(type);
-
-  // Apartment
-  if (t === "apartment") {
-    if (beds <= 0) return 550;
-    if (beds === 1) return 850;
-    if (beds === 2) return 1250;
-    if (beds === 3) return 1700;
-    return 2200; // 4+
-  }
-
-  // Villa（更大）
-  if (beds <= 0) return 1800;
-  if (beds === 1) return 2200;
-  if (beds === 2) return 2800;
-  if (beds === 3) return 3500;
-  return 4500;
+function normKey(v: any) {
+  return normalizeStr(v).toLowerCase();
 }
 
-// 让“不同区域必然变”，但不会过度夸张
-function areaFactor(area: string) {
-  const m: Record<string, number> = {
-    "palm jumeirah": 1.28,
-    "downtown dubai": 1.22,
-    "dubai marina": 1.12,
-    "business bay": 1.02,
-    "jlt": 0.95,
-    "jumeirah lake towers": 0.95,
-    "jvc": 0.88,
-    "dubai hills": 1.10,
-    "arabian ranches": 1.08,
-  };
-
-  return m[normalize(area)] ?? 1.0;
+// ✅ beds=6 代表 4+，自动向下兜底：6 -> 5 -> 4
+function bedsCandidates(beds: number) {
+  if (!Number.isFinite(beds)) return [];
+  if (beds >= 6) return [6, 5, 4];
+  if (beds === 5) return [5, 4];
+  return [beds];
 }
 
-export async function POST(req: Request) {
+function clamp(n: number, lo: number, hi: number) {
+  return Math.max(lo, Math.min(hi, n));
+}
+
+// ✅ 根据 sizeSqft 做一个轻量的“面积调整”
+// - 以同档位 comps 的中位面积为基准（如果没有 comps，用 1000 sqft 当基准）
+// - 调整幅度限制在 ±25%（避免离谱）
+function sizeAdjustFactor(area: string, community: string, type: string, beds: number, sizeSqft: number) {
+  const comps = (data as any)?.comps ?? [];
+  const aKey = normKey(area);
+  const cKey = normKey(community);
+
+  const pool = comps
+    .filter((x: any) => normKey(x?.area) === aKey)
+    .filter((x: any) => !community || normKey(x?.community) === cKey)
+    .filter((x: any) => normKey(x?.beds) === normKey(beds));
+
+  const sizes = pool
+    .map((x: any) => Number(x?.size_sqft))
+    .filter((n: number) => Number.isFinite(n) && n > 0)
+    .sort((p: number, q: number) => p - q);
+
+  const base = sizes.length
+    ? sizes[Math.floor(sizes.length / 2)]
+    : 1000;
+
+  if (!Number.isFinite(sizeSqft) || sizeSqft <= 0) return 1;
+
+  const raw = sizeSqft / base;
+
+  // 对数压缩一下，不让变化太夸张
+  // 例如：2倍面积不会让价格2倍，只是偏大一些
+  const compressed = Math.pow(raw, 0.85);
+
+  return clamp(compressed, 0.75, 1.25);
+}
+
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const area = String(body?.area ?? "").trim();
-    const community = String(body?.community ?? "").trim(); // ✅ 新增：可选
-    const type = String(body?.type ?? "").trim(); // "Apartment" | "Villa"
-    const beds = Number(body?.beds ?? 0);
-    const sizeSqft = Number(body?.sizeSqft ?? 0);
+    const area = normalizeStr(body?.area);
+    const community = normalizeStr(body?.community); // ✅ 可选
+    const building = normalizeStr(body?.building);   // ✅ 先占位，后面可用于采样/训练
+    const type = normalizeStr(body?.type) as "Apartment" | "Villa";
+    const beds = Number(body?.beds);
+    const sizeSqft = Number(body?.sizeSqft);
 
-    if (!area || !type || !Number.isFinite(sizeSqft) || sizeSqft <= 0) {
-      return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 });
+    if (!area || (type !== "Apartment" && type !== "Villa") || !Number.isFinite(beds) || beds < 0) {
+      return NextResponse.json(
+        { error: "Invalid request. Please provide area/type/beds/sizeSqft." },
+        { status: 400 }
+      );
     }
 
-    const rowsAll = (data as any)?.communities ?? [];
+    const rows: Row[] = ((data as any)?.communities ?? []) as Row[];
 
-    // 统一按 area/type/beds 过滤（beds 也要匹配，不然会乱）
-    const baseMatch = (r: any) =>
-      normalize(r?.area) === normalize(area) &&
-      normalize(r?.type) === normalize(type) &&
-      Number(r?.beds) === Number(beds);
+    const aKey = normKey(area);
+    const cKey = normKey(community);
+    const tKey = normKey(type);
 
-    // ✅ 1) community 优先（如果你的数据里有 community 字段就会命中）
-    const communityRows = community
-      ? rowsAll.filter((r: any) => baseMatch(r) && normalize(r?.community) === normalize(community))
-      : [];
+const candidates = bedsCandidates(beds);
 
-    // ✅ 2) fallback 到 area 级别
-    const areaRows = rowsAll.filter((r: any) => baseMatch(r));
+// 先社区级（community 精确）
+let picked: any[] = [];
+if (community) {
+  for (const b of candidates) {
+    const found = rows.filter(
+      (r) =>
+        r.area === area &&
+        r.type === type &&
+        Number(r.beds) === b &&
+        String(r.community || "") === String(community)
+    );
+    if (found.length) {
+      picked = found;
+      break;
+    }
+  }
+}
 
-    const rows = communityRows.length ? communityRows : areaRows;
+// 再区域级（无 community 的行）
+if (!picked.length) {
+  for (const b of candidates) {
+    const found = rows.filter(
+      (r) =>
+        r.area === area &&
+        r.type === type &&
+        Number(r.beds) === b &&
+        !r.community
+    );
+    if (found.length) {
+      picked = found;
+      break;
+    }
+  }
+}
 
-    // 没有任何匹配：fallback（仍按区域系数）
-    if (!rows.length) {
-      const af = areaFactor(area);
-      const basePpsf = 1800 * af; // 你可以后续替换成更真实的基准
-      const mid = basePpsf * sizeSqft;
-
-      return NextResponse.json({
-        min: Math.round(mid * 0.75),
-        max: Math.round(mid * 1.25),
-        confidence: "Low" as Confidence,
-        meta: { reason: "no_match_rows", area, community, type, beds, areaFactor: af },
-      });
+    // ✅ 2) fallback：area 级（没有 community 字段的行）
+    if (!picked.length) {
+      for (const b of candidates) {
+        const found = rows.filter((r) => {
+          if (normKey(r?.area) !== aKey) return false;
+          if (normKey(r?.type) !== tKey) return false;
+          if (Number(r?.beds) !== b) return false;
+          if (r?.community) return false; // 只要 area-level
+          return true;
+        });
+        if (found.length) {
+          picked = found;
+          break;
+        }
+      }
     }
 
-    // ✅ 从数据的 min/max 得到“基准区间”
-    const mins = rows.map((r: any) => Number(r?.min)).filter((n: number) => Number.isFinite(n) && n > 0);
-    const maxs = rows.map((r: any) => Number(r?.max)).filter((n: number) => Number.isFinite(n) && n > 0);
-
-    if (!mins.length || !maxs.length) {
-      return NextResponse.json({
-        min: 0,
-        max: 0,
-        confidence: "Low" as Confidence,
-        meta: { reason: "bad_min_max_in_rows", rows: rows.length },
-      });
+    if (!picked.length) {
+  return NextResponse.json(
+  { error: "NO_DATA" },
+  { status: 404 }
+);
     }
 
-    // 取一个稳的范围：min 取中位附近、max 取中位附近（MVP 简化）
-    mins.sort((a, b) => a - b);
-    maxs.sort((a, b) => a - b);
-    const baseMin = mins[Math.floor(mins.length / 2)];
-    const baseMax = maxs[Math.floor(maxs.length / 2)];
+    // ✅ 取范围：如果同一档多行，取 min 的最小、max 的最大
+    const baseMin = Math.min(...picked.map((r) => Number(r.min)).filter((n) => Number.isFinite(n) && n > 0));
+    const baseMax = Math.max(...picked.map((r) => Number(r.max)).filter((n) => Number.isFinite(n) && n > 0));
 
-    // ✅ 用“典型面积”把区间按用户输入 sizeSqft 比例缩放
-    const typical = typicalSizeSqft(type, beds);
-    const scale = typical > 0 ? sizeSqft / typical : 1;
+    if (!Number.isFinite(baseMin) || !Number.isFinite(baseMax) || baseMax <= baseMin) {
+      return NextResponse.json(
+        { error: "Estimate data is incomplete for this selection." },
+        { status: 500 }
+      );
+    }
 
-    const scaledMin = baseMin * scale;
-    const scaledMax = baseMax * scale;
+    // ✅ 面积微调
+    const factor = sizeAdjustFactor(area, community, type, candidates[0] ?? beds, sizeSqft);
+    const min = Math.round(baseMin * factor);
+    const max = Math.round(baseMax * factor);
 
-    // ✅ 置信度：community 命中 = High；只有 area 命中 = Medium；兜底 = Low
-    let confidence: Confidence = "Medium";
-    if (communityRows.length) confidence = "High";
-    if (!areaRows.length) confidence = "Low";
+    // ✅ 简单置信度：community 匹配更高；bed 兜底更低
+    const usedBeds = picked[0]?.beds ?? beds;
+    const isCommunityMatched = !!community && normKey(picked[0]?.community) === cKey;
+    const isFallbackBeds = Number(usedBeds) !== Number(beds);
 
-    // 最终保护：max 必须 > min
-    const minOut = Math.round(Math.min(scaledMin, scaledMax * 0.95));
-    const maxOut = Math.round(Math.max(scaledMax, scaledMin * 1.05));
+    const confidence =
+      isCommunityMatched && !isFallbackBeds ? "High" :
+      isCommunityMatched && isFallbackBeds ? "Medium" :
+      !isCommunityMatched && !isFallbackBeds ? "Medium" :
+      "Low";
 
     return NextResponse.json({
-      min: minOut,
-      max: maxOut,
+      min,
+      max,
       confidence,
-      meta: {
-        matched: communityRows.length ? "community" : "area",
-        rowsUsed: rows.length,
-        baseMin,
-        baseMax,
-        typicalSizeSqft: typical,
-        scale,
+      matched: isCommunityMatched ? "community" : "area",
+      // 下面这些留着以后做训练样本/后台收集（暂时不影响前端）
+      debug: {
+        area,
+        community,
+        building,
+        type,
+        beds,
+        bedsUsed: usedBeds,
+        sizeSqft,
+        factor,
       },
     });
-  } catch {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  } catch (e) {
+    return NextResponse.json(
+      { error: "Invalid JSON or server error." },
+      { status: 400 }
+    );
   }
 }

@@ -2,6 +2,13 @@
   "home": {
     "title": "迪拜房价一键估算 — 立刻知道真实区间",
     "subtitle": "基于区域与小区数据的独立估值区间。",
+"badges": {
+  "fast": "30秒快速估值",
+  "areaCommunity": "区域 + 小区",
+  "noAgents": "无中介报价",
+  "noAds": "无广告",
+  "noSpam": "不骚扰"
+},
     "area": "区域",
     "community": "小区（可选）",
     "communityAll": "全部小区",
@@ -27,7 +34,7 @@
     },
     "error": {
       "size": "请输入正确的面积（平方英尺）。",
-      "noData": "该选择暂时没有可用估值。请尝试其他区域。",
+      "noData": "当前所选条件下，市场数据不足，暂无法给出可靠的价格区间。请尝试更换区域或小区。",
       "generic": "估值失败，请稍后再试。",
       "network": "网络错误，请稍后再试。"
     },
@@ -41,10 +48,12 @@
       "recheck": "再估算一套",
       "changeInputs": "修改输入"
     },
-    "header": {
-      "beds": "{beds} 卧",
-      "sqft": "平方英尺"
-    },
+  "header": {
+  "beds": "{beds} 房",
+  "bedsPlus": "4房以上",
+  "studio": "单间",
+  "sqft": "平方英尺"
+},
     "likelyRange": "可能价格区间（AED）",
     "conservativeRange": "保守市场区间",
     "likelyBandWidth": "可能区间宽度",
@@ -55,6 +64,7 @@
     "how": {
       "title": "估值如何计算",
       "desc": "本估值基于小区级价格区间，并结合面积进行调整。",
+      "areaMatch": "该估值基于同一区域的近期成交数据。",
       "factorsTitle": "主要影响因素：",
       "factors": {
         "location": "位置（小区级定价）",
