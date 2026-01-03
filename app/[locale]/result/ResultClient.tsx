@@ -169,7 +169,34 @@ useEffect(() => {
     const url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   }
+async function submitLeadFromResult(extra?: { source?: string; notes?: string }) {
+  try {
+    await fetch("/api/lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        // 结果页没有姓名/whatsapp输入就先留空
+        name: "",
+        whatsapp: "",
+        notes: extra?.notes || "",
 
+        area,
+        community,
+        type,
+        beds: Number(bedsNum || 0),
+        sizeSqft: Number(sizeSqft || 0),
+
+        estimateMin: Number(minFinal || 0),
+        estimateMax: Number(maxFinal || 0),
+
+        // 可选：告诉你是从哪个按钮提交的（你后端不存也没关系）
+        source: extra?.source || "result",
+      }),
+    });
+  } catch (e) {
+    console.error("lead submit failed (result)", e);
+  }
+}
   const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
 
   const band = useMemo(() => {
@@ -582,12 +609,15 @@ useEffect(() => {
                         newMax = Math.min(hi, Math.round(midLocal + newHalf));
                       }
 
-                      setMinOverride(newMin);
-                      setMaxOverride(newMax);
-                      setConfidenceOverride(t("refine.messages.refinedBadge"));
+              setMinOverride(newMin);
+setMaxOverride(newMax);
+setConfidenceOverride(t("refine.messages.refinedBadge"));
 
-                      setRefineResult({ min: newMin, max: newMax, note: t("refine.messages.thanks") });
-                      setShowRefine(false);
+// ✅ 结果页也发一封邮件（不影响用户流程）
+submitLeadFromResult({ source: "result_refine_submit", notes: `Refine submit | expectedPrice=${refineData.expectedPrice || ""}` });
+
+setRefineResult({ min: newMin, max: newMax, note: t("refine.messages.thanks") });
+setShowRefine(false);
                     }}
                   >
                     {t("refine.submit")}
