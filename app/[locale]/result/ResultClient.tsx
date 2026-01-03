@@ -614,7 +614,19 @@ setMaxOverride(newMax);
 setConfidenceOverride(t("refine.messages.refinedBadge"));
 
 // ✅ 结果页也发一封邮件（不影响用户流程）
-submitLeadFromResult({ source: "result_refine_submit", notes: `Refine submit | expectedPrice=${refineData.expectedPrice || ""}` });
+submitLeadFromResult({
+  source: "result_refine_submit",
+  notes:
+    `Refine submit` +
+    ` | building=${refineData.building || "-"}` +
+    ` | floor=${refineData.floor || "-"}` +
+    ` | view=${refineData.view || "-"}` +
+    ` | condition=${refineData.condition || "-"}` +
+    ` | parking=${refineData.parking || "-"}` +
+    ` | expectedPrice=${refineData.expectedPrice || "-"}` +
+    ` | amenities=${(refineData.amenities && refineData.amenities.length ? refineData.amenities.join(",") : "-")}` +
+    ` | refinedRange=${newMin}-${newMax}`,
+});
 
 setRefineResult({ min: newMin, max: newMax, note: t("refine.messages.thanks") });
 setShowRefine(false);
