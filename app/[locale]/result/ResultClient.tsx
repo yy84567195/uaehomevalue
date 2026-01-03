@@ -571,7 +571,7 @@ async function submitLeadFromResult(extra?: { source?: string; notes?: string })
                   <button
                     className={styles.btnPrimary}
                     style={{ marginTop: 12 }}
-                    onClick={() => {
+                    onClick={async () => {
                       const lo = Number(minFinal ?? min);
                       const hi = Number(maxFinal ?? max);
 
@@ -628,6 +628,38 @@ submitLeadFromResult({
     ` | refinedRange=${newMin}-${newMax}`,
 });
 
+// ✅ send lead email (refine) - do NOT block user flow
+try {
+  await fetch("/api/lead", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: "",
+      whatsapp: "",
+      notes:
+        `Refine submit` +
+        ` | building=${refineData.building || "-"}` +
+        ` | floor=${refineData.floor || "-"}` +
+        ` | view=${refineData.view || "-"}` +
+        ` | condition=${refineData.condition || "-"}` +
+        ` | parking=${refineData.parking || "-"}` +
+        ` | expectedPrice=${refineData.expectedPrice || "-"}` +
+        ` | amenities=${(refineData.amenities?.length ? refineData.amenities.join(",") : "-")}` +
+        ` | refinedRange=${newMin}-${newMax}`,
+      area,
+      community: String(community || ""),
+      type,
+      beds: Number(beds || 0),
+      sizeSqft: Number(sizeSqftStr || 0),
+      estimateMin: newMin,
+      estimateMax: newMax,
+    }),
+  });
+} catch (e) {
+  console.error("refine lead submit failed", e);
+}
+
+// ✅ UI 结果（保持你原来的）
 setRefineResult({ min: newMin, max: newMax, note: t("refine.messages.thanks") });
 setShowRefine(false);
                     }}
