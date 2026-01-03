@@ -91,62 +91,89 @@ export default function HomePage() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/estimate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          area,
-          community: String(community || ""),
-          building: "",
-          type, // 注意：仍然传 Apartment/Villa（不要翻译）
-          beds,
-          sizeSqft: Number(sizeSqftNum),
-        }),
-      });
+  const res = await fetch("/api/estimate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      area,
+      community: String(community || ""),
+      building: "",
+      type, // 注意：仍然传 Apartment/Villa（不要翻译）
+      beds,
+      sizeSqft: Number(sizeSqftNum),
+    }),
+  });
 
-      const out = await res.json();
+  const out = await res.json();
 
-      // ✅ API 报错：统一返回 error code（兼容旧的英文 error 文案）
-      if (!res.ok || out?.error) {
-        const e = String(out?.error || "");
+  // ✅ API 报错：统一返回 error code（兼容旧的英文 error 文案）
+  if (!res.ok || out?.error) {
+    const e = String(out?.error || "");
 
-        if (e === "NO_DATA" || e.includes("No estimate available")) {
-          setErrCode("NO_DATA_AREA_COMMUNITY");
-        } else if (e === "INVALID_INPUT" || e.includes("Invalid")) {
-          setErrCode("INVALID_INPUT");
-        } else {
-          setErrCode("GENERIC");
-        }
-        return;
-      }
+    if (e === "NO_DATA" || e.includes("No estimate available")) {
+      setErrCode("NO_DATA_AREA_COMMUNITY");
+    } else if (e === "INVALID_INPUT" || e.includes("Invalid")) {
+      setErrCode("INVALID_INPUT");
+    } else {
+      setErrCode("GENERIC");
+    }
+    return;
+  }
 
-      const minVal = Number(out?.min);
-      const maxVal = Number(out?.max);
+  const minVal = Number(out?.min);
+  const maxVal = Number(out?.max);
 
-      // ✅ 防止 min/max 异常
-      if (!Number.isFinite(minVal) || !Number.isFinite(maxVal) || minVal <= 0 || maxVal <= 0 || maxVal <= minVal) {
-        setErrCode("NO_DATA_AREA_COMMUNITY");
-        return;
-      }
+  // ✅ 防止 min/max 异常
+  if (
+    !Number.isFinite(minVal) ||
+    !Number.isFinite(maxVal) ||
+    minVal <= 0 ||
+    maxVal <= 0 ||
+    maxVal <= minVal
+  ) {
+    setErrCode("NO_DATA_AREA_COMMUNITY");
+    return;
+  }
 
-      const params = new URLSearchParams({
+  // ✅ 提交 lead（发邮件 / 入库）：不影响主流程
+  try {
+    await fetch("/api/lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+     
         area,
         community: String(community || ""),
         type,
-        beds: String(beds),
-        sizeSqft: String(Number(sizeSqftNum)),
-        min: String(minVal),
-        max: String(maxVal),
-        confidence: String(out?.confidence || "Medium"),
-      });
+        beds,
+        sizeSqft: Number(sizeSqftNum),
 
-      // ✅ 保持 locale 前缀（你现在是 /[locale] 结构）
-      window.location.href = `/${locale}/result?${params.toString()}`;
-    } catch {
-      setErrCode("NETWORK");
-    } finally {
-      setLoading(false);
-    }
+        estimateMin: minVal,
+        estimateMax: maxVal,
+      }),
+    });
+  } catch (e) {
+    console.error("lead submit failed", e);
+  }
+
+  const params = new URLSearchParams({
+    area,
+    community: String(community || ""),
+    type,
+    beds: String(beds),
+    sizeSqft: String(Number(sizeSqftNum)),
+    min: String(minVal),
+    max: String(maxVal),
+    confidence: String(out?.confidence || "Medium"),
+  });
+
+  // ✅ 保持 locale 前缀（你现在是 /[locale] 结构）
+  window.location.href = `/${locale}/result?${params.toString()}`;
+} catch {
+  setErrCode("NETWORK");
+} finally {
+  setLoading(false);
+}
   }
 
 return (
