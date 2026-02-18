@@ -270,7 +270,8 @@
     "reportSubtitle": "由 UAEHomeValue 生成",
     "reportSource": "数据来源：DLD（迪拜）+ DARI（阿布扎比）官方开放数据",
     "reportDisclaimer": "本报告仅供参考，不构成正式评估或法律效力文件。最终价格因楼层、景观、装修状态及成交时点而异。",
-    "share": "保存/分享报告"
+    "share": "保存/分享报告",
+    "saveImage": "保存图片"
   },
   "dataSource": {
     "label": "数据",
