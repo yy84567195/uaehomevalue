@@ -23,21 +23,26 @@ The estimate follows this logic:
     },
     {
       title: "Data Sources",
-      body: `All pricing data is derived from official open data published by Dubai government bodies:
+      body: `All pricing data is derived from official open data published by UAE government bodies:
 
+Dubai:
 • Dubai Land Department (DLD) — Residential sale transaction records, freehold units. Available at dubailand.gov.ae/en/open-data/real-estate-data/
+• Dubai Pulse — DLD Residential Sale Index (monthly/quarterly/yearly). Available at dubaipulse.gov.ae/organisation/dld
+• DLD Ejari Rent Contracts — Tenancy contract data used for rental yield calculation. Available at dubaipulse.gov.ae
 
-• Dubai Pulse — DLD Residential Sale Index (monthly/quarterly/yearly), DSC Residential Property Price Index. Available at dubaipulse.gov.ae/organisation/dld
+Abu Dhabi:
+• DARI Platform (DMT / ADRES) — Official Abu Dhabi real estate transaction data and market insights. Available at dari.ae/en/realestate-data
+• ADREC Dashboards — Abu Dhabi Real Estate Centre price indices and transaction analytics. Available at adrec.gov.ae
 
-• DLD Ejari Rent Contracts — Tenancy contract data used for rental yield reference. Available at dubaipulse.gov.ae
-
-Data is used under the open data terms published by Dubai Land Department and Dubai Pulse. No proprietary or commercial data feeds are used.`,
+Data is used under open data terms. No proprietary or commercial data feeds are used.`,
     },
     {
       title: "Rental Yield Reference",
-      body: `The rent estimate shown on result pages is a rough reference only. It is calculated as 5–7% gross yield on the estimated property value, which reflects typical gross rental yields observed in Dubai's residential market.
+      body: `The rental estimates are derived from area-level rental data sourced from DLD Ejari tenancy contracts (Dubai) and DARI rental indices (Abu Dhabi). Rental ranges reflect the typical annual rent for the selected area, property type, and bedroom count.
 
-This is not derived from actual rental transaction data. Do not use this figure for investment decisions without verifying against current rental listings.`,
+Gross rental yield is calculated as: (Annual Rent / Property Value) × 100%. Yields typically range from 4–8% across UAE markets.
+
+These figures are indicative references. Always verify against current rental listings before making investment decisions.`,
     },
     {
       title: "What the Estimate Does Not Account For",

@@ -113,6 +113,25 @@ useEffect(() => {
   // Report download
   const [reportLoading, setReportLoading] = useState(false);
 
+  // Feedback state
+  const [fbOpen, setFbOpen] = useState(false);
+  const [fbMsg, setFbMsg] = useState("");
+  const [fbEmail, setFbEmail] = useState("");
+  const [fbStatus, setFbStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  async function onSubmitFeedback() {
+    if (fbMsg.trim().length < 3) return;
+    setFbStatus("loading");
+    try {
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: fbMsg, email: fbEmail, page: typeof window !== "undefined" ? window.location.href : "" }),
+      });
+      if (res.ok) { setFbStatus("success"); setFbMsg(""); }
+      else setFbStatus("error");
+    } catch { setFbStatus("error"); }
+  }
 
   // URL params
   const area = useMemo(() => getParam("area"), []);
@@ -204,12 +223,28 @@ useEffect(() => {
     }
   }
 
-  function onDownloadReport() {
+  async function onDownloadReport() {
     setReportLoading(true);
-    setTimeout(() => {
+    try {
+      const { default: html2canvas } = await import("html2canvas");
+      const { jsPDF } = await import("jspdf");
+      const el = document.querySelector(".uaehv-print-report") as HTMLElement;
+      if (!el) { window.print(); return; }
+      el.style.display = "block";
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      el.style.display = "none";
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = (canvas.height * pdfW) / canvas.width;
+      pdf.addImage(imgData, "PNG", 0, 0, pdfW, Math.min(pdfH, pdf.internal.pageSize.getHeight()));
+      pdf.save(`UAEHomeValue_${area.replace(/\s+/g, "_")}_Report.pdf`);
+    } catch (e) {
+      console.error("PDF generation failed:", e);
       window.print();
+    } finally {
       setReportLoading(false);
-    }, 120);
+    }
   }
   const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
 
@@ -292,18 +327,23 @@ useEffect(() => {
 
   const trendPath = useMemo(() => sparkPath(trend, 240, 64, 6), [trend]);
 
+  const rentMinParam = useMemo(() => Number(getParam("rent_min") || 0), []);
+  const rentMaxParam = useMemo(() => Number(getParam("rent_max") || 0), []);
+
   const rent = useMemo(() => {
-    const lo = mid * 0.05;
-    const hi = mid * 0.07;
+    const annMin = rentMinParam > 0 ? rentMinParam : Math.round(mid * 0.05);
+    const annMax = rentMaxParam > 0 ? rentMaxParam : Math.round(mid * 0.07);
+    const yieldMinPct = mid > 0 ? Math.round((annMin / mid) * 1000) / 10 : 0;
+    const yieldMaxPct = mid > 0 ? Math.round((annMax / mid) * 1000) / 10 : 0;
     return {
-      monthlyMin: Math.round(lo / 12),
-      monthlyMax: Math.round(hi / 12),
-      annualMin: Math.round(lo),
-      annualMax: Math.round(hi),
-      yieldMinPct: 5,
-      yieldMaxPct: 7,
+      monthlyMin: Math.round(annMin / 12),
+      monthlyMax: Math.round(annMax / 12),
+      annualMin: annMin,
+      annualMax: annMax,
+      yieldMinPct,
+      yieldMaxPct,
     };
-  }, [mid]);
+  }, [mid, rentMinParam, rentMaxParam]);
 
   const comps = useMemo(() => {
     const count = 4;
@@ -1016,6 +1056,65 @@ useEffect(() => {
           )}
 
           <div className={styles.k} style={{ marginTop: 8, fontSize: 11 }}>{t("subscribe.privacy")}</div>
+        </div>
+
+        {/* Feedback card */}
+        <div className={styles.subscribeCard} style={{ marginTop: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ fontSize: 14, fontWeight: 950 }}>{t("feedback.title")}</div>
+            <button
+              onClick={() => setFbOpen((v) => !v)}
+              style={{ fontSize: 12, fontWeight: 700, background: "none", border: "none", color: "var(--accent, #58a6ff)", cursor: "pointer", padding: "4px 8px" }}
+            >
+              {fbOpen ? "✕" : t("feedback.open")}
+            </button>
+          </div>
+          {fbOpen && (
+            <div style={{ marginTop: 10 }}>
+              {fbStatus === "success" ? (
+                <div className={styles.pillPos} style={{ fontSize: 13, padding: "10px 14px" }}>
+                  ✓ {t("feedback.success")}
+                </div>
+              ) : (
+                <>
+                  <textarea
+                    value={fbMsg}
+                    onChange={(e) => setFbMsg(e.target.value)}
+                    placeholder={t("feedback.placeholder")}
+                    rows={3}
+                    style={{
+                      width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10,
+                      border: "1px solid var(--border)", background: "rgba(255,255,255,.05)",
+                      color: "var(--text)", fontSize: 13, resize: "vertical", outline: "none",
+                      fontFamily: "inherit",
+                    }}
+                  />
+                  <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+                    <input
+                      type="email" value={fbEmail} onChange={(e) => setFbEmail(e.target.value)}
+                      placeholder={t("feedback.emailPlaceholder")}
+                      style={{
+                        flex: "1 1 180px", padding: "8px 12px", borderRadius: 10,
+                        border: "1px solid var(--border)", background: "rgba(255,255,255,.05)",
+                        color: "var(--text)", fontSize: 12, outline: "none",
+                      }}
+                    />
+                    <button
+                      className={styles.btnPrimary}
+                      onClick={onSubmitFeedback}
+                      disabled={fbStatus === "loading" || fbMsg.trim().length < 3}
+                      style={{ flex: "0 0 auto", padding: "8px 16px", fontSize: 12 }}
+                    >
+                      {fbStatus === "loading" ? "…" : t("feedback.send")}
+                    </button>
+                  </div>
+                  {fbStatus === "error" && (
+                    <div style={{ marginTop: 6, fontSize: 12, color: "#f87171", fontWeight: 700 }}>{t("feedback.error")}</div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <div className={styles.footerBrand}>

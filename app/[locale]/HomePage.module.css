@@ -15,38 +15,6 @@
   padding: 22px 16px 28px;
 }
 
-/* ===== Top bar ===== */
-.topBar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:14px;
-  margin-bottom: 16px;
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  min-width: 0;
-}
-
-.logo{
-  height: 34px;
-  width: auto;
-  display:block;
-}
-
-.brandTitle{
-  font-weight: 900;
-  letter-spacing: -.2px;
-  font-size: 16px;
-  line-height: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 /* ===== Layout ===== */
 .heroGrid{
   display:grid;
@@ -56,7 +24,7 @@
   margin-top: 10px;
 }
 
-/* ===== Cards (悬浮卡关键在这里) ===== */
+/* ===== Cards ===== */
 .card{
   background: rgba(17,26,46,.86);
   border: 1px solid rgba(255,255,255,.10);
@@ -137,6 +105,38 @@
   background: rgba(255,255,255,.04);
 }
 
+/* ===== City Tabs ===== */
+.cityTabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.cityTab, .cityTabActive {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  transition: background .12s, color .12s;
+  text-align: center;
+}
+.cityTab {
+  background: rgba(255,255,255,.03);
+  color: var(--text-muted);
+}
+.cityTab:hover {
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+}
+.cityTabActive {
+  background: rgba(88,166,255,.18);
+  color: var(--text);
+}
+
 /* ===== Form ===== */
 .formGrid{
   display:grid;
@@ -165,6 +165,8 @@
   background: rgba(255,255,255,.04);
   color: var(--text);
   outline: none;
+  font-size: 14px;
+  box-sizing: border-box;
 }
 
 .control:focus{
@@ -197,6 +199,7 @@
   background: rgba(88,166,255,.18);
   color: var(--text);
   font-weight: 900;
+  font-size: 14px;
   cursor: pointer;
   transition: background .15s ease, transform .15s ease;
 }
@@ -258,7 +261,7 @@
   white-space: nowrap;
 }
 
-/* ===== Custom Area Picker ===== */
+/* ===== Area Picker Trigger ===== */
 .pickerTrigger {
   display: flex;
   align-items: center;
@@ -274,25 +277,73 @@
   white-space: nowrap;
 }
 
-.pickerDropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  z-index: 200;
-  /* min-width ensures readable chips even on small form layouts */
-  min-width: 300px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 10px;
-  box-shadow: 0 8px 32px rgba(0,0,0,.35);
-  animation: pickerFadeIn .12s ease;
+/* ===== Area Picker Modal Overlay ===== */
+.pickerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: overlayFadeIn .15s ease;
 }
 
-@keyframes pickerFadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.pickerModal {
+  width: 100%;
+  max-width: 480px;
+  max-height: calc(100vh - 80px);
+  background: var(--card, #111a2e);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  display: flex;
+  flex-direction: column;
+  animation: modalSlideUp .2s ease;
+}
+
+@keyframes modalSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+.pickerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.pickerTitle {
+  font-size: 16px;
+  font-weight: 950;
+}
+
+.pickerClose {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.05);
+  color: var(--text-muted);
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .1s;
+}
+.pickerClose:hover {
+  background: rgba(255,255,255,.12);
+  color: var(--text);
 }
 
 .pickerSearch {
@@ -300,11 +351,11 @@
   box-sizing: border-box;
   background: rgba(255,255,255,.06);
   border: 1px solid var(--border);
-  border-radius: 9px;
-  padding: 8px 11px;
-  font-size: 13px;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
   color: var(--text);
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   outline: none;
 }
 .pickerSearch::placeholder { color: var(--text-muted); }
@@ -313,17 +364,18 @@
 .pickerGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 5px;
-  max-height: 220px;
+  gap: 6px;
   overflow-y: auto;
+  flex: 1;
   scrollbar-width: thin;
+  padding-right: 4px;
 }
 
 .pickerChip {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 7px 10px;
-  border-radius: 9px;
+  padding: 10px 12px;
+  border-radius: 10px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text-muted);
@@ -351,6 +403,9 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  max-height: 120px;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 .communityChip {
   font-size: 12px;
@@ -381,7 +436,8 @@
   .heroGrid{ grid-template-columns: 1fr; }
   .formGrid{ grid-template-columns: 1fr; }
 }
-/* ===== Footer brand (shared with Result page) ===== */
+
+/* ===== Footer ===== */
 .footerBrand {
   margin-top: 48px;
   padding: 20px 16px;
@@ -415,11 +471,25 @@
   margin-top: 2px;
 }
 
-/* Mobile: center nicely */
 @media (max-width: 520px) {
   .footerBrand {
     flex-direction: column;
     gap: 10px;
     text-align: center;
+  }
+
+  .pickerModal {
+    max-height: calc(100vh - 40px);
+    border-radius: 18px 18px 0 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 100%;
+    padding-bottom: 28px;
+  }
+  .pickerOverlay {
+    align-items: flex-end;
+    padding: 0;
   }
 }

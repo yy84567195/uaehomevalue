@@ -18,29 +18,29 @@ function seoByLocale(locale: Locale) {
   // ✅ 不依赖 messages 文件，避免你现在又要去改一堆 json
   const map: Record<Locale, { title: string; description: string }> = {
     en: {
-      title: "Dubai Home Value Estimate | Instant Property Price Range – UAEHomeValue",
+      title: "Dubai & Abu Dhabi Property Value Estimate | Free Home Price Range – UAEHomeValue",
       description:
-        "Check your home value in Dubai instantly. Get a realistic property price range based on nearby market data. Free, independent, no agents.",
+        "Instantly estimate your property value in Dubai and Abu Dhabi. Get a realistic price range and rental yield based on DLD and DARI official data. Free tool, no agents, no login.",
     },
     ar: {
-      title: "تقدير سعر العقار في دبي فورًا | UAEHomeValue",
+      title: "تقدير قيمة العقار في دبي وأبوظبي فورًا | UAEHomeValue",
       description:
-        "اعرف قيمة منزلك في دبي فورًا. احصل على نطاق سعري واقعي بناءً على بيانات السوق القريبة. مجاني ومستقل وبدون وسطاء.",
+        "اعرف قيمة عقارك في دبي وأبوظبي فورًا. نطاق سعري واقعي بناءً على بيانات DLD و DARI الرسمية. أداة مجانية بدون وسطاء.",
     },
     hi: {
-      title: "दुबई में घर की कीमत का अनुमान | UAEHomeValue",
+      title: "दुबई और अबू धाबी संपत्ति मूल्य अनुमान | UAEHomeValue",
       description:
-        "दुबई में अपने घर की कीमत तुरंत जानें। आसपास के बाज़ार डेटा पर आधारित वास्तविक मूल्य रेंज पाएं। मुफ्त, स्वतंत्र, बिना एजेंट।",
+        "दुबई और अबू धाबी में अपनी संपत्ति का मूल्य तुरंत जानें। DLD और DARI आधिकारिक डेटा पर आधारित। मुफ्त, बिना एजेंट।",
     },
     zh: {
-      title: "迪拜房产估值｜即时价格区间 – UAEHomeValue",
+      title: "迪拜和阿布扎比房产估值｜免费价格区间工具 – UAEHomeValue",
       description:
-        "快速查看你在迪拜的房产价值区间。基于附近市场数据给出更真实的价格范围。免费、独立、无中介。",
+        "即时估算你在迪拜和阿布扎比的房产价值。基于 DLD 和 DARI 官方数据，提供真实价格区间和租金回报率。免费工具，无中介。",
     },
     ru: {
-      title: "Оценка недвижимости в Дубае | UAEHomeValue",
+      title: "Оценка недвижимости в Дубае и Абу-Даби | UAEHomeValue",
       description:
-        "Узнайте стоимость недвижимости в Дубае мгновенно. Реалистичный ценовой диапазон на основе рыночных данных. Бесплатно, независимо, без агентов.",
+        "Мгновенная оценка стоимости недвижимости в Дубае и Абу-Даби. Данные DLD и DARI. Бесплатно, без агентов.",
     },
   };
 
@@ -109,8 +109,32 @@ export default async function LocaleLayout({
 
   const messages = await getMessages({ locale });
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "UAEHomeValue",
+    url: getBaseUrl(),
+    description: seoByLocale(locale).description,
+    applicationCategory: "FinanceApplication",
+    operatingSystem: "Web",
+    offers: { "@type": "Offer", price: "0", priceCurrency: "AED" },
+    provider: {
+      "@type": "Organization",
+      name: "UAEHomeValue",
+      url: getBaseUrl(),
+    },
+    areaServed: [
+      { "@type": "City", name: "Dubai", containedInPlace: { "@type": "Country", name: "United Arab Emirates" } },
+      { "@type": "City", name: "Abu Dhabi", containedInPlace: { "@type": "Country", name: "United Arab Emirates" } },
+    ],
+    featureList: "Property valuation, Rental yield estimation, Market data, PDF report download",
+  };
+
   return (
     <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
+      <head>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      </head>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <div className="container">

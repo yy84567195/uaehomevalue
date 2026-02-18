@@ -1,7 +1,7 @@
 {
   "meta": {
     "currency": "AED",
-    "last_updated": "2025-02",
+    "last_updated": "2026-02",
     "sources": [
       {
         "name": "Dubai Land Department (DLD)",
@@ -12,9 +12,19 @@
         "name": "Dubai Pulse",
         "url": "https://www.dubaipulse.gov.ae/organisation/dld",
         "type": "Official open data platform"
+      },
+      {
+        "name": "DARI (Abu Dhabi DMT)",
+        "url": "https://dari.ae/en/realestate-data",
+        "type": "Official open data"
+      },
+      {
+        "name": "DLD Ejari Rental Data",
+        "url": "https://www.dubaipulse.gov.ae/data/dld-registration/dld_rent_contracts-open",
+        "type": "Official open data"
       }
     ],
-    "source_note": "Community and area-level price ranges derived from Dubai Land Department open data and Dubai Pulse DLD transaction indices. Ranges reflect residential sale transactions for freehold units. Updated periodically.",
+    "source_note": "Sale price ranges from DLD (Dubai) and DARI/ADREC (Abu Dhabi) open data. Rental ranges derived from Ejari tenancy contracts (Dubai) and DARI rental indices (Abu Dhabi). Updated periodically.",
     "disclaimer": "Indicative ranges only. Not an official valuation. Actual prices may differ based on floor, view, condition and timing."
   },
   "communities": [
@@ -24,7 +34,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1800000,
-      "max": 2400000
+      "max": 2400000,
+      "rent_min": 96096,
+      "rent_max": 122304
     },
     {
       "area": "Downtown Dubai",
@@ -32,37 +44,46 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2600000,
-      "max": 3600000
+      "max": 3600000,
+      "rent_min": 141856,
+      "rent_max": 180544
     },
     {
       "area": "Downtown Dubai",
       "type": "Apartment",
       "beds": 1,
       "min": 1700000,
-      "max": 2300000
+      "max": 2300000,
+      "rent_min": 91520,
+      "rent_max": 116480
     },
     {
       "area": "Downtown Dubai",
       "type": "Apartment",
       "beds": 2,
       "min": 2400000,
-      "max": 3500000
+      "max": 3500000,
+      "rent_min": 134992,
+      "rent_max": 171808
     },
     {
       "area": "Downtown Dubai",
       "type": "Apartment",
       "beds": 3,
       "min": 3800000,
-      "max": 5500000
+      "max": 5500000,
+      "rent_min": 212784,
+      "rent_max": 270816
     },
-
     {
       "area": "Downtown Dubai",
       "community": "Boulevard Central",
       "type": "Apartment",
       "beds": 1,
       "min": 1650000,
-      "max": 2200000
+      "max": 2200000,
+      "rent_min": 88088,
+      "rent_max": 112112
     },
     {
       "area": "Downtown Dubai",
@@ -70,7 +91,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2450000,
-      "max": 3350000
+      "max": 3350000,
+      "rent_min": 132704,
+      "rent_max": 168896
     },
     {
       "area": "Downtown Dubai",
@@ -78,7 +101,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1700000,
-      "max": 2300000
+      "max": 2300000,
+      "rent_min": 91520,
+      "rent_max": 116480
     },
     {
       "area": "Downtown Dubai",
@@ -86,7 +111,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2600000,
-      "max": 3600000
+      "max": 3600000,
+      "rent_min": 141856,
+      "rent_max": 180544
     },
     {
       "area": "Downtown Dubai",
@@ -94,7 +121,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2750000,
-      "max": 3950000
+      "max": 3950000,
+      "rent_min": 153296,
+      "rent_max": 195104
     },
     {
       "area": "Downtown Dubai",
@@ -102,7 +131,9 @@
       "type": "Apartment",
       "beds": 3,
       "min": 4200000,
-      "max": 6200000
+      "max": 6200000,
+      "rent_min": 237952,
+      "rent_max": 302848
     },
     {
       "area": "Downtown Dubai",
@@ -110,7 +141,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1750000,
-      "max": 2400000
+      "max": 2400000,
+      "rent_min": 94952,
+      "rent_max": 120848
     },
     {
       "area": "Downtown Dubai",
@@ -118,7 +151,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2650000,
-      "max": 3700000
+      "max": 3700000,
+      "rent_min": 145288,
+      "rent_max": 184912
     },
     {
       "area": "Downtown Dubai",
@@ -126,7 +161,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1600000,
-      "max": 2250000
+      "max": 2250000,
+      "rent_min": 88088,
+      "rent_max": 112112
     },
     {
       "area": "Downtown Dubai",
@@ -134,16 +171,19 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2450000,
-      "max": 3500000
+      "max": 3500000,
+      "rent_min": 136136,
+      "rent_max": 173264
     },
-
     {
       "area": "Dubai Marina",
       "community": "Marina Gate",
       "type": "Apartment",
       "beds": 1,
       "min": 1500000,
-      "max": 2100000
+      "max": 2100000,
+      "rent_min": 91872,
+      "rent_max": 116928
     },
     {
       "area": "Dubai Marina",
@@ -151,7 +191,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2400000,
-      "max": 3200000
+      "max": 3200000,
+      "rent_min": 142912,
+      "rent_max": 181888
     },
     {
       "area": "Dubai Marina",
@@ -159,37 +201,46 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2700000,
-      "max": 3800000
+      "max": 3800000,
+      "rent_min": 165880,
+      "rent_max": 211120
     },
     {
       "area": "Dubai Marina",
       "type": "Apartment",
       "beds": 1,
       "min": 1200000,
-      "max": 1800000
+      "max": 1800000,
+      "rent_min": 76560,
+      "rent_max": 97440
     },
     {
       "area": "Dubai Marina",
       "type": "Apartment",
       "beds": 2,
       "min": 1900000,
-      "max": 3000000
+      "max": 3000000,
+      "rent_min": 125048,
+      "rent_max": 159152
     },
     {
       "area": "Dubai Marina",
       "type": "Apartment",
       "beds": 3,
       "min": 3200000,
-      "max": 4800000
+      "max": 4800000,
+      "rent_min": 204160,
+      "rent_max": 259840
     },
-
     {
       "area": "Dubai Marina",
       "community": "Marina Promenade",
       "type": "Apartment",
       "beds": 1,
       "min": 1400000,
-      "max": 2000000
+      "max": 2000000,
+      "rent_min": 86768,
+      "rent_max": 110432
     },
     {
       "area": "Dubai Marina",
@@ -197,7 +248,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2300000,
-      "max": 3150000
+      "max": 3150000,
+      "rent_min": 139084,
+      "rent_max": 177016
     },
     {
       "area": "Dubai Marina",
@@ -205,7 +258,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1300000,
-      "max": 1850000
+      "max": 1850000,
+      "rent_min": 80388,
+      "rent_max": 102312
     },
     {
       "area": "Dubai Marina",
@@ -213,7 +268,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2050000,
-      "max": 2850000
+      "max": 2850000,
+      "rent_min": 125048,
+      "rent_max": 159152
     },
     {
       "area": "Dubai Marina",
@@ -221,7 +278,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1350000,
-      "max": 1950000
+      "max": 1950000,
+      "rent_min": 84216,
+      "rent_max": 107184
     },
     {
       "area": "Dubai Marina",
@@ -229,7 +288,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2150000,
-      "max": 3050000
+      "max": 3050000,
+      "rent_min": 132704,
+      "rent_max": 168896
     },
     {
       "area": "Dubai Marina",
@@ -237,7 +298,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1250000,
-      "max": 1750000
+      "max": 1750000,
+      "rent_min": 76560,
+      "rent_max": 97440
     },
     {
       "area": "Dubai Marina",
@@ -245,7 +308,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1950000,
-      "max": 2750000
+      "max": 2750000,
+      "rent_min": 119944,
+      "rent_max": 152656
     },
     {
       "area": "Dubai Marina",
@@ -253,7 +318,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1150000,
-      "max": 1650000
+      "max": 1650000,
+      "rent_min": 71456,
+      "rent_max": 90944
     },
     {
       "area": "Dubai Marina",
@@ -261,7 +328,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1800000,
-      "max": 2600000
+      "max": 2600000,
+      "rent_min": 112288,
+      "rent_max": 142912
     },
     {
       "area": "Dubai Marina",
@@ -269,7 +338,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1600000,
-      "max": 2300000
+      "max": 2300000,
+      "rent_min": 99528,
+      "rent_max": 126672
     },
     {
       "area": "Dubai Marina",
@@ -277,16 +348,19 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2600000,
-      "max": 3600000
+      "max": 3600000,
+      "rent_min": 158224,
+      "rent_max": 201376
     },
-
     {
       "area": "Business Bay",
       "community": "DAMAC Towers",
       "type": "Apartment",
       "beds": 1,
       "min": 1200000,
-      "max": 1800000
+      "max": 1800000,
+      "rent_min": 85800,
+      "rent_max": 109200
     },
     {
       "area": "Business Bay",
@@ -294,37 +368,46 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1900000,
-      "max": 2800000
+      "max": 2800000,
+      "rent_min": 134420,
+      "rent_max": 171080
     },
     {
       "area": "Business Bay",
       "type": "Apartment",
       "beds": 1,
       "min": 1000000,
-      "max": 1600000
+      "max": 1600000,
+      "rent_min": 74360,
+      "rent_max": 94640
     },
     {
       "area": "Business Bay",
       "type": "Apartment",
       "beds": 2,
       "min": 1700000,
-      "max": 2600000
+      "max": 2600000,
+      "rent_min": 122980,
+      "rent_max": 156520
     },
     {
       "area": "Business Bay",
       "type": "Apartment",
       "beds": 3,
       "min": 2800000,
-      "max": 4200000
+      "max": 4200000,
+      "rent_min": 200200,
+      "rent_max": 254800
     },
-
     {
       "area": "Business Bay",
       "community": "Executive Towers",
       "type": "Apartment",
       "beds": 1,
       "min": 1150000,
-      "max": 1650000
+      "max": 1650000,
+      "rent_min": 80080,
+      "rent_max": 101920
     },
     {
       "area": "Business Bay",
@@ -332,7 +415,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1850000,
-      "max": 2600000
+      "max": 2600000,
+      "rent_min": 127270,
+      "rent_max": 161980
     },
     {
       "area": "Business Bay",
@@ -340,7 +425,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1100000,
-      "max": 1600000
+      "max": 1600000,
+      "rent_min": 77220,
+      "rent_max": 98280
     },
     {
       "area": "Business Bay",
@@ -348,7 +435,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1750000,
-      "max": 2500000
+      "max": 2500000,
+      "rent_min": 121550,
+      "rent_max": 154700
     },
     {
       "area": "Business Bay",
@@ -356,7 +445,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1050000,
-      "max": 1600000
+      "max": 1600000,
+      "rent_min": 75790,
+      "rent_max": 96460
     },
     {
       "area": "Business Bay",
@@ -364,16 +455,19 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1750000,
-      "max": 2550000
+      "max": 2550000,
+      "rent_min": 122980,
+      "rent_max": 156520
     },
-
     {
       "area": "JVC",
       "community": "Belgravia",
       "type": "Apartment",
       "beds": 1,
       "min": 720000,
-      "max": 1050000
+      "max": 1050000,
+      "rent_min": 58410,
+      "rent_max": 74340
     },
     {
       "area": "JVC",
@@ -381,37 +475,46 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1150000,
-      "max": 1650000
+      "max": 1650000,
+      "rent_min": 92400,
+      "rent_max": 117600
     },
     {
       "area": "JVC",
       "type": "Apartment",
       "beds": 1,
       "min": 650000,
-      "max": 1000000
+      "max": 1000000,
+      "rent_min": 54450,
+      "rent_max": 69300
     },
     {
       "area": "JVC",
       "type": "Apartment",
       "beds": 2,
       "min": 1000000,
-      "max": 1600000
+      "max": 1600000,
+      "rent_min": 85800,
+      "rent_max": 109200
     },
     {
       "area": "JVC",
       "type": "Apartment",
       "beds": 3,
       "min": 1600000,
-      "max": 2400000
+      "max": 2400000,
+      "rent_min": 132000,
+      "rent_max": 168000
     },
-
     {
       "area": "JVC",
       "community": "Bloom Heights",
       "type": "Apartment",
       "beds": 1,
       "min": 700000,
-      "max": 1050000
+      "max": 1050000,
+      "rent_min": 57750,
+      "rent_max": 73500
     },
     {
       "area": "JVC",
@@ -419,7 +522,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1100000,
-      "max": 1600000
+      "max": 1600000,
+      "rent_min": 89100,
+      "rent_max": 113400
     },
     {
       "area": "JVC",
@@ -427,7 +532,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 680000,
-      "max": 980000
+      "max": 980000,
+      "rent_min": 54780,
+      "rent_max": 69720
     },
     {
       "area": "JVC",
@@ -435,7 +542,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1050000,
-      "max": 1550000
+      "max": 1550000,
+      "rent_min": 85800,
+      "rent_max": 109200
     },
     {
       "area": "JVC",
@@ -443,7 +552,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 750000,
-      "max": 1150000
+      "max": 1150000,
+      "rent_min": 62700,
+      "rent_max": 79800
     },
     {
       "area": "JVC",
@@ -451,46 +562,56 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1200000,
-      "max": 1750000
+      "max": 1750000,
+      "rent_min": 97350,
+      "rent_max": 123900
     },
-
     {
       "area": "JLT",
       "community": "Cluster X",
       "type": "Apartment",
       "beds": 2,
       "min": 1800000,
-      "max": 2600000
+      "max": 2600000,
+      "rent_min": 131648,
+      "rent_max": 167552
     },
     {
       "area": "JLT",
       "type": "Apartment",
       "beds": 1,
       "min": 900000,
-      "max": 1400000
+      "max": 1400000,
+      "rent_min": 68816,
+      "rent_max": 87584
     },
     {
       "area": "JLT",
       "type": "Apartment",
       "beds": 2,
       "min": 1600000,
-      "max": 2500000
+      "max": 2500000,
+      "rent_min": 122672,
+      "rent_max": 156128
     },
     {
       "area": "JLT",
       "type": "Apartment",
       "beds": 3,
       "min": 2800000,
-      "max": 4000000
+      "max": 4000000,
+      "rent_min": 203456,
+      "rent_max": 258944
     },
-
     {
       "area": "JLT",
       "community": "Cluster S",
       "type": "Apartment",
       "beds": 1,
       "min": 950000,
-      "max": 1450000
+      "max": 1450000,
+      "rent_min": 71808,
+      "rent_max": 91392
     },
     {
       "area": "JLT",
@@ -498,7 +619,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1650000,
-      "max": 2400000
+      "max": 2400000,
+      "rent_min": 121176,
+      "rent_max": 154224
     },
     {
       "area": "JLT",
@@ -506,7 +629,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 920000,
-      "max": 1400000
+      "max": 1400000,
+      "rent_min": 69414,
+      "rent_max": 88346
     },
     {
       "area": "JLT",
@@ -514,7 +639,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1600000,
-      "max": 2350000
+      "max": 2350000,
+      "rent_min": 118184,
+      "rent_max": 150416
     },
     {
       "area": "JLT",
@@ -522,7 +649,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 980000,
-      "max": 1500000
+      "max": 1500000,
+      "rent_min": 74202,
+      "rent_max": 94438
     },
     {
       "area": "JLT",
@@ -530,16 +659,19 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1700000,
-      "max": 2550000
+      "max": 2550000,
+      "rent_min": 127160,
+      "rent_max": 161840
     },
-
     {
       "area": "Palm Jumeirah",
       "community": "Shoreline Apartments",
       "type": "Apartment",
       "beds": 1,
       "min": 2600000,
-      "max": 4200000
+      "max": 4200000,
+      "rent_min": 143616,
+      "rent_max": 182784
     },
     {
       "area": "Palm Jumeirah",
@@ -547,37 +679,46 @@
       "type": "Apartment",
       "beds": 2,
       "min": 4200000,
-      "max": 7200000
+      "max": 7200000,
+      "rent_min": 240768,
+      "rent_max": 306432
     },
     {
       "area": "Palm Jumeirah",
       "type": "Apartment",
       "beds": 1,
       "min": 2200000,
-      "max": 3800000
+      "max": 3800000,
+      "rent_min": 126720,
+      "rent_max": 161280
     },
     {
       "area": "Palm Jumeirah",
       "type": "Apartment",
       "beds": 2,
       "min": 3500000,
-      "max": 6500000
+      "max": 6500000,
+      "rent_min": 211200,
+      "rent_max": 268800
     },
     {
       "area": "Palm Jumeirah",
       "type": "Apartment",
       "beds": 3,
       "min": 7000000,
-      "max": 12000000
+      "max": 12000000,
+      "rent_min": 401280,
+      "rent_max": 510720
     },
-
     {
       "area": "Palm Jumeirah",
       "community": "Oceana Residences",
       "type": "Apartment",
       "beds": 1,
       "min": 2800000,
-      "max": 4500000
+      "max": 4500000,
+      "rent_min": 154176,
+      "rent_max": 196224
     },
     {
       "area": "Palm Jumeirah",
@@ -585,7 +726,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 4500000,
-      "max": 7800000
+      "max": 7800000,
+      "rent_min": 259776,
+      "rent_max": 330624
     },
     {
       "area": "Palm Jumeirah",
@@ -593,7 +736,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 2600000,
-      "max": 4200000
+      "max": 4200000,
+      "rent_min": 143616,
+      "rent_max": 182784
     },
     {
       "area": "Palm Jumeirah",
@@ -601,29 +746,36 @@
       "type": "Apartment",
       "beds": 2,
       "min": 4300000,
-      "max": 7500000
+      "max": 7500000,
+      "rent_min": 249216,
+      "rent_max": 317184
     },
-
     {
       "area": "Dubai Creek Harbour",
       "type": "Apartment",
       "beds": 1,
       "min": 1400000,
-      "max": 2100000
+      "max": 2100000,
+      "rent_min": 84700,
+      "rent_max": 107800
     },
     {
       "area": "Dubai Creek Harbour",
       "type": "Apartment",
       "beds": 2,
       "min": 2100000,
-      "max": 3200000
+      "max": 3200000,
+      "rent_min": 128260,
+      "rent_max": 163240
     },
     {
       "area": "Dubai Creek Harbour",
       "type": "Apartment",
       "beds": 3,
       "min": 3000000,
-      "max": 4800000
+      "max": 4800000,
+      "rent_min": 188760,
+      "rent_max": 240240
     },
     {
       "area": "Dubai Creek Harbour",
@@ -631,7 +783,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1550000,
-      "max": 2300000
+      "max": 2300000,
+      "rent_min": 93170,
+      "rent_max": 118580
     },
     {
       "area": "Dubai Creek Harbour",
@@ -639,7 +793,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2350000,
-      "max": 3500000
+      "max": 3500000,
+      "rent_min": 141570,
+      "rent_max": 180180
     },
     {
       "area": "Dubai Creek Harbour",
@@ -647,7 +803,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1500000,
-      "max": 2250000
+      "max": 2250000,
+      "rent_min": 90750,
+      "rent_max": 115500
     },
     {
       "area": "Dubai Creek Harbour",
@@ -655,7 +813,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2300000,
-      "max": 3400000
+      "max": 3400000,
+      "rent_min": 137940,
+      "rent_max": 175560
     },
     {
       "area": "Dubai Creek Harbour",
@@ -663,7 +823,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1450000,
-      "max": 2150000
+      "max": 2150000,
+      "rent_min": 87120,
+      "rent_max": 110880
     },
     {
       "area": "Dubai Creek Harbour",
@@ -671,29 +833,36 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2200000,
-      "max": 3300000
+      "max": 3300000,
+      "rent_min": 133100,
+      "rent_max": 169400
     },
-
     {
       "area": "Dubai Hills Estate",
       "type": "Apartment",
       "beds": 1,
       "min": 1050000,
-      "max": 1650000
+      "max": 1650000,
+      "rent_min": 68904,
+      "rent_max": 87696
     },
     {
       "area": "Dubai Hills Estate",
       "type": "Apartment",
       "beds": 2,
       "min": 1650000,
-      "max": 2550000
+      "max": 2550000,
+      "rent_min": 107184,
+      "rent_max": 136416
     },
     {
       "area": "Dubai Hills Estate",
       "type": "Apartment",
       "beds": 3,
       "min": 2400000,
-      "max": 3800000
+      "max": 3800000,
+      "rent_min": 158224,
+      "rent_max": 201376
     },
     {
       "area": "Dubai Hills Estate",
@@ -701,7 +870,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1150000,
-      "max": 1750000
+      "max": 1750000,
+      "rent_min": 74008,
+      "rent_max": 94192
     },
     {
       "area": "Dubai Hills Estate",
@@ -709,7 +880,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1750000,
-      "max": 2700000
+      "max": 2700000,
+      "rent_min": 113564,
+      "rent_max": 144536
     },
     {
       "area": "Dubai Hills Estate",
@@ -717,7 +890,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1850000,
-      "max": 2850000
+      "max": 2850000,
+      "rent_min": 119944,
+      "rent_max": 152656
     },
     {
       "area": "Dubai Hills Estate",
@@ -725,7 +900,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1100000,
-      "max": 1700000
+      "max": 1700000,
+      "rent_min": 71456,
+      "rent_max": 90944
     },
     {
       "area": "Dubai Hills Estate",
@@ -733,29 +910,36 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1750000,
-      "max": 2700000
+      "max": 2700000,
+      "rent_min": 113564,
+      "rent_max": 144536
     },
-
     {
       "area": "DIFC",
       "type": "Apartment",
       "beds": 1,
       "min": 1600000,
-      "max": 2500000
+      "max": 2500000,
+      "rent_min": 99220,
+      "rent_max": 126280
     },
     {
       "area": "DIFC",
       "type": "Apartment",
       "beds": 2,
       "min": 2600000,
-      "max": 4200000
+      "max": 4200000,
+      "rent_min": 164560,
+      "rent_max": 209440
     },
     {
       "area": "DIFC",
       "type": "Apartment",
       "beds": 3,
       "min": 4200000,
-      "max": 7000000
+      "max": 7000000,
+      "rent_min": 271040,
+      "rent_max": 344960
     },
     {
       "area": "DIFC",
@@ -763,7 +947,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1700000,
-      "max": 2600000
+      "max": 2600000,
+      "rent_min": 104060,
+      "rent_max": 132440
     },
     {
       "area": "DIFC",
@@ -771,7 +957,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2800000,
-      "max": 4500000
+      "max": 4500000,
+      "rent_min": 176660,
+      "rent_max": 224840
     },
     {
       "area": "DIFC",
@@ -779,7 +967,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1650000,
-      "max": 2550000
+      "max": 2550000,
+      "rent_min": 101640,
+      "rent_max": 129360
     },
     {
       "area": "DIFC",
@@ -787,7 +977,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2700000,
-      "max": 4300000
+      "max": 4300000,
+      "rent_min": 169400,
+      "rent_max": 215600
     },
     {
       "area": "DIFC",
@@ -795,7 +987,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1750000,
-      "max": 2700000
+      "max": 2700000,
+      "rent_min": 107690,
+      "rent_max": 137060
     },
     {
       "area": "DIFC",
@@ -803,29 +997,36 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2900000,
-      "max": 4600000
+      "max": 4600000,
+      "rent_min": 181500,
+      "rent_max": 231000
     },
-
     {
       "area": "JBR",
       "type": "Apartment",
       "beds": 1,
       "min": 1500000,
-      "max": 2300000
+      "max": 2300000,
+      "rent_min": 93632,
+      "rent_max": 119168
     },
     {
       "area": "JBR",
       "type": "Apartment",
       "beds": 2,
       "min": 2400000,
-      "max": 3700000
+      "max": 3700000,
+      "rent_min": 150304,
+      "rent_max": 191296
     },
     {
       "area": "JBR",
       "type": "Apartment",
       "beds": 3,
       "min": 3600000,
-      "max": 6000000
+      "max": 6000000,
+      "rent_min": 236544,
+      "rent_max": 301056
     },
     {
       "area": "JBR",
@@ -833,7 +1034,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2500000,
-      "max": 3800000
+      "max": 3800000,
+      "rent_min": 155232,
+      "rent_max": 197568
     },
     {
       "area": "JBR",
@@ -841,7 +1044,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2550000,
-      "max": 3900000
+      "max": 3900000,
+      "rent_min": 158928,
+      "rent_max": 202272
     },
     {
       "area": "JBR",
@@ -849,22 +1054,27 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2450000,
-      "max": 3800000
+      "max": 3800000,
+      "rent_min": 154000,
+      "rent_max": 196000
     },
-
     {
       "area": "City Walk",
       "type": "Apartment",
       "beds": 1,
       "min": 1700000,
-      "max": 2600000
+      "max": 2600000,
+      "rent_min": 94600,
+      "rent_max": 120400
     },
     {
       "area": "City Walk",
       "type": "Apartment",
       "beds": 2,
       "min": 2800000,
-      "max": 4300000
+      "max": 4300000,
+      "rent_min": 156200,
+      "rent_max": 198800
     },
     {
       "area": "City Walk",
@@ -872,7 +1082,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1800000,
-      "max": 2700000
+      "max": 2700000,
+      "rent_min": 99000,
+      "rent_max": 126000
     },
     {
       "area": "City Walk",
@@ -880,22 +1092,27 @@
       "type": "Apartment",
       "beds": 2,
       "min": 3000000,
-      "max": 4600000
+      "max": 4600000,
+      "rent_min": 167200,
+      "rent_max": 212800
     },
-
     {
       "area": "The Greens",
       "type": "Apartment",
       "beds": 1,
       "min": 950000,
-      "max": 1450000
+      "max": 1450000,
+      "rent_min": 65472,
+      "rent_max": 83328
     },
     {
       "area": "The Greens",
       "type": "Apartment",
       "beds": 2,
       "min": 1500000,
-      "max": 2300000
+      "max": 2300000,
+      "rent_min": 103664,
+      "rent_max": 131936
     },
     {
       "area": "The Greens",
@@ -903,7 +1120,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 980000,
-      "max": 1500000
+      "max": 1500000,
+      "rent_min": 67654,
+      "rent_max": 86106
     },
     {
       "area": "The Greens",
@@ -911,7 +1130,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1550000,
-      "max": 2350000
+      "max": 2350000,
+      "rent_min": 106392,
+      "rent_max": 135408
     },
     {
       "area": "The Greens",
@@ -919,7 +1140,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 950000,
-      "max": 1450000
+      "max": 1450000,
+      "rent_min": 65472,
+      "rent_max": 83328
     },
     {
       "area": "The Greens",
@@ -927,22 +1150,27 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1500000,
-      "max": 2300000
+      "max": 2300000,
+      "rent_min": 103664,
+      "rent_max": 131936
     },
-
     {
       "area": "The Views",
       "type": "Apartment",
       "beds": 1,
       "min": 1050000,
-      "max": 1650000
+      "max": 1650000,
+      "rent_min": 71280,
+      "rent_max": 90720
     },
     {
       "area": "The Views",
       "type": "Apartment",
       "beds": 2,
       "min": 1700000,
-      "max": 2600000
+      "max": 2600000,
+      "rent_min": 113520,
+      "rent_max": 144480
     },
     {
       "area": "The Views",
@@ -950,7 +1178,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1100000,
-      "max": 1700000
+      "max": 1700000,
+      "rent_min": 73920,
+      "rent_max": 94080
     },
     {
       "area": "The Views",
@@ -958,7 +1188,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1800000,
-      "max": 2700000
+      "max": 2700000,
+      "rent_min": 118800,
+      "rent_max": 151200
     },
     {
       "area": "The Views",
@@ -966,7 +1198,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1150000,
-      "max": 1750000
+      "max": 1750000,
+      "rent_min": 76560,
+      "rent_max": 97440
     },
     {
       "area": "The Views",
@@ -974,22 +1208,27 @@
       "type": "Apartment",
       "beds": 2,
       "min": 1850000,
-      "max": 2800000
+      "max": 2800000,
+      "rent_min": 122760,
+      "rent_max": 156240
     },
-
     {
       "area": "Dubai Harbour",
       "type": "Apartment",
       "beds": 1,
       "min": 1700000,
-      "max": 2600000
+      "max": 2600000,
+      "rent_min": 104060,
+      "rent_max": 132440
     },
     {
       "area": "Dubai Harbour",
       "type": "Apartment",
       "beds": 2,
       "min": 2800000,
-      "max": 4300000
+      "max": 4300000,
+      "rent_min": 171820,
+      "rent_max": 218680
     },
     {
       "area": "Dubai Harbour",
@@ -997,7 +1236,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1850000,
-      "max": 2800000
+      "max": 2800000,
+      "rent_min": 112530,
+      "rent_max": 143220
     },
     {
       "area": "Dubai Harbour",
@@ -1005,7 +1246,9 @@
       "type": "Apartment",
       "beds": 2,
       "min": 3000000,
-      "max": 4600000
+      "max": 4600000,
+      "rent_min": 183920,
+      "rent_max": 234080
     },
     {
       "area": "Dubai Harbour",
@@ -1013,7 +1256,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 1800000,
-      "max": 2750000
+      "max": 2750000,
+      "rent_min": 110110,
+      "rent_max": 140140
     },
     {
       "area": "Dubai Harbour",
@@ -1021,22 +1266,27 @@
       "type": "Apartment",
       "beds": 2,
       "min": 2950000,
-      "max": 4500000
+      "max": 4500000,
+      "rent_min": 180290,
+      "rent_max": 229460
     },
-
     {
       "area": "Bluewaters Island",
       "type": "Apartment",
       "beds": 1,
       "min": 2600000,
-      "max": 4200000
+      "max": 4200000,
+      "rent_min": 155584,
+      "rent_max": 198016
     },
     {
       "area": "Bluewaters Island",
       "type": "Apartment",
       "beds": 2,
       "min": 4300000,
-      "max": 7500000
+      "max": 7500000,
+      "rent_min": 269984,
+      "rent_max": 343616
     },
     {
       "area": "Bluewaters Island",
@@ -1044,7 +1294,9 @@
       "type": "Apartment",
       "beds": 1,
       "min": 2800000,
-      "max": 4500000
+      "max": 4500000,
+      "rent_min": 167024,
+      "rent_max": 212576
     },
     {
       "area": "Bluewaters Island",
@@ -1052,30 +1304,36 @@
       "type": "Apartment",
       "beds": 2,
       "min": 4700000,
-      "max": 8200000
+      "max": 8200000,
+      "rent_min": 295152,
+      "rent_max": 375648
     },
-
-
     {
       "area": "Dubai Hills Estate",
       "type": "Villa",
       "beds": 3,
       "min": 5200000,
-      "max": 8200000
+      "max": 8200000,
+      "rent_min": 341968,
+      "rent_max": 435232
     },
     {
       "area": "Dubai Hills Estate",
       "type": "Villa",
       "beds": 4,
       "min": 7000000,
-      "max": 11500000
+      "max": 11500000,
+      "rent_min": 472120,
+      "rent_max": 600880
     },
     {
       "area": "Dubai Hills Estate",
       "type": "Villa",
       "beds": 5,
       "min": 9500000,
-      "max": 17000000
+      "max": 17000000,
+      "rent_min": 676280,
+      "rent_max": 860720
     },
     {
       "area": "Dubai Hills Estate",
@@ -1083,7 +1341,9 @@
       "type": "Villa",
       "beds": 3,
       "min": 4200000,
-      "max": 6200000
+      "max": 6200000,
+      "rent_min": 265408,
+      "rent_max": 337792
     },
     {
       "area": "Dubai Hills Estate",
@@ -1091,7 +1351,9 @@
       "type": "Villa",
       "beds": 4,
       "min": 5200000,
-      "max": 7800000
+      "max": 7800000,
+      "rent_min": 331760,
+      "rent_max": 422240
     },
     {
       "area": "Dubai Hills Estate",
@@ -1099,7 +1361,9 @@
       "type": "Villa",
       "beds": 3,
       "min": 5600000,
-      "max": 8500000
+      "max": 8500000,
+      "rent_min": 359832,
+      "rent_max": 457968
     },
     {
       "area": "Dubai Hills Estate",
@@ -1107,7 +1371,9 @@
       "type": "Villa",
       "beds": 4,
       "min": 7600000,
-      "max": 12000000
+      "max": 12000000,
+      "rent_min": 500192,
+      "rent_max": 636608
     },
     {
       "area": "Dubai Hills Estate",
@@ -1115,29 +1381,36 @@
       "type": "Villa",
       "beds": 5,
       "min": 14000000,
-      "max": 24000000
+      "max": 24000000,
+      "rent_min": 969760,
+      "rent_max": 1234240
     },
-
     {
       "area": "Arabian Ranches",
       "type": "Villa",
       "beds": 3,
       "min": 4200000,
-      "max": 6800000
+      "max": 6800000,
+      "rent_min": 242000,
+      "rent_max": 308000
     },
     {
       "area": "Arabian Ranches",
       "type": "Villa",
       "beds": 4,
       "min": 5600000,
-      "max": 9500000
+      "max": 9500000,
+      "rent_min": 332200,
+      "rent_max": 422800
     },
     {
       "area": "Arabian Ranches",
       "type": "Villa",
       "beds": 5,
       "min": 7800000,
-      "max": 13500000
+      "max": 13500000,
+      "rent_min": 468600,
+      "rent_max": 596400
     },
     {
       "area": "Arabian Ranches",
@@ -1145,7 +1418,9 @@
       "type": "Villa",
       "beds": 3,
       "min": 3900000,
-      "max": 6100000
+      "max": 6100000,
+      "rent_min": 220000,
+      "rent_max": 280000
     },
     {
       "area": "Arabian Ranches",
@@ -1153,7 +1428,9 @@
       "type": "Villa",
       "beds": 3,
       "min": 4200000,
-      "max": 6600000
+      "max": 6600000,
+      "rent_min": 237600,
+      "rent_max": 302400
     },
     {
       "area": "Arabian Ranches",
@@ -1161,7 +1438,9 @@
       "type": "Villa",
       "beds": 4,
       "min": 6500000,
-      "max": 10500000
+      "max": 10500000,
+      "rent_min": 374000,
+      "rent_max": 476000
     },
     {
       "area": "Arabian Ranches",
@@ -1169,22 +1448,27 @@
       "type": "Villa",
       "beds": 5,
       "min": 9000000,
-      "max": 15000000
+      "max": 15000000,
+      "rent_min": 528000,
+      "rent_max": 672000
     },
-
     {
       "area": "Arabian Ranches 2",
       "type": "Villa",
       "beds": 3,
       "min": 3800000,
-      "max": 6200000
+      "max": 6200000,
+      "rent_min": 228800,
+      "rent_max": 291200
     },
     {
       "area": "Arabian Ranches 2",
       "type": "Villa",
       "beds": 4,
       "min": 5200000,
-      "max": 8800000
+      "max": 8800000,
+      "rent_min": 320320,
+      "rent_max": 407680
     },
     {
       "area": "Arabian Ranches 2",
@@ -1192,7 +1476,9 @@
       "type": "Villa",
       "beds": 3,
       "min": 3900000,
-      "max": 6300000
+      "max": 6300000,
+      "rent_min": 233376,
+      "rent_max": 297024
     },
     {
       "area": "Arabian Ranches 2",
@@ -1200,7 +1486,9 @@
       "type": "Villa",
       "beds": 4,
       "min": 6500000,
-      "max": 10500000
+      "max": 10500000,
+      "rent_min": 388960,
+      "rent_max": 495040
     },
     {
       "area": "Arabian Ranches 2",
@@ -1208,74 +1496,90 @@
       "type": "Villa",
       "beds": 5,
       "min": 8200000,
-      "max": 13500000
+      "max": 13500000,
+      "rent_min": 496496,
+      "rent_max": 631904
     },
-
     {
       "area": "The Springs",
       "type": "Villa",
       "beds": 2,
       "min": 2500000,
-      "max": 3900000
+      "max": 3900000,
+      "rent_min": 154880,
+      "rent_max": 197120
     },
     {
       "area": "The Springs",
       "type": "Villa",
       "beds": 3,
       "min": 3200000,
-      "max": 5200000
+      "max": 5200000,
+      "rent_min": 203280,
+      "rent_max": 258720
     },
     {
       "area": "The Springs",
       "type": "Villa",
       "beds": 4,
       "min": 4300000,
-      "max": 7000000
+      "max": 7000000,
+      "rent_min": 273460,
+      "rent_max": 348040
     },
-
     {
       "area": "The Meadows",
       "type": "Villa",
       "beds": 4,
       "min": 8200000,
-      "max": 13500000
+      "max": 13500000,
+      "rent_min": 458304,
+      "rent_max": 583296
     },
     {
       "area": "The Meadows",
       "type": "Villa",
       "beds": 5,
       "min": 10500000,
-      "max": 18000000
+      "max": 18000000,
+      "rent_min": 601920,
+      "rent_max": 766080
     },
-
     {
       "area": "The Lakes",
       "type": "Villa",
       "beds": 4,
       "min": 9000000,
-      "max": 15000000
+      "max": 15000000,
+      "rent_min": 475200,
+      "rent_max": 604800
     },
     {
       "area": "The Lakes",
       "type": "Villa",
       "beds": 5,
       "min": 11500000,
-      "max": 19500000
+      "max": 19500000,
+      "rent_min": 613800,
+      "rent_max": 781200
     },
-
     {
       "area": "Jumeirah Golf Estates",
       "type": "Villa",
       "beds": 4,
       "min": 8500000,
-      "max": 15000000
+      "max": 15000000,
+      "rent_min": 465300,
+      "rent_max": 592200
     },
     {
       "area": "Jumeirah Golf Estates",
       "type": "Villa",
       "beds": 5,
       "min": 12000000,
-      "max": 22000000
+      "max": 22000000,
+      "rent_min": 673200,
+      "rent_max": 856800
     },
     {
       "area": "Jumeirah Golf Estates",
@@ -1283,7 +1587,9 @@
       "type": "Villa",
       "beds": 5,
       "min": 14000000,
-      "max": 26000000
+      "max": 26000000,
+      "rent_min": 792000,
+      "rent_max": 1008000
     },
     {
       "area": "Jumeirah Golf Estates",
@@ -1291,44 +1597,54 @@
       "type": "Villa",
       "beds": 4,
       "min": 9500000,
-      "max": 17500000
+      "max": 17500000,
+      "rent_min": 534600,
+      "rent_max": 680400
     },
-
     {
       "area": "DAMAC Hills",
       "type": "Villa",
       "beds": 3,
       "min": 3000000,
-      "max": 5200000
+      "max": 5200000,
+      "rent_min": 234520,
+      "rent_max": 298480
     },
     {
       "area": "DAMAC Hills",
       "type": "Villa",
       "beds": 4,
       "min": 4200000,
-      "max": 7600000
+      "max": 7600000,
+      "rent_min": 337480,
+      "rent_max": 429520
     },
     {
       "area": "DAMAC Hills",
       "type": "Villa",
       "beds": 5,
       "min": 5800000,
-      "max": 10500000
+      "max": 10500000,
+      "rent_min": 466180,
+      "rent_max": 593320
     },
-
     {
       "area": "MBR City",
       "type": "Villa",
       "beds": 4,
       "min": 11000000,
-      "max": 20000000
+      "max": 20000000,
+      "rent_min": 818400,
+      "rent_max": 1041600
     },
     {
       "area": "MBR City",
       "type": "Villa",
       "beds": 5,
       "min": 15000000,
-      "max": 28000000
+      "max": 28000000,
+      "rent_min": 1135200,
+      "rent_max": 1444800
     },
     {
       "area": "MBR City",
@@ -1336,7 +1652,9 @@
       "type": "Villa",
       "beds": 4,
       "min": 14000000,
-      "max": 25000000
+      "max": 25000000,
+      "rent_min": 1029600,
+      "rent_max": 1310400
     },
     {
       "area": "MBR City",
@@ -1344,22 +1662,27 @@
       "type": "Villa",
       "beds": 5,
       "min": 20000000,
-      "max": 35000000
+      "max": 35000000,
+      "rent_min": 1452000,
+      "rent_max": 1848000
     },
-
     {
       "area": "Palm Jumeirah",
       "type": "Villa",
       "beds": 4,
       "min": 18000000,
-      "max": 35000000
+      "max": 35000000,
+      "rent_min": 1119360,
+      "rent_max": 1424640
     },
     {
       "area": "Palm Jumeirah",
       "type": "Villa",
       "beds": 5,
       "min": 26000000,
-      "max": 55000000
+      "max": 55000000,
+      "rent_min": 1710720,
+      "rent_max": 2177280
     },
     {
       "area": "Palm Jumeirah",
@@ -1367,7 +1690,9 @@
       "type": "Villa",
       "beds": 4,
       "min": 22000000,
-      "max": 42000000
+      "max": 42000000,
+      "rent_min": 1351680,
+      "rent_max": 1720320
     },
     {
       "area": "Palm Jumeirah",
@@ -1375,15 +1700,18 @@
       "type": "Villa",
       "beds": 5,
       "min": 35000000,
-      "max": 80000000
+      "max": 80000000,
+      "rent_min": 2428800,
+      "rent_max": 3091200
     },
-
     {
       "area": "Al Barari",
       "type": "Villa",
       "beds": 5,
       "min": 18000000,
-      "max": 38000000
+      "max": 38000000,
+      "rent_min": 985600,
+      "rent_max": 1254400
     },
     {
       "area": "Al Barari",
@@ -1391,94 +1719,1254 @@
       "type": "Villa",
       "beds": 6,
       "min": 26000000,
-      "max": 52000000
+      "max": 52000000,
+      "rent_min": 1372800,
+      "rent_max": 1747200
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "52|42",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 4300000,
+      "max": 6500000,
+      "rent_min": 275616,
+      "rent_max": 350784
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Damac Heights",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1600000,
+      "max": 2500000,
+      "rent_min": 104632,
+      "rent_max": 133168
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Damac Heights",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2550000,
+      "max": 3900000,
+      "rent_min": 164604,
+      "rent_max": 209496
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Damac Heights",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 4100000,
+      "max": 6200000,
+      "rent_min": 262856,
+      "rent_max": 334544
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Ocean Heights",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1300000,
+      "max": 2000000,
+      "rent_min": 84216,
+      "rent_max": 107184
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Ocean Heights",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2050000,
+      "max": 3200000,
+      "rent_min": 133980,
+      "rent_max": 170520
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Ocean Heights",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 3300000,
+      "max": 5000000,
+      "rent_min": 211816,
+      "rent_max": 269584
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Elite Residence",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1250000,
+      "max": 1850000,
+      "rent_min": 79112,
+      "rent_max": 100688
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Elite Residence",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1900000,
+      "max": 2950000,
+      "rent_min": 123772,
+      "rent_max": 157528
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Elite Residence",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 3100000,
+      "max": 4600000,
+      "rent_min": 196504,
+      "rent_max": 250096
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Stella Maris",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1350000,
+      "max": 2100000,
+      "rent_min": 88044,
+      "rent_max": 112056
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Stella Maris",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2150000,
+      "max": 3300000,
+      "rent_min": 139084,
+      "rent_max": 177016
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Stella Maris",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 3400000,
+      "max": 5200000,
+      "rent_min": 219472,
+      "rent_max": 279328
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Marina Quays",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1200000,
+      "max": 1800000,
+      "rent_min": 76560,
+      "rent_max": 97440
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Marina Quays",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1850000,
+      "max": 2900000,
+      "rent_min": 121220,
+      "rent_max": 154280
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Marina Quays",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 3000000,
+      "max": 4400000,
+      "rent_min": 188848,
+      "rent_max": 240352
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "The Address Dubai Marina",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1700000,
+      "max": 2600000,
+      "rent_min": 109736,
+      "rent_max": 139664
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "The Address Dubai Marina",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2700000,
+      "max": 4200000,
+      "rent_min": 176088,
+      "rent_max": 224112
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "The Address Dubai Marina",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 4300000,
+      "max": 6500000,
+      "rent_min": 275616,
+      "rent_max": 350784
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Boulevard Point",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1700000,
+      "max": 2550000,
+      "rent_min": 97240,
+      "rent_max": 123760
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Boulevard Point",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2600000,
+      "max": 3900000,
+      "rent_min": 148720,
+      "rent_max": 189280
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Boulevard Point",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 4200000,
+      "max": 6100000,
+      "rent_min": 235664,
+      "rent_max": 299936
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Act One | Act Two",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1650000,
+      "max": 2450000,
+      "rent_min": 93808,
+      "rent_max": 119392
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Act One | Act Two",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2550000,
+      "max": 3850000,
+      "rent_min": 146432,
+      "rent_max": 186368
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Act One | Act Two",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 4100000,
+      "max": 6000000,
+      "rent_min": 231088,
+      "rent_max": 294112
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Forte",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1500000,
+      "max": 2250000,
+      "rent_min": 85800,
+      "rent_max": 109200
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Forte",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2350000,
+      "max": 3600000,
+      "rent_min": 136136,
+      "rent_max": 173264
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Forte",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 3900000,
+      "max": 5700000,
+      "rent_min": 219648,
+      "rent_max": 279552
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Claren Towers",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1400000,
+      "max": 2100000,
+      "rent_min": 80080,
+      "rent_max": 101920
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Claren Towers",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2200000,
+      "max": 3300000,
+      "rent_min": 125840,
+      "rent_max": 160160
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Claren Towers",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 3600000,
+      "max": 5200000,
+      "rent_min": 201344,
+      "rent_max": 256256
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Old Town (Reehan/Zanzabeel)",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1600000,
+      "max": 2450000,
+      "rent_min": 92664,
+      "rent_max": 117936
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Old Town (Reehan/Zanzabeel)",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2600000,
+      "max": 3900000,
+      "rent_min": 148720,
+      "rent_max": 189280
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Old Town (Reehan/Zanzabeel)",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 4200000,
+      "max": 6500000,
+      "rent_min": 244816,
+      "rent_max": 311584
+    },
+    {
+      "area": "Business Bay",
+      "community": "Canal Crown",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1200000,
+      "max": 1850000,
+      "rent_min": 87230,
+      "rent_max": 111020
+    },
+    {
+      "area": "Business Bay",
+      "community": "Canal Crown",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1950000,
+      "max": 3000000,
+      "rent_min": 141570,
+      "rent_max": 180180
+    },
+    {
+      "area": "Business Bay",
+      "community": "Canal Crown",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 3150000,
+      "max": 4700000,
+      "rent_min": 224510,
+      "rent_max": 285740
+    },
+    {
+      "area": "Business Bay",
+      "community": "Aykon City",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1050000,
+      "max": 1650000,
+      "rent_min": 77220,
+      "rent_max": 98280
+    },
+    {
+      "area": "Business Bay",
+      "community": "Aykon City",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1750000,
+      "max": 2750000,
+      "rent_min": 128700,
+      "rent_max": 163800
+    },
+    {
+      "area": "Business Bay",
+      "community": "Aykon City",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 2850000,
+      "max": 4300000,
+      "rent_min": 204490,
+      "rent_max": 260260
+    },
+    {
+      "area": "Business Bay",
+      "community": "Peninsula",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1150000,
+      "max": 1750000,
+      "rent_min": 82940,
+      "rent_max": 105560
+    },
+    {
+      "area": "Business Bay",
+      "community": "Peninsula",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1850000,
+      "max": 2850000,
+      "rent_min": 134420,
+      "rent_max": 171080
+    },
+    {
+      "area": "Business Bay",
+      "community": "Peninsula",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 3000000,
+      "max": 4600000,
+      "rent_min": 217360,
+      "rent_max": 276640
+    },
+    {
+      "area": "JBR",
+      "community": "Murjan",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1550000,
+      "max": 2400000,
+      "rent_min": 97328,
+      "rent_max": 123872
+    },
+    {
+      "area": "JBR",
+      "community": "Murjan",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2650000,
+      "max": 4200000,
+      "rent_min": 168784,
+      "rent_max": 214816
+    },
+    {
+      "area": "JBR",
+      "community": "Murjan",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 4300000,
+      "max": 6800000,
+      "rent_min": 273504,
+      "rent_max": 348096
+    },
+    {
+      "area": "JLT",
+      "community": "Cluster K",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 920000,
+      "max": 1420000,
+      "rent_min": 70013,
+      "rent_max": 89107
+    },
+    {
+      "area": "JLT",
+      "community": "Cluster K",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1600000,
+      "max": 2500000,
+      "rent_min": 122672,
+      "rent_max": 156128
+    },
+    {
+      "area": "JLT",
+      "community": "Cluster K",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 2800000,
+      "max": 4100000,
+      "rent_min": 206448,
+      "rent_max": 262752
+    },
+    {
+      "area": "DIFC",
+      "community": "Index Tower",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1750000,
+      "max": 2650000,
+      "rent_min": 106480,
+      "rent_max": 135520
+    },
+    {
+      "area": "DIFC",
+      "community": "Index Tower",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2950000,
+      "max": 4700000,
+      "rent_min": 185130,
+      "rent_max": 235620
+    },
+    {
+      "area": "DIFC",
+      "community": "Index Tower",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 5100000,
+      "max": 8200000,
+      "rent_min": 321860,
+      "rent_max": 409640
+    },
+    {
+      "area": "DIFC",
+      "community": "Central Park Towers",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1650000,
+      "max": 2550000,
+      "rent_min": 101640,
+      "rent_max": 129360
+    },
+    {
+      "area": "DIFC",
+      "community": "Central Park Towers",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2850000,
+      "max": 4500000,
+      "rent_min": 177870,
+      "rent_max": 226380
+    },
+    {
+      "area": "DIFC",
+      "community": "Central Park Towers",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 4900000,
+      "max": 8000000,
+      "rent_min": 312180,
+      "rent_max": 397320
+    },
+    {
+      "area": "Dubai Creek Harbour",
+      "community": "Creek Rise",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 3100000,
+      "max": 4700000,
+      "rent_min": 188760,
+      "rent_max": 240240
+    },
+    {
+      "area": "Dubai Creek Harbour",
+      "community": "Harbour Views",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 3250000,
+      "max": 4900000,
+      "rent_min": 197230,
+      "rent_max": 251020
+    },
+    {
+      "area": "Dubai Creek Harbour",
+      "community": "Creek Gate",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 3200000,
+      "max": 4850000,
+      "rent_min": 194810,
+      "rent_max": 247940
+    },
+    {
+      "area": "Dubai Harbour",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 4600000,
+      "max": 7600000,
+      "rent_min": 295240,
+      "rent_max": 375760
+    },
+    {
+      "area": "Dubai Harbour",
+      "community": "Emaar Beachfront (General)",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1650000,
+      "max": 2550000,
+      "rent_min": 101640,
+      "rent_max": 129360
+    },
+    {
+      "area": "Dubai Harbour",
+      "community": "Emaar Beachfront (General)",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2750000,
+      "max": 4400000,
+      "rent_min": 173030,
+      "rent_max": 220220
+    },
+    {
+      "area": "Dubai Harbour",
+      "community": "Emaar Beachfront (General)",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 4500000,
+      "max": 7400000,
+      "rent_min": 287980,
+      "rent_max": 366520
+    },
+    {
+      "area": "Bluewaters Island",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 6000000,
+      "max": 9500000,
+      "rent_min": 354640,
+      "rent_max": 451360
+    },
+    {
+      "area": "Bluewaters Island",
+      "community": "Bluewaters Residences",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 6300000,
+      "max": 9800000,
+      "rent_min": 368368,
+      "rent_max": 468832
+    },
+    {
+      "area": "City Walk",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 4200000,
+      "max": 6800000,
+      "rent_min": 242000,
+      "rent_max": 308000
+    },
+    {
+      "area": "MBR City",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1250000,
+      "max": 1900000,
+      "rent_min": 83160,
+      "rent_max": 105840
+    },
+    {
+      "area": "MBR City",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 2000000,
+      "max": 3200000,
+      "rent_min": 137280,
+      "rent_max": 174720
+    },
+    {
+      "area": "MBR City",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 3300000,
+      "max": 5200000,
+      "rent_min": 224400,
+      "rent_max": 285600
+    },
+    {
+      "area": "MBR City",
+      "community": "Sobha Hartland",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1200000,
+      "max": 1850000,
+      "rent_min": 80520,
+      "rent_max": 102480
+    },
+    {
+      "area": "MBR City",
+      "community": "Sobha Hartland",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1950000,
+      "max": 3100000,
+      "rent_min": 133320,
+      "rent_max": 169680
+    },
+    {
+      "area": "MBR City",
+      "community": "Sobha Hartland",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 3250000,
+      "max": 5100000,
+      "rent_min": 220440,
+      "rent_max": 280560
+    },
+    {
+      "area": "Palm Jumeirah",
+      "community": "Golden Mile",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 2400000,
+      "max": 4000000,
+      "rent_min": 135168,
+      "rent_max": 172032
+    },
+    {
+      "area": "Palm Jumeirah",
+      "community": "Golden Mile",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 3900000,
+      "max": 7000000,
+      "rent_min": 230208,
+      "rent_max": 292992
+    },
+    {
+      "area": "Palm Jumeirah",
+      "community": "Golden Mile",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 7200000,
+      "max": 12000000,
+      "rent_min": 405504,
+      "rent_max": 516096
+    },
+    {
+      "area": "Al Reem Island",
+      "community": "Shams Abu Dhabi",
+      "type": "Apartment",
+      "beds": 0,
+      "min": 450000,
+      "max": 650000,
+      "rent_min": 34848,
+      "rent_max": 44352
+    },
+    {
+      "area": "Al Reem Island",
+      "community": "Shams Abu Dhabi",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 700000,
+      "max": 1050000,
+      "rent_min": 55440,
+      "rent_max": 70560
+    },
+    {
+      "area": "Al Reem Island",
+      "community": "Shams Abu Dhabi",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1050000,
+      "max": 1500000,
+      "rent_min": 80784,
+      "rent_max": 102816
+    },
+    {
+      "area": "Al Reem Island",
+      "community": "Shams Abu Dhabi",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 1500000,
+      "max": 2200000,
+      "rent_min": 117216,
+      "rent_max": 149184
+    },
+    {
+      "area": "Al Reem Island",
+      "community": "Marina Square",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 650000,
+      "max": 950000,
+      "rent_min": 50688,
+      "rent_max": 64512
+    },
+    {
+      "area": "Al Reem Island",
+      "community": "Marina Square",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 950000,
+      "max": 1400000,
+      "rent_min": 74448,
+      "rent_max": 94752
+    },
+    {
+      "area": "Al Reem Island",
+      "community": "The Gate Towers",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 680000,
+      "max": 980000,
+      "rent_min": 52589,
+      "rent_max": 66931
+    },
+    {
+      "area": "Al Reem Island",
+      "community": "The Gate Towers",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1000000,
+      "max": 1450000,
+      "rent_min": 77616,
+      "rent_max": 98784
+    },
+    {
+      "area": "Al Reem Island",
+      "type": "Apartment",
+      "beds": 0,
+      "min": 430000,
+      "max": 630000,
+      "rent_min": 33581,
+      "rent_max": 42739
+    },
+    {
+      "area": "Al Reem Island",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 680000,
+      "max": 1000000,
+      "rent_min": 53222,
+      "rent_max": 67738
+    },
+    {
+      "area": "Al Reem Island",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1000000,
+      "max": 1450000,
+      "rent_min": 77616,
+      "rent_max": 98784
+    },
+    {
+      "area": "Al Reem Island",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 1400000,
+      "max": 2100000,
+      "rent_min": 110880,
+      "rent_max": 141120
+    },
+    {
+      "area": "Yas Island",
+      "community": "Yas Acres",
+      "type": "Villa",
+      "beds": 3,
+      "min": 3200000,
+      "max": 4500000,
+      "rent_min": 203280,
+      "rent_max": 258720
+    },
+    {
+      "area": "Yas Island",
+      "community": "Yas Acres",
+      "type": "Villa",
+      "beds": 4,
+      "min": 4200000,
+      "max": 6000000,
+      "rent_min": 269280,
+      "rent_max": 342720
+    },
+    {
+      "area": "Yas Island",
+      "community": "Yas Bay",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 900000,
+      "max": 1300000,
+      "rent_min": 58080,
+      "rent_max": 73920
+    },
+    {
+      "area": "Yas Island",
+      "community": "Yas Bay",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1300000,
+      "max": 1900000,
+      "rent_min": 84480,
+      "rent_max": 107520
+    },
+    {
+      "area": "Yas Island",
+      "community": "Waters Edge",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 850000,
+      "max": 1200000,
+      "rent_min": 54120,
+      "rent_max": 68880
+    },
+    {
+      "area": "Yas Island",
+      "community": "Waters Edge",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1200000,
+      "max": 1700000,
+      "rent_min": 76560,
+      "rent_max": 97440
+    },
+    {
+      "area": "Yas Island",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 850000,
+      "max": 1250000,
+      "rent_min": 55440,
+      "rent_max": 70560
+    },
+    {
+      "area": "Yas Island",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1250000,
+      "max": 1800000,
+      "rent_min": 80520,
+      "rent_max": 102480
+    },
+    {
+      "area": "Yas Island",
+      "type": "Villa",
+      "beds": 3,
+      "min": 3100000,
+      "max": 4400000,
+      "rent_min": 198000,
+      "rent_max": 252000
+    },
+    {
+      "area": "Yas Island",
+      "type": "Villa",
+      "beds": 4,
+      "min": 4000000,
+      "max": 5800000,
+      "rent_min": 258720,
+      "rent_max": 329280
+    },
+    {
+      "area": "Saadiyat Island",
+      "community": "Saadiyat Grove",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1200000,
+      "max": 1800000,
+      "rent_min": 59400,
+      "rent_max": 75600
+    },
+    {
+      "area": "Saadiyat Island",
+      "community": "Saadiyat Grove",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1800000,
+      "max": 2800000,
+      "rent_min": 91080,
+      "rent_max": 115920
+    },
+    {
+      "area": "Saadiyat Island",
+      "community": "Saadiyat Beach",
+      "type": "Villa",
+      "beds": 4,
+      "min": 8000000,
+      "max": 14000000,
+      "rent_min": 435600,
+      "rent_max": 554400
+    },
+    {
+      "area": "Saadiyat Island",
+      "community": "Saadiyat Beach",
+      "type": "Villa",
+      "beds": 5,
+      "min": 12000000,
+      "max": 20000000,
+      "rent_min": 633600,
+      "rent_max": 806400
+    },
+    {
+      "area": "Saadiyat Island",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1100000,
+      "max": 1700000,
+      "rent_min": 55440,
+      "rent_max": 70560
+    },
+    {
+      "area": "Saadiyat Island",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1700000,
+      "max": 2700000,
+      "rent_min": 87120,
+      "rent_max": 110880
+    },
+    {
+      "area": "Saadiyat Island",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 2500000,
+      "max": 4000000,
+      "rent_min": 128700,
+      "rent_max": 163800
+    },
+    {
+      "area": "Saadiyat Island",
+      "type": "Villa",
+      "beds": 4,
+      "min": 7500000,
+      "max": 13000000,
+      "rent_min": 405900,
+      "rent_max": 516600
+    },
+    {
+      "area": "Al Raha Beach",
+      "community": "Al Muneera",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 750000,
+      "max": 1100000,
+      "rent_min": 47212,
+      "rent_max": 60088
+    },
+    {
+      "area": "Al Raha Beach",
+      "community": "Al Muneera",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1100000,
+      "max": 1600000,
+      "rent_min": 68904,
+      "rent_max": 87696
+    },
+    {
+      "area": "Al Raha Beach",
+      "community": "Al Zeina",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1200000,
+      "max": 1700000,
+      "rent_min": 74008,
+      "rent_max": 94192
+    },
+    {
+      "area": "Al Raha Beach",
+      "community": "Al Zeina",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 1600000,
+      "max": 2300000,
+      "rent_min": 99528,
+      "rent_max": 126672
+    },
+    {
+      "area": "Al Raha Beach",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 700000,
+      "max": 1050000,
+      "rent_min": 44660,
+      "rent_max": 56840
+    },
+    {
+      "area": "Al Raha Beach",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1050000,
+      "max": 1600000,
+      "rent_min": 67628,
+      "rent_max": 86072
+    },
+    {
+      "area": "Al Raha Beach",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 1500000,
+      "max": 2200000,
+      "rent_min": 94424,
+      "rent_max": 120176
+    },
+    {
+      "area": "Al Raha Beach",
+      "type": "Villa",
+      "beds": 3,
+      "min": 3000000,
+      "max": 4500000,
+      "rent_min": 191400,
+      "rent_max": 243600
+    },
+    {
+      "area": "Khalifa City",
+      "type": "Villa",
+      "beds": 3,
+      "min": 2500000,
+      "max": 3500000,
+      "rent_min": 171600,
+      "rent_max": 218400
+    },
+    {
+      "area": "Khalifa City",
+      "type": "Villa",
+      "beds": 4,
+      "min": 3200000,
+      "max": 4500000,
+      "rent_min": 220220,
+      "rent_max": 280280
+    },
+    {
+      "area": "Khalifa City",
+      "type": "Villa",
+      "beds": 5,
+      "min": 4000000,
+      "max": 5800000,
+      "rent_min": 280280,
+      "rent_max": 356720
+    },
+    {
+      "area": "Khalifa City",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 500000,
+      "max": 750000,
+      "rent_min": 35750,
+      "rent_max": 45500
+    },
+    {
+      "area": "Khalifa City",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 750000,
+      "max": 1100000,
+      "rent_min": 52910,
+      "rent_max": 67340
+    },
+    {
+      "area": "Al Maryah Island",
+      "community": "Al Maryah Vista",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1100000,
+      "max": 1600000,
+      "rent_min": 59400,
+      "rent_max": 75600
+    },
+    {
+      "area": "Al Maryah Island",
+      "community": "Al Maryah Vista",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1600000,
+      "max": 2400000,
+      "rent_min": 88000,
+      "rent_max": 112000
+    },
+    {
+      "area": "Al Maryah Island",
+      "type": "Apartment",
+      "beds": 1,
+      "min": 1050000,
+      "max": 1550000,
+      "rent_min": 57200,
+      "rent_max": 72800
+    },
+    {
+      "area": "Al Maryah Island",
+      "type": "Apartment",
+      "beds": 2,
+      "min": 1500000,
+      "max": 2300000,
+      "rent_min": 83600,
+      "rent_max": 106400
+    },
+    {
+      "area": "Al Maryah Island",
+      "type": "Apartment",
+      "beds": 3,
+      "min": 2200000,
+      "max": 3500000,
+      "rent_min": 125400,
+      "rent_max": 159600
+    },
+    {
+      "area": "Mohammed Bin Zayed City",
+      "type": "Villa",
+      "beds": 3,
+      "min": 2000000,
+      "max": 2800000,
+      "rent_min": 126720,
+      "rent_max": 161280
+    },
+    {
+      "area": "Mohammed Bin Zayed City",
+      "type": "Villa",
+      "beds": 4,
+      "min": 2500000,
+      "max": 3500000,
+      "rent_min": 158400,
+      "rent_max": 201600
+    },
+    {
+      "area": "Mohammed Bin Zayed City",
+      "type": "Villa",
+      "beds": 5,
+      "min": 3200000,
+      "max": 4500000,
+      "rent_min": 203280,
+      "rent_max": 258720
+    },
+    {
+      "area": "Al Shamkha",
+      "type": "Villa",
+      "beds": 3,
+      "min": 1800000,
+      "max": 2500000,
+      "rent_min": 122980,
+      "rent_max": 156520
+    },
+    {
+      "area": "Al Shamkha",
+      "type": "Villa",
+      "beds": 4,
+      "min": 2200000,
+      "max": 3200000,
+      "rent_min": 154440,
+      "rent_max": 196560
+    },
+    {
+      "area": "Al Shamkha",
+      "type": "Villa",
+      "beds": 5,
+      "min": 2800000,
+      "max": 4000000,
+      "rent_min": 194480,
+      "rent_max": 247520
     }
-    ,
-    { "area": "Dubai Marina", "community": "52|42", "type": "Apartment", "beds": 3, "min": 4300000, "max": 6500000 },
-    { "area": "Dubai Marina", "community": "Damac Heights", "type": "Apartment", "beds": 1, "min": 1600000, "max": 2500000 },
-    { "area": "Dubai Marina", "community": "Damac Heights", "type": "Apartment", "beds": 2, "min": 2550000, "max": 3900000 },
-    { "area": "Dubai Marina", "community": "Damac Heights", "type": "Apartment", "beds": 3, "min": 4100000, "max": 6200000 },
-    { "area": "Dubai Marina", "community": "Ocean Heights", "type": "Apartment", "beds": 1, "min": 1300000, "max": 2000000 },
-    { "area": "Dubai Marina", "community": "Ocean Heights", "type": "Apartment", "beds": 2, "min": 2050000, "max": 3200000 },
-    { "area": "Dubai Marina", "community": "Ocean Heights", "type": "Apartment", "beds": 3, "min": 3300000, "max": 5000000 },
-    { "area": "Dubai Marina", "community": "Elite Residence", "type": "Apartment", "beds": 1, "min": 1250000, "max": 1850000 },
-    { "area": "Dubai Marina", "community": "Elite Residence", "type": "Apartment", "beds": 2, "min": 1900000, "max": 2950000 },
-    { "area": "Dubai Marina", "community": "Elite Residence", "type": "Apartment", "beds": 3, "min": 3100000, "max": 4600000 },
-    { "area": "Dubai Marina", "community": "Stella Maris", "type": "Apartment", "beds": 1, "min": 1350000, "max": 2100000 },
-    { "area": "Dubai Marina", "community": "Stella Maris", "type": "Apartment", "beds": 2, "min": 2150000, "max": 3300000 },
-    { "area": "Dubai Marina", "community": "Stella Maris", "type": "Apartment", "beds": 3, "min": 3400000, "max": 5200000 },
-    { "area": "Dubai Marina", "community": "Marina Quays", "type": "Apartment", "beds": 1, "min": 1200000, "max": 1800000 },
-    { "area": "Dubai Marina", "community": "Marina Quays", "type": "Apartment", "beds": 2, "min": 1850000, "max": 2900000 },
-    { "area": "Dubai Marina", "community": "Marina Quays", "type": "Apartment", "beds": 3, "min": 3000000, "max": 4400000 },
-    { "area": "Dubai Marina", "community": "The Address Dubai Marina", "type": "Apartment", "beds": 1, "min": 1700000, "max": 2600000 },
-    { "area": "Dubai Marina", "community": "The Address Dubai Marina", "type": "Apartment", "beds": 2, "min": 2700000, "max": 4200000 },
-    { "area": "Dubai Marina", "community": "The Address Dubai Marina", "type": "Apartment", "beds": 3, "min": 4300000, "max": 6500000 },
-
-    { "area": "Downtown Dubai", "community": "Boulevard Point", "type": "Apartment", "beds": 1, "min": 1700000, "max": 2550000 },
-    { "area": "Downtown Dubai", "community": "Boulevard Point", "type": "Apartment", "beds": 2, "min": 2600000, "max": 3900000 },
-    { "area": "Downtown Dubai", "community": "Boulevard Point", "type": "Apartment", "beds": 3, "min": 4200000, "max": 6100000 },
-    { "area": "Downtown Dubai", "community": "Act One | Act Two", "type": "Apartment", "beds": 1, "min": 1650000, "max": 2450000 },
-    { "area": "Downtown Dubai", "community": "Act One | Act Two", "type": "Apartment", "beds": 2, "min": 2550000, "max": 3850000 },
-    { "area": "Downtown Dubai", "community": "Act One | Act Two", "type": "Apartment", "beds": 3, "min": 4100000, "max": 6000000 },
-    { "area": "Downtown Dubai", "community": "Forte", "type": "Apartment", "beds": 1, "min": 1500000, "max": 2250000 },
-    { "area": "Downtown Dubai", "community": "Forte", "type": "Apartment", "beds": 2, "min": 2350000, "max": 3600000 },
-    { "area": "Downtown Dubai", "community": "Forte", "type": "Apartment", "beds": 3, "min": 3900000, "max": 5700000 },
-    { "area": "Downtown Dubai", "community": "Claren Towers", "type": "Apartment", "beds": 1, "min": 1400000, "max": 2100000 },
-    { "area": "Downtown Dubai", "community": "Claren Towers", "type": "Apartment", "beds": 2, "min": 2200000, "max": 3300000 },
-    { "area": "Downtown Dubai", "community": "Claren Towers", "type": "Apartment", "beds": 3, "min": 3600000, "max": 5200000 },
-    { "area": "Downtown Dubai", "community": "Old Town (Reehan/Zanzabeel)", "type": "Apartment", "beds": 1, "min": 1600000, "max": 2450000 },
-    { "area": "Downtown Dubai", "community": "Old Town (Reehan/Zanzabeel)", "type": "Apartment", "beds": 2, "min": 2600000, "max": 3900000 },
-    { "area": "Downtown Dubai", "community": "Old Town (Reehan/Zanzabeel)", "type": "Apartment", "beds": 3, "min": 4200000, "max": 6500000 },
-
-    { "area": "Business Bay", "community": "Canal Crown", "type": "Apartment", "beds": 1, "min": 1200000, "max": 1850000 },
-    { "area": "Business Bay", "community": "Canal Crown", "type": "Apartment", "beds": 2, "min": 1950000, "max": 3000000 },
-    { "area": "Business Bay", "community": "Canal Crown", "type": "Apartment", "beds": 3, "min": 3150000, "max": 4700000 },
-    { "area": "Business Bay", "community": "Aykon City", "type": "Apartment", "beds": 1, "min": 1050000, "max": 1650000 },
-    { "area": "Business Bay", "community": "Aykon City", "type": "Apartment", "beds": 2, "min": 1750000, "max": 2750000 },
-    { "area": "Business Bay", "community": "Aykon City", "type": "Apartment", "beds": 3, "min": 2850000, "max": 4300000 },
-    { "area": "Business Bay", "community": "Peninsula", "type": "Apartment", "beds": 1, "min": 1150000, "max": 1750000 },
-    { "area": "Business Bay", "community": "Peninsula", "type": "Apartment", "beds": 2, "min": 1850000, "max": 2850000 },
-    { "area": "Business Bay", "community": "Peninsula", "type": "Apartment", "beds": 3, "min": 3000000, "max": 4600000 },
-
-    { "area": "JBR", "community": "Murjan", "type": "Apartment", "beds": 1, "min": 1550000, "max": 2400000 },
-    { "area": "JBR", "community": "Murjan", "type": "Apartment", "beds": 2, "min": 2650000, "max": 4200000 },
-    { "area": "JBR", "community": "Murjan", "type": "Apartment", "beds": 3, "min": 4300000, "max": 6800000 },
-
-    { "area": "JLT", "community": "Cluster K", "type": "Apartment", "beds": 1, "min": 920000, "max": 1420000 },
-    { "area": "JLT", "community": "Cluster K", "type": "Apartment", "beds": 2, "min": 1600000, "max": 2500000 },
-    { "area": "JLT", "community": "Cluster K", "type": "Apartment", "beds": 3, "min": 2800000, "max": 4100000 },
-
-    { "area": "DIFC", "community": "Index Tower", "type": "Apartment", "beds": 1, "min": 1750000, "max": 2650000 },
-    { "area": "DIFC", "community": "Index Tower", "type": "Apartment", "beds": 2, "min": 2950000, "max": 4700000 },
-    { "area": "DIFC", "community": "Index Tower", "type": "Apartment", "beds": 3, "min": 5100000, "max": 8200000 },
-    { "area": "DIFC", "community": "Central Park Towers", "type": "Apartment", "beds": 1, "min": 1650000, "max": 2550000 },
-    { "area": "DIFC", "community": "Central Park Towers", "type": "Apartment", "beds": 2, "min": 2850000, "max": 4500000 },
-    { "area": "DIFC", "community": "Central Park Towers", "type": "Apartment", "beds": 3, "min": 4900000, "max": 8000000 },
-
-    { "area": "Dubai Creek Harbour", "community": "Creek Rise", "type": "Apartment", "beds": 3, "min": 3100000, "max": 4700000 },
-    { "area": "Dubai Creek Harbour", "community": "Harbour Views", "type": "Apartment", "beds": 3, "min": 3250000, "max": 4900000 },
-    { "area": "Dubai Creek Harbour", "community": "Creek Gate", "type": "Apartment", "beds": 3, "min": 3200000, "max": 4850000 },
-
-    { "area": "Dubai Harbour", "type": "Apartment", "beds": 3, "min": 4600000, "max": 7600000 },
-    { "area": "Dubai Harbour", "community": "Emaar Beachfront (General)", "type": "Apartment", "beds": 1, "min": 1650000, "max": 2550000 },
-    { "area": "Dubai Harbour", "community": "Emaar Beachfront (General)", "type": "Apartment", "beds": 2, "min": 2750000, "max": 4400000 },
-    { "area": "Dubai Harbour", "community": "Emaar Beachfront (General)", "type": "Apartment", "beds": 3, "min": 4500000, "max": 7400000 },
-
-    { "area": "Bluewaters Island", "type": "Apartment", "beds": 3, "min": 6000000, "max": 9500000 },
-    { "area": "Bluewaters Island", "community": "Bluewaters Residences", "type": "Apartment", "beds": 3, "min": 6300000, "max": 9800000 },
-
-    { "area": "City Walk", "type": "Apartment", "beds": 3, "min": 4200000, "max": 6800000 },
-
-    { "area": "MBR City", "type": "Apartment", "beds": 1, "min": 1250000, "max": 1900000 },
-    { "area": "MBR City", "type": "Apartment", "beds": 2, "min": 2000000, "max": 3200000 },
-    { "area": "MBR City", "type": "Apartment", "beds": 3, "min": 3300000, "max": 5200000 },
-    { "area": "MBR City", "community": "Sobha Hartland", "type": "Apartment", "beds": 1, "min": 1200000, "max": 1850000 },
-    { "area": "MBR City", "community": "Sobha Hartland", "type": "Apartment", "beds": 2, "min": 1950000, "max": 3100000 },
-    { "area": "MBR City", "community": "Sobha Hartland", "type": "Apartment", "beds": 3, "min": 3250000, "max": 5100000 },
-
-    { "area": "Palm Jumeirah", "community": "Golden Mile", "type": "Apartment", "beds": 1, "min": 2400000, "max": 4000000 },
-    { "area": "Palm Jumeirah", "community": "Golden Mile", "type": "Apartment", "beds": 2, "min": 3900000, "max": 7000000 },
-    { "area": "Palm Jumeirah", "community": "Golden Mile", "type": "Apartment", "beds": 3, "min": 7200000, "max": 12000000 }
   ],
   "comps": [
     {
@@ -1607,7 +3095,6 @@
       "price": 6900000,
       "date": "2025-08"
     },
-
     {
       "area": "Dubai Hills Estate",
       "community": "Maple",
@@ -1651,22 +3138,169 @@
       "size_sqft": 5000,
       "price": 31500000,
       "date": "2025-09"
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "52|42",
+      "label": "52|42 (sample)",
+      "beds": 2,
+      "size_sqft": 1285,
+      "price": 3350000,
+      "date": "2025-08"
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Cayan Tower",
+      "label": "Cayan Tower (sample)",
+      "beds": 2,
+      "size_sqft": 1400,
+      "price": 2950000,
+      "date": "2025-09"
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Damac Heights",
+      "label": "Damac Heights (sample)",
+      "beds": 1,
+      "size_sqft": 890,
+      "price": 1950000,
+      "date": "2025-10"
+    },
+    {
+      "area": "Dubai Marina",
+      "community": "Stella Maris",
+      "label": "Stella Maris (sample)",
+      "beds": 1,
+      "size_sqft": 760,
+      "price": 1550000,
+      "date": "2025-09"
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Forte",
+      "label": "Forte (sample)",
+      "beds": 2,
+      "size_sqft": 1100,
+      "price": 3050000,
+      "date": "2025-10"
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "Claren Towers",
+      "label": "Claren Towers (sample)",
+      "beds": 1,
+      "size_sqft": 780,
+      "price": 1650000,
+      "date": "2025-08"
+    },
+    {
+      "area": "Downtown Dubai",
+      "community": "The Residences",
+      "label": "The Residences (sample)",
+      "beds": 3,
+      "size_sqft": 1950,
+      "price": 5650000,
+      "date": "2025-07"
+    },
+    {
+      "area": "DIFC",
+      "community": "Index Tower",
+      "label": "Index Tower (sample)",
+      "beds": 2,
+      "size_sqft": 1650,
+      "price": 3950000,
+      "date": "2025-09"
+    },
+    {
+      "area": "Dubai Harbour",
+      "community": "Beach Vista",
+      "label": "Beach Vista (sample)",
+      "beds": 2,
+      "size_sqft": 1320,
+      "price": 3550000,
+      "date": "2025-09"
+    },
+    {
+      "area": "Dubai Harbour",
+      "community": "Sunrise Bay",
+      "label": "Sunrise Bay (sample)",
+      "beds": 1,
+      "size_sqft": 760,
+      "price": 1850000,
+      "date": "2025-08"
+    },
+    {
+      "area": "Palm Jumeirah",
+      "community": "Golden Mile",
+      "label": "Golden Mile (sample)",
+      "beds": 1,
+      "size_sqft": 1150,
+      "price": 3150000,
+      "date": "2025-10"
+    },
+    {
+      "area": "Al Reem Island",
+      "label": "Shams 2BR",
+      "beds": 2,
+      "size_sqft": 1100,
+      "price": 1280000,
+      "date": "2025-11"
+    },
+    {
+      "area": "Al Reem Island",
+      "label": "Gate Tower 1BR",
+      "beds": 1,
+      "size_sqft": 750,
+      "price": 820000,
+      "date": "2025-12"
+    },
+    {
+      "area": "Al Reem Island",
+      "label": "Marina Square 2BR",
+      "beds": 2,
+      "size_sqft": 1050,
+      "price": 1150000,
+      "date": "2025-10"
+    },
+    {
+      "area": "Yas Island",
+      "label": "Yas Bay 2BR",
+      "beds": 2,
+      "size_sqft": 1200,
+      "price": 1550000,
+      "date": "2025-11"
+    },
+    {
+      "area": "Yas Island",
+      "label": "Yas Acres 4BR Villa",
+      "beds": 4,
+      "size_sqft": 3200,
+      "price": 5100000,
+      "date": "2025-09"
+    },
+    {
+      "area": "Saadiyat Island",
+      "label": "Saadiyat Grove 2BR",
+      "beds": 2,
+      "size_sqft": 1350,
+      "price": 2200000,
+      "date": "2025-10"
+    },
+    {
+      "area": "Al Raha Beach",
+      "label": "Al Muneera 2BR",
+      "beds": 2,
+      "size_sqft": 1100,
+      "price": 1350000,
+      "date": "2025-11"
+    },
+    {
+      "area": "Khalifa City",
+      "label": "KCA Villa 4BR",
+      "beds": 4,
+      "size_sqft": 4500,
+      "price": 3800000,
+      "date": "2025-12"
     }
-    ,
-    { "area": "Dubai Marina", "community": "52|42", "label": "52|42 (sample)", "beds": 2, "size_sqft": 1285, "price": 3350000, "date": "2025-08" },
-    { "area": "Dubai Marina", "community": "Cayan Tower", "label": "Cayan Tower (sample)", "beds": 2, "size_sqft": 1400, "price": 2950000, "date": "2025-09" },
-    { "area": "Dubai Marina", "community": "Damac Heights", "label": "Damac Heights (sample)", "beds": 1, "size_sqft": 890, "price": 1950000, "date": "2025-10" },
-    { "area": "Dubai Marina", "community": "Stella Maris", "label": "Stella Maris (sample)", "beds": 1, "size_sqft": 760, "price": 1550000, "date": "2025-09" },
-
-    { "area": "Downtown Dubai", "community": "Forte", "label": "Forte (sample)", "beds": 2, "size_sqft": 1100, "price": 3050000, "date": "2025-10" },
-    { "area": "Downtown Dubai", "community": "Claren Towers", "label": "Claren Towers (sample)", "beds": 1, "size_sqft": 780, "price": 1650000, "date": "2025-08" },
-    { "area": "Downtown Dubai", "community": "The Residences", "label": "The Residences (sample)", "beds": 3, "size_sqft": 1950, "price": 5650000, "date": "2025-07" },
-
-    { "area": "DIFC", "community": "Index Tower", "label": "Index Tower (sample)", "beds": 2, "size_sqft": 1650, "price": 3950000, "date": "2025-09" },
-
-    { "area": "Dubai Harbour", "community": "Beach Vista", "label": "Beach Vista (sample)", "beds": 2, "size_sqft": 1320, "price": 3550000, "date": "2025-09" },
-    { "area": "Dubai Harbour", "community": "Sunrise Bay", "label": "Sunrise Bay (sample)", "beds": 1, "size_sqft": 760, "price": 1850000, "date": "2025-08" },
-
-    { "area": "Palm Jumeirah", "community": "Golden Mile", "label": "Golden Mile (sample)", "beds": 1, "size_sqft": 1150, "price": 3150000, "date": "2025-10" }
   ]
 }

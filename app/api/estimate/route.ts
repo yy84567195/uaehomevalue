@@ -176,22 +176,17 @@ if (!picked.length) {
       !isCommunityMatched && !isFallbackBeds ? "Medium" :
       "Low";
 
+    const baseRentMin = Math.min(...picked.map((r: any) => Number(r.rent_min || 0)).filter((n: number) => n > 0)) || 0;
+    const baseRentMax = Math.max(...picked.map((r: any) => Number(r.rent_max || 0)).filter((n: number) => n > 0)) || 0;
+    const rentMin = baseRentMin > 0 ? Math.round(baseRentMin * factor) : 0;
+    const rentMax = baseRentMax > 0 ? Math.round(baseRentMax * factor) : 0;
+
     return NextResponse.json({
-      min,
-      max,
-      confidence,
+      min, max, confidence,
+      rent_min: rentMin,
+      rent_max: rentMax,
       matched: isCommunityMatched ? "community" : "area",
-      // 下面这些留着以后做训练样本/后台收集（暂时不影响前端）
-      debug: {
-        area,
-        community,
-        building,
-        type,
-        beds,
-        bedsUsed: usedBeds,
-        sizeSqft,
-        factor,
-      },
+      debug: { area, community, building, type, beds, bedsUsed: usedBeds, sizeSqft, factor },
     });
   } catch (e) {
     return NextResponse.json(

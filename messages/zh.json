@@ -1,6 +1,6 @@
 {
   "home": {
-    "title": "追踪你的迪拜房价涨幅-随时随地",
+    "title": "追踪迪拜和阿布扎比的房价走势——随时随地",
     "subtitle": "先估值 · 再决策",
 "badges": {
   "fast": "30秒快速估值",
@@ -260,19 +260,28 @@
     "downloading": "生成中…",
     "reportTitle": "房产估值报告",
     "reportSubtitle": "由 UAEHomeValue 生成",
-    "reportSource": "数据来源：迪拜土地局（开放数据）",
+    "reportSource": "数据来源：DLD（迪拜）+ DARI（阿布扎比）官方开放数据",
     "reportDisclaimer": "本报告仅供参考，不构成正式评估或法律效力文件。最终价格因楼层、景观、装修状态及成交时点而异。"
   },
   "dataSource": {
     "label": "数据",
-    "value": "迪拜土地局",
+    "value": "DLD（迪拜）+ DARI（阿布扎比）",
     "updated": "更新",
     "methodologyLink": "估值方法"
+  },
+  "feedback": {
+    "title": "建议与反馈",
+    "open": "写信给我们",
+    "placeholder": "告诉我们哪里可以改进、报告问题或建议新功能…",
+    "emailPlaceholder": "你的邮箱（可选）",
+    "send": "发送",
+    "success": "感谢！你的反馈已收到。",
+    "error": "发送失败，请重试。"
   },
   "footer": {
     "copy": "© UAEHomeValue",
     "methodology": "估值方法",
-    "dataCredit": "数据：迪拜土地局开放数据"
+    "dataCredit": "数据：DLD（迪拜）+ DARI（阿布扎比）官方开放数据"
   },
   "lang": {
     "label": "语言",
