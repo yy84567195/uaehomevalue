@@ -59,7 +59,7 @@
       "studio": "Studio",
       "sqft": "sqft"
     },
-    "likelyRange": "Likely value range (AED)",
+    "likelyRange": "Likely value range",
     "conservativeRange": "Conservative market range",
     "likelyBandWidth": "Likely band width",
     "lastUpdated": "Last updated: today",
@@ -88,7 +88,7 @@
     },
     "rent": {
       "title": "Rent estimate (informational)",
-      "monthlyLabel": "Monthly rent range (AED)",
+      "monthlyLabel": "Monthly rent range",
       "annualLabel": "Annual",
       "yieldLabel": "Yield",
       "basis": "Basis: a broad gross yield band for quick screening."

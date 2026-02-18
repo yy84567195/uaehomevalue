@@ -59,7 +59,7 @@
       "studio": "单间",
       "sqft": "平方英尺"
     },
-    "likelyRange": "可能价格区间（AED 迪拉姆）",
+    "likelyRange": "可能价格区间",
     "conservativeRange": "保守市场区间",
     "likelyBandWidth": "可能区间宽度",
     "lastUpdated": "更新：今天",
@@ -89,7 +89,7 @@
     },
     "rent": {
       "title": "租金估算（参考）",
-      "monthlyLabel": "月租区间（AED 迪拉姆）",
+      "monthlyLabel": "月租区间",
       "annualLabel": "年租",
       "yieldLabel": "收益率",
       "basis": "依据：用于快速筛选的粗略毛租金收益率区间。"
@@ -238,7 +238,7 @@
       "gym": "健身房",
       "kids": "儿童区"
     },
-    "expectedPrice": "你的期望价（可选，AED）",
+    "expectedPrice": "你的期望价（可选，迪拉姆）",
     "submit": "更新估值",
     "note": "我们会用这些信息收紧区间并持续优化模型。",
     "messages": {

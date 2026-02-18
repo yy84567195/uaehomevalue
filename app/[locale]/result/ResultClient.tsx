@@ -33,28 +33,65 @@ function formatSqft(n: number) {
   return n.toLocaleString("en-US");
 }
 
-const currencyLabel: Record<string, string> = {
-  en: "AED", zh: "迪拉姆", ar: "درهم", hi: "दिरहम", ru: "дирхам",
-};
+const CUR: Record<string, string> = { en: "AED", zh: "迪拉姆", ar: "درهم", hi: "दिरहम", ru: "дирхам" };
+const WAN: Record<string, string> = { zh: "万", hi: "लाख" };
+const MILLION: Record<string, string> = { en: "M", zh: "万", ar: "مليون", hi: "लाख", ru: "млн" };
+const THOUSAND: Record<string, string> = { en: "K", zh: "千", ar: "ألف", hi: "हज़ार", ru: "тыс" };
 
-function getCur(locale: string) {
-  return currencyLabel[locale] || "AED";
-}
+function getCur(locale: string) { return CUR[locale] || "AED"; }
 
 function fmtPrice(n: number, locale: string) {
   if (!Number.isFinite(n) || n <= 0) return "—";
   const c = getCur(locale);
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M ${c}`;
-  if (n >= 1_000) return `${Math.round(n).toLocaleString("en-US")} ${c}`;
-  return `${Math.round(n)} ${c}`;
+  if (locale === "zh") {
+    if (n >= 10_000) return `${(n / 10_000).toFixed(n >= 1_000_000 ? 0 : 1)}万 ${c}`;
+    return `${Math.round(n).toLocaleString()} ${c}`;
+  }
+  if (locale === "hi") {
+    if (n >= 100_000) return `${(n / 100_000).toFixed(n >= 1_000_000 ? 1 : 2)} ${MILLION.hi} ${c}`;
+    if (n >= 1_000) return `${(n / 1_000).toFixed(0)} ${THOUSAND.hi} ${c}`;
+    return `${Math.round(n)} ${c}`;
+  }
+  if (locale === "ar") {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)} ${MILLION.ar} ${c}`;
+    if (n >= 1_000) return `${Math.round(n).toLocaleString("ar-AE")} ${c}`;
+    return `${Math.round(n)} ${c}`;
+  }
+  if (locale === "ru") {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)} ${MILLION.ru} ${c}`;
+    if (n >= 1_000) return `${Math.round(n).toLocaleString("ru-RU")} ${c}`;
+    return `${Math.round(n)} ${c}`;
+  }
+  if (n >= 1_000_000) return `AED ${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000) return `AED ${Math.round(n).toLocaleString("en-US")}`;
+  return `AED ${Math.round(n)}`;
 }
 
 function fmtPriceShort(n: number, locale: string) {
   if (!Number.isFinite(n)) return "—";
   const c = getCur(locale);
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M ${c}`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K ${c}`;
-  return `${Math.round(n)} ${c}`;
+  if (locale === "zh") {
+    if (n >= 10_000) return `${Math.round(n / 10_000)}万 ${c}`;
+    return `${Math.round(n).toLocaleString()} ${c}`;
+  }
+  if (locale === "hi") {
+    if (n >= 100_000) return `${(n / 100_000).toFixed(1)} ${MILLION.hi} ${c}`;
+    if (n >= 1_000) return `${Math.round(n / 1_000)} ${THOUSAND.hi} ${c}`;
+    return `${Math.round(n)} ${c}`;
+  }
+  if (locale === "ar") {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} ${MILLION.ar} ${c}`;
+    if (n >= 1_000) return `${Math.round(n / 1_000)} ${THOUSAND.ar} ${c}`;
+    return `${Math.round(n)} ${c}`;
+  }
+  if (locale === "ru") {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} ${MILLION.ru} ${c}`;
+    if (n >= 1_000) return `${Math.round(n / 1_000)} ${THOUSAND.ru} ${c}`;
+    return `${Math.round(n)} ${c}`;
+  }
+  if (n >= 1_000_000) return `AED ${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000) return `AED ${(n / 1_000).toFixed(0)}K`;
+  return `AED ${Math.round(n)}`;
 }
 
 function sparkPath(values: number[], w = 220, h = 56, pad = 6) {
@@ -484,103 +521,97 @@ useEffect(() => {
 
   return (
     <div className={styles.page}>
-      {/* Share poster — hidden, rendered by html2canvas (900x600 ratio) */}
-      <div id="share-poster" style={{ display: "none", position: "fixed", left: "-9999px", top: 0, width: 600, height: 900, fontFamily: "system-ui, -apple-system, sans-serif", overflow: "hidden" }}>
-        <div style={{ width: 600, height: 900, background: "linear-gradient(160deg, #0a0f1e 0%, #111d35 40%, #0d1526 100%)", padding: "32px 28px 24px", color: "#fff", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
-          {/* Top brand bar */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24, flexShrink: 0 }}>
-            <div style={{ width: 38, height: 38, background: "linear-gradient(135deg,#3b82f6,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 900, color: "#fff" }}>U</div>
+      {/* Share poster — hidden, rendered by html2canvas */}
+      <div id="share-poster" style={{ display: "none", position: "fixed", left: "-9999px", top: 0, width: 600, fontFamily: "system-ui, -apple-system, sans-serif" }}>
+        <div style={{ width: 600, background: "linear-gradient(170deg, #080d1a 0%, #0f1a30 35%, #0a1020 100%)", padding: "28px 24px 20px", color: "#fff", boxSizing: "border-box" }}>
+          {/* Brand + date */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+            <div style={{ width: 34, height: 34, background: "linear-gradient(135deg,#3b82f6,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 900 }}>U</div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 17, fontWeight: 900, letterSpacing: 0.5 }}>UAEHomeValue</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,.5)" }}>{t("result.subtitle")}</div>
+              <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: 0.5 }}>UAEHomeValue</div>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,.45)" }}>{t("result.subtitle")}</div>
             </div>
-            <div style={{ textAlign: "right", fontSize: 11, color: "rgba(255,255,255,.4)" }}>{new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,.35)" }}>{new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
           </div>
 
-          {/* Location tag */}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16, flexShrink: 0 }}>
-            <span style={{ background: "rgba(59,130,246,.2)", border: "1px solid rgba(59,130,246,.35)", padding: "4px 12px", fontSize: 12, fontWeight: 800, color: "#93c5fd" }}>{getLocaleName(area, locale)}</span>
-            {community && <span style={{ background: "rgba(139,92,246,.15)", border: "1px solid rgba(139,92,246,.3)", padding: "4px 12px", fontSize: 12, fontWeight: 700, color: "#c4b5fd" }}>{getLocaleNameWithEnglish(community, locale)}</span>}
-            <span style={{ background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", padding: "4px 12px", fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,.6)" }}>{localType} • {localBeds}</span>
+          {/* Location tags */}
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+            <span style={{ background: "rgba(59,130,246,.18)", border: "1px solid rgba(59,130,246,.3)", padding: "3px 10px", fontSize: 11, fontWeight: 800, color: "#93c5fd" }}>{getLocaleName(area, locale)}</span>
+            {community && <span style={{ background: "rgba(139,92,246,.12)", border: "1px solid rgba(139,92,246,.25)", padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#c4b5fd" }}>{getLocaleNameWithEnglish(community, locale)}</span>}
+            <span style={{ background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)", padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.5)" }}>{localType} • {localBeds} • {formatSqft(sizeSqft)} {t("result.header.sqft")}</span>
           </div>
 
-          {/* Main value block */}
-          <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", padding: "20px 20px 16px", marginBottom: 16, flexShrink: 0 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.4)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 8 }}>{t("result.title")}</div>
-            <div style={{ fontSize: 32, fontWeight: 900, color: "#60a5fa", lineHeight: 1.1, letterSpacing: -0.5 }}>
-              {fmtPrice(likely.likelyMin, locale)}
+          {/* ━━━ Value block ━━━ */}
+          <div style={{ background: "rgba(255,255,255,.035)", border: "1px solid rgba(255,255,255,.07)", padding: "16px 18px 14px", marginBottom: 12 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,.35)", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 6 }}>{t("result.title")}</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: "#60a5fa", lineHeight: 1.15 }}>{fmtPrice(likely.likelyMin, locale)}</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: "#60a5fa", lineHeight: 1.15 }}>– {fmtPrice(likely.likelyMax, locale)}</div>
+            <div style={{ display: "flex", gap: 12, marginTop: 8, alignItems: "center" }}>
+              <span style={{ background: "rgba(34,197,94,.15)", padding: "3px 8px", fontSize: 11, fontWeight: 800, color: "#4ade80" }}>{t("result.confidence")}: {localConfidence}</span>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,.35)" }}>{t("result.conservativeRange")}: {fmtPriceShort(minFinal, locale)} – {fmtPriceShort(maxFinal, locale)}</span>
             </div>
-            <div style={{ fontSize: 32, fontWeight: 900, color: "#60a5fa", lineHeight: 1.1, letterSpacing: -0.5 }}>
-              – {fmtPrice(likely.likelyMax, locale)}
-            </div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,.5)", marginTop: 10 }}>
-              {t("result.conservativeRange")}: {fmtPrice(minFinal, locale)} – {fmtPrice(maxFinal, locale)}
-            </div>
-            <div style={{ display: "flex", gap: 16, marginTop: 10 }}>
-              <div style={{ background: "rgba(34,197,94,.15)", padding: "4px 10px", fontSize: 12, fontWeight: 800, color: "#4ade80" }}>
-                {t("result.confidence")}: {localConfidence}
+          </div>
+
+          {/* ━━━ Trend + Rental (two-column) ━━━ */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+            {/* Price trend */}
+            <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", padding: "12px 14px 10px" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,.35)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{t("result.trend.title")}</div>
+              <svg viewBox="0 0 220 50" style={{ width: "100%", height: 50 }}>
+                <path d={sparkPath(trend, 220, 50, 4)} fill="none" stroke="#60a5fa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 10 }}>
+                <span style={{ color: "rgba(255,255,255,.3)" }}>{t("result.trend.daysAgo")}</span>
+                <span style={{ color: "#60a5fa", fontWeight: 800 }}>{fmtPriceShort(trend[trend.length - 1] || mid, locale)}</span>
               </div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", alignSelf: "center" }}>
-                {formatSqft(sizeSqft)} {t("result.header.sqft")}
-              </div>
             </div>
-          </div>
 
-          {/* Two-column data */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16, flexShrink: 0 }}>
             {/* Rental yield */}
-            <div style={{ background: "rgba(96,165,250,.08)", border: "1px solid rgba(96,165,250,.15)", padding: "14px 14px 12px" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#60a5fa", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>{t("result.rent.title")}</div>
-              <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", lineHeight: 1.3 }}>
-                {fmtPriceShort(rent.monthlyMin, locale)}
-              </div>
-              <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", lineHeight: 1.3 }}>
-                – {fmtPriceShort(rent.monthlyMax, locale)}
-              </div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,.45)", marginTop: 6 }}>
-                {t("result.rent.yieldLabel")}: {rent.yieldMinPct}% – {rent.yieldMaxPct}%
-              </div>
+            <div style={{ background: "rgba(96,165,250,.06)", border: "1px solid rgba(96,165,250,.12)", padding: "12px 14px 10px" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#60a5fa", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{t("result.rent.title")}</div>
+              <div style={{ fontSize: 15, fontWeight: 900, color: "#fff", lineHeight: 1.3 }}>{fmtPriceShort(rent.monthlyMin, locale)}</div>
+              <div style={{ fontSize: 15, fontWeight: 900, color: "#fff", lineHeight: 1.3 }}>– {fmtPriceShort(rent.monthlyMax, locale)}</div>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,.4)", marginTop: 6 }}>{t("result.rent.annualLabel")}: {fmtPriceShort(rent.annualMin, locale)} – {fmtPriceShort(rent.annualMax, locale)}</div>
+              <div style={{ fontSize: 11, color: "#4ade80", fontWeight: 800, marginTop: 2 }}>{t("result.rent.yieldLabel")}: {rent.yieldMinPct}% – {rent.yieldMaxPct}%</div>
             </div>
+          </div>
 
-            {/* Market stats */}
-            <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)", padding: "14px 14px 12px" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,.4)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>{t("result.snapshot.title").replace("(estimated)", "").replace("（估算）", "").trim()}</div>
-              {[
-                [t("result.snapshot.pricePerSqft"), sizeSqft > 0 ? `${Math.round(mid / sizeSqft).toLocaleString()} ${getCur(locale)}/sqft` : "—"],
-                [t("result.snapshot.yoy"), pct(market.yoy)],
-                [t("result.snapshot.activity"), market.dom <= 40 ? t("result.snapshot.activityHigh") : market.dom <= 70 ? t("result.snapshot.activityMed") : t("result.snapshot.activityLow")],
-              ].map(([k, v], i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 4 }}>
-                  <span style={{ color: "rgba(255,255,255,.4)" }}>{k}</span>
-                  <span style={{ fontWeight: 800, color: "#fff" }}>{v}</span>
+          {/* ━━━ Comparable homes ━━━ */}
+          <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)", padding: "12px 14px 10px", marginBottom: 12 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,.35)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>{t("result.comps.title")}</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+              {comps.slice(0, 4).map((c, i) => (
+                <div key={i} style={{ background: "rgba(255,255,255,.03)", padding: "8px 10px", border: "1px solid rgba(255,255,255,.05)" }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "#fff" }}>{fmtPriceShort(c.price, locale)}</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,.35)", marginTop: 2 }}>{localType} • {c.beds ? t("result.header.beds", { beds: c.beds }) : "—"} • {formatSqft(c.size)} {t("result.header.sqft")}</div>
+                  <div style={{ fontSize: 9, color: "rgba(255,255,255,.25)", marginTop: 1 }}>{c.note}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Adjustments row */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: "auto", flexShrink: 0 }}>
+          {/* ━━━ Market snapshot row ━━━ */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 6, marginBottom: 12 }}>
             {[
-              [t("result.adjustments.seaView.label"), t("result.adjustments.seaView.impact")],
-              [t("result.adjustments.highFloor.label"), t("result.adjustments.highFloor.impact")],
-              [t("result.adjustments.upgraded.label"), t("result.adjustments.upgraded.impact")],
-              [t("result.adjustments.lowFloorRoad.label"), t("result.adjustments.lowFloorRoad.impact")],
-            ].map(([label, impact], i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 10, padding: "4px 8px", background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.05)" }}>
-                <span style={{ color: "rgba(255,255,255,.35)" }}>{label}</span>
-                <span style={{ color: "#93c5fd", fontWeight: 700 }}>{impact}</span>
+              [t("result.snapshot.pricePerSqft"), sizeSqft > 0 ? `${Math.round(mid / sizeSqft).toLocaleString()} ${getCur(locale)}` : "—"],
+              [t("result.snapshot.yoy"), pct(market.yoy)],
+              [t("result.snapshot.mom"), pct(market.mom)],
+              [t("result.snapshot.activity"), market.dom <= 40 ? t("result.snapshot.activityHigh") : market.dom <= 70 ? t("result.snapshot.activityMed") : t("result.snapshot.activityLow")],
+            ].map(([k, v], i) => (
+              <div key={i} style={{ background: "rgba(255,255,255,.025)", padding: "8px 8px 6px", textAlign: "center", border: "1px solid rgba(255,255,255,.05)" }}>
+                <div style={{ fontSize: 9, color: "rgba(255,255,255,.3)", marginBottom: 3 }}>{k}</div>
+                <div style={{ fontSize: 13, fontWeight: 900, color: "#fff" }}>{v}</div>
               </div>
             ))}
           </div>
 
-          {/* Bottom bar */}
-          <div style={{ borderTop: "1px solid rgba(255,255,255,.08)", paddingTop: 12, marginTop: 16, display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexShrink: 0 }}>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,.3)", lineHeight: 1.6 }}>
-              {t("footer.dataCredit")}<br />
-              <span style={{ color: "#60a5fa" }}>uaehomevalue.com</span>
+          {/* ━━━ Footer ━━━ */}
+          <div style={{ borderTop: "1px solid rgba(255,255,255,.06)", paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,.25)", lineHeight: 1.5 }}>
+              {t("footer.dataCredit")}<br /><span style={{ color: "#60a5fa" }}>uaehomevalue.com</span>
             </div>
-            <div style={{ fontSize: 9, color: "rgba(255,255,255,.2)", maxWidth: 200, textAlign: "right", lineHeight: 1.4 }}>
-              {t("report.reportDisclaimer").slice(0, 60)}…
+            <div style={{ fontSize: 8, color: "rgba(255,255,255,.15)", maxWidth: 180, textAlign: "right", lineHeight: 1.4 }}>
+              {t("report.reportDisclaimer").slice(0, 50)}…
             </div>
           </div>
         </div>
