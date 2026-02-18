@@ -155,12 +155,34 @@ useEffect(() => {
   const matched = useMemo(() => getParam("matched"), []);
   const fallbackLevel = useMemo(() => getParam("fallback") || "exact", []);
 
+  const localType = useMemo(() => {
+    if (type === "Apartment") return t("home.typeOptions.apartment");
+    if (type === "Villa") return t("home.typeOptions.villa");
+    return type || "—";
+  }, [type, t]);
+
+  const localBeds = useMemo(() => {
+    if (bedsLabel === "Studio") return t("result.header.studio");
+    if (bedsLabel === "4+") return t("result.header.bedsPlus");
+    if (bedsLabel) return t("result.header.beds", { beds: bedsLabel });
+    return "—";
+  }, [bedsLabel, t]);
+
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
   // ✅ refine override 优先
   const minFinal = minOverride ?? min;
   const maxFinal = maxOverride ?? max;
   const confidenceFinal = confidenceOverride ?? confidence;
+
+  const localConfidence = useMemo(() => {
+    const c = (confidenceFinal || "").toLowerCase();
+    if (c.includes("high")) return t("result.snapshot.activityHigh");
+    if (c.includes("med")) return t("result.snapshot.activityMed");
+    if (c.includes("low")) return t("result.snapshot.activityLow");
+    if (c.includes("refin")) return t("refine.messages.refinedBadge");
+    return confidenceFinal;
+  }, [confidenceFinal, t]);
 
   const bedsNum = useMemo(() => Number(beds || 0), [beds]);
   const sizeSqft = useMemo(() => Number(sizeSqftStr || 0), [sizeSqftStr]);
@@ -225,201 +247,22 @@ useEffect(() => {
     }
   }
 
-  async function onDownloadReport() {
+  async function onShareReport() {
     setReportLoading(true);
     try {
-      const { jsPDF } = await import("jspdf");
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const W = pdf.internal.pageSize.getWidth();
-      const H = pdf.internal.pageSize.getHeight();
-      const M = 16; // margin
-      const CW = (W - M * 2 - 6) / 2; // column width
-      let y = M;
-
-      const navy = [15, 23, 42] as [number, number, number];
-      const blue = [59, 130, 246] as [number, number, number];
-      const gray = [100, 116, 139] as [number, number, number];
-      const lightGray = [226, 232, 240] as [number, number, number];
-      const white = [255, 255, 255] as [number, number, number];
-
-      const hr = () => {
-        pdf.setDrawColor(...lightGray);
-        pdf.setLineWidth(0.3);
-        pdf.line(M, y, W - M, y);
-        y += 4;
-      };
-
-      // Header bar
-      pdf.setFillColor(...navy);
-      pdf.rect(0, 0, W, 22, "F");
-      pdf.setTextColor(...white);
-      pdf.setFontSize(16);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("UAEHomeValue", M, 10);
-      pdf.setFontSize(10);
-      pdf.setFont("helvetica", "normal");
-      pdf.text("Property Estimate Report", M, 16);
-      const dateStr = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-      pdf.text(dateStr, W - M, 10, { align: "right" });
-      y = 30;
-
-      // Estimated value section
-      pdf.setTextColor(...navy);
-      pdf.setFontSize(11);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("ESTIMATED VALUE", M, y);
-      y += 7;
-      pdf.setFontSize(20);
-      pdf.setTextColor(...blue);
-      pdf.text(`${formatAED(likely.likelyMin)} — ${formatAED(likely.likelyMax)}`, M, y);
-      y += 8;
-      pdf.setFontSize(11);
-      pdf.setTextColor(...gray);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(`Conservative range: ${formatAED(minFinal)} — ${formatAED(maxFinal)}`, M, y);
-      y += 5;
-      pdf.text(`Confidence: ${confidenceFinal}`, M, y);
-      y += 8;
-      hr();
-
-      // Two-column: Property Details | Market Snapshot
-      const colLeftX = M;
-      const colRightX = M + CW + 6;
-      const yColStart = y;
-
-      const drawKV = (x: number, yy: number, key: string, val: string) => {
-        pdf.setFontSize(9);
-        pdf.setTextColor(...gray);
-        pdf.setFont("helvetica", "normal");
-        pdf.text(key, x, yy);
-        pdf.setTextColor(...navy);
-        pdf.setFont("helvetica", "bold");
-        pdf.text(val, x + 38, yy);
-        return yy + 5.5;
-      };
-
-      pdf.setFontSize(10);
-      pdf.setTextColor(...navy);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Property Details", colLeftX, y);
-      y += 6;
-
-      y = drawKV(colLeftX, y, "Area:", getLocaleName(area, locale) || "—");
-      if (community) y = drawKV(colLeftX, y, "Community:", getLocaleNameWithEnglish(community, locale));
-      y = drawKV(colLeftX, y, "Type:", type || "—");
-      y = drawKV(colLeftX, y, "Bedrooms:", bedsLabel || "—");
-      y = drawKV(colLeftX, y, "Size:", `${formatSqft(sizeSqft)} sqft`);
-      const yLeftEnd = y;
-
-      let yR = yColStart;
-      pdf.setFontSize(10);
-      pdf.setTextColor(...navy);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Market Snapshot", colRightX, yR);
-      yR += 6;
-      yR = drawKV(colRightX, yR, "Price/sqft:", sizeSqft > 0 ? `AED ${Math.round(mid / sizeSqft)}` : "—");
-      yR = drawKV(colRightX, yR, "YoY Change:", pct(market.yoy));
-      yR = drawKV(colRightX, yR, "MoM Change:", pct(market.mom));
-      yR = drawKV(colRightX, yR, "Activity:", market.dom <= 40 ? "High" : market.dom <= 70 ? "Medium" : "Low");
-      yR = drawKV(colRightX, yR, "Days on mkt:", `~${market.dom} days`);
-
-      y = Math.max(yLeftEnd, yR) + 4;
-      hr();
-
-      // Rental yield section
-      pdf.setFontSize(11);
-      pdf.setTextColor(...navy);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("RENTAL YIELD", M, y);
-      y += 7;
-      pdf.setFontSize(12);
-      pdf.setTextColor(...blue);
-      pdf.text(`Monthly: AED ${rent.monthlyMin.toLocaleString()} — AED ${rent.monthlyMax.toLocaleString()}`, M, y);
-      y += 6;
-      pdf.setFontSize(10);
-      pdf.setTextColor(...gray);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(`Annual: AED ${rent.annualMin.toLocaleString()} — AED ${rent.annualMax.toLocaleString()}`, M, y);
-      y += 5;
-      pdf.text(`Gross Yield: ${rent.yieldMinPct}% — ${rent.yieldMaxPct}%`, M, y);
-      y += 8;
-      hr();
-
-      // Two-column: Comparable Sales | Value Adjustments
-      const yCompStart = y;
-      pdf.setFontSize(10);
-      pdf.setTextColor(...navy);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Comparable Sales", colLeftX, y);
-      y += 6;
-      pdf.setFontSize(9);
-      pdf.setFont("helvetica", "normal");
-      for (const c of comps.slice(0, 5)) {
-        pdf.setTextColor(...navy);
-        pdf.text(`${c.label}`, colLeftX, y);
-        pdf.setTextColor(...gray);
-        pdf.text(`${formatAedShort(c.price)}  (${formatSqft(c.size)} sqft)`, colLeftX + 36, y);
-        y += 5;
-      }
-      const yCompsEnd = y;
-
-      yR = yCompStart;
-      pdf.setFontSize(10);
-      pdf.setTextColor(...navy);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Value Adjustments", colRightX, yR);
-      yR += 6;
-      const adjustList = [
-        ["Sea / Marina view", "+6% to +12%"],
-        ["High floor", "+2% to +5%"],
-        ["Upgraded / renovated", "+5% to +10%"],
-        ["Low floor / road view", "−3% to −8%"],
-      ];
-      pdf.setFontSize(9);
-      pdf.setFont("helvetica", "normal");
-      for (const [lbl, impact] of adjustList) {
-        pdf.setTextColor(...navy);
-        pdf.text(lbl, colRightX, yR);
-        pdf.setTextColor(...blue);
-        pdf.text(impact, colRightX + 40, yR);
-        yR += 5;
-      }
-
-      y = Math.max(yCompsEnd, yR) + 6;
-      hr();
-
-      // Fallback banner
-      if (fallbackLevel !== "exact") {
-        pdf.setFontSize(9);
-        pdf.setTextColor(180, 130, 20);
-        pdf.setFont("helvetica", "italic");
-        const fbText = fallbackLevel === "area"
-          ? "Note: Community-level data limited; area-wide data used."
-          : "Note: Limited data; similar property types used as reference.";
-        pdf.text(fbText, M, y);
-        y += 6;
-      }
-
-      // Footer disclaimer
-      pdf.setFontSize(8);
-      pdf.setTextColor(...gray);
-      pdf.setFont("helvetica", "normal");
-      const disclaimer = "Indicative estimate only. Not an official valuation. Final value may differ based on floor, view, condition and timing.";
-      const lines = pdf.splitTextToSize(disclaimer, W - M * 2);
-      pdf.text(lines, M, y);
-      y += lines.length * 3.5 + 3;
-      pdf.text("Data: DLD (Dubai) + DARI (Abu Dhabi) open data  |  uaehomevalue.com", M, y);
-      y += 4;
-
-      // QR code area (simple text link since QR lib adds complexity)
-      pdf.setFontSize(8);
-      pdf.setTextColor(...blue);
-      pdf.textWithLink("View online: " + (typeof window !== "undefined" ? window.location.href : "uaehomevalue.com"), M, y, { url: typeof window !== "undefined" ? window.location.href : "https://uaehomevalue.com" });
-
-      pdf.save(`UAEHomeValue_${area.replace(/\s+/g, "_")}_Report.pdf`);
+      const { default: html2canvas } = await import("html2canvas");
+      const el = document.getElementById("share-poster") as HTMLElement;
+      if (!el) return;
+      el.style.display = "block";
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: null });
+      el.style.display = "none";
+      const dataUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.download = `UAEHomeValue_${area.replace(/\s+/g, "_")}.png`;
+      link.href = dataUrl;
+      link.click();
     } catch (e) {
-      console.error("PDF generation failed:", e);
-      window.print();
+      console.error("Poster generation failed:", e);
     } finally {
       setReportLoading(false);
     }
@@ -597,51 +440,65 @@ useEffect(() => {
 
   return (
     <div className={styles.page}>
-      {/* Hidden print report — shown only during window.print() */}
-      <div className="uaehv-print-report">
-        <div style={{ fontSize: 22, fontWeight: 900, margin: "0 0 4px", color: "#0f172a" }}>{t("report.reportTitle")}</div>
-        <div style={{ fontSize: 13, color: "#475569", marginBottom: 20, paddingBottom: 12, borderBottom: "1px solid #e2e8f0" }}>
-          {t("report.reportSubtitle")} · {new Date().toLocaleDateString("en-GB")}
-        </div>
-
-        <div style={{ marginBottom: 18 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>{t("result.likelyRange")}</div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: "#1e40af", margin: "4px 0" }}>
-            {formatAED(likely.likelyMin)} – {formatAED(likely.likelyMax)}
+      {/* Share poster — hidden, rendered by html2canvas */}
+      <div id="share-poster" style={{ display: "none", position: "fixed", left: "-9999px", top: 0, width: 440, fontFamily: "system-ui, -apple-system, sans-serif" }}>
+        <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%)", borderRadius: 20, padding: "28px 24px 20px", color: "#fff" }}>
+          {/* Brand header */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 900 }}>U</div>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: "0.5px" }}>UAEHomeValue</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,.6)" }}>{t("report.reportSubtitle")}</div>
+            </div>
+            <div style={{ marginLeft: "auto", fontSize: 11, color: "rgba(255,255,255,.5)" }}>{new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
           </div>
-          <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>
-            {t("result.conservativeRange")}: {formatAED(minFinal)} – {formatAED(maxFinal)} · {t("result.confidence")}: {confidenceFinal}
-          </div>
-        </div>
 
-        <div style={{ marginBottom: 18 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>{t("result.inputs.title")}</div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", lineHeight: 2 }}>
-            {t("result.inputs.area")}: {getLocaleName(area, locale) || "—"}<br />
-            {community ? <>{t("home.community")}: {getLocaleNameWithEnglish(community, locale)}<br /></> : null}
-            {t("result.inputs.type")}: {type || "—"}<br />
-            {t("result.inputs.bedrooms")}: {bedsLabel || "—"}<br />
-            {t("result.inputs.size")}: {formatSqft(sizeSqft)} {t("result.header.sqft")}
+          {/* Value highlight */}
+          <div style={{ background: "rgba(255,255,255,.08)", borderRadius: 14, padding: "18px 16px", marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.5)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>{t("result.title")}</div>
+            <div style={{ fontSize: 26, fontWeight: 900, color: "#60a5fa", lineHeight: 1.2 }}>
+              {formatAED(likely.likelyMin)} – {formatAED(likely.likelyMax)}
+            </div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,.6)", marginTop: 6 }}>
+              {t("result.conservativeRange")}: {formatAED(minFinal)} – {formatAED(maxFinal)}
+            </div>
           </div>
-        </div>
 
-        <div style={{ marginBottom: 18 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>{t("result.snapshot.pricePerSqft")}</div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a" }}>
-            {market.ppsf > 0 ? `${Math.round(market.ppsf).toLocaleString("en-US")} AED/sqft` : "—"}
+          {/* Property info row */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
+            {[
+              [t("result.inputs.area"), getLocaleName(area, locale)],
+              [t("result.inputs.type"), localType],
+              ...(community ? [[t("result.inputs.community"), getLocaleNameWithEnglish(community, locale)]] : []),
+              [t("result.inputs.bedrooms"), localBeds],
+              [t("result.inputs.size"), `${formatSqft(sizeSqft)} ${t("result.header.sqft")}`],
+              [t("result.confidence"), localConfidence],
+            ].map(([k, v], i) => (
+              <div key={i} style={{ background: "rgba(255,255,255,.05)", borderRadius: 8, padding: "8px 10px" }}>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,.45)", fontWeight: 700, marginBottom: 2 }}>{k}</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>{v}</div>
+              </div>
+            ))}
           </div>
-        </div>
 
-        <div style={{ marginBottom: 18 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>{t("result.rent.title")}</div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a" }}>
-            {formatAedShort(rent.monthlyMin)} – {formatAedShort(rent.monthlyMax)} / mo · {t("result.rent.yieldLabel")}: {rent.yieldMinPct}–{rent.yieldMaxPct}%
+          {/* Rental yield bar */}
+          <div style={{ background: "rgba(96,165,250,.12)", borderRadius: 10, padding: "12px 14px", marginBottom: 16, border: "1px solid rgba(96,165,250,.2)" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#60a5fa", marginBottom: 4 }}>{t("result.rent.title")}</div>
+            <div style={{ fontSize: 15, fontWeight: 900, color: "#fff" }}>
+              {formatAedShort(rent.monthlyMin)} – {formatAedShort(rent.monthlyMax)} / {t("result.rent.monthlyLabel").split("(")[0].trim().split(" ").pop()}
+            </div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,.55)", marginTop: 2 }}>
+              {t("result.rent.yieldLabel")}: {rent.yieldMinPct}% – {rent.yieldMaxPct}%
+            </div>
           </div>
-        </div>
 
-        <div style={{ fontSize: 10, color: "#94a3b8", borderTop: "1px solid #e2e8f0", paddingTop: 10, marginTop: 24, lineHeight: 1.6 }}>
-          {t("report.reportSource")}<br />
-          {t("report.reportDisclaimer")}
+          {/* Footer */}
+          <div style={{ borderTop: "1px solid rgba(255,255,255,.1)", paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,.35)", lineHeight: 1.5 }}>
+              {t("footer.dataCredit")}<br />uaehomevalue.com
+            </div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,.35)" }}>{t("report.reportDisclaimer").slice(0, 40)}…</div>
+          </div>
         </div>
       </div>
 
@@ -685,15 +542,7 @@ useEffect(() => {
     <div className={styles.sub}>{t("result.subtitle")}</div>
 
     <div className={styles.metaLine}>
-      {getLocaleName(area, locale) || "—"} • {type || "—"} •{" "}
-      {bedsLabel
-        ? bedsLabel === "Studio"
-          ? t("result.header.studio")
-          : bedsLabel === "4+"
-          ? t("result.header.bedsPlus")
-          : t("result.header.beds", { beds: bedsLabel })
-        : "—"}{" "}
-      • {formatSqft(sizeSqft)} {t("result.header.sqft")}
+      {getLocaleName(area, locale) || "—"} • {localType} • {localBeds} • {formatSqft(sizeSqft)} {t("result.header.sqft")}
     </div>
   </div>
 
@@ -738,20 +587,34 @@ useEffect(() => {
 
                 <div style={{ display: "grid", gap: 10, minWidth: 220 }}>
                   <div className={confTone.cls}>
-                    {t("result.confidence")}: {confidenceFinal}
+                    {t("result.confidence")}: {localConfidence}
                   </div>
 
-                  <button className={styles.btnPrimary} onClick={() => setShowRefine(true)}>
-                    {t("refine.open")}
+                  <button className={styles.refineBtn} onClick={() => setShowRefine(true)}>
+                    <span style={{ fontSize: 15 }}>🎯</span> {t("refine.open")}
                   </button>
 
-                  <button className={styles.btnOutline} onClick={onDownloadReport} disabled={reportLoading} style={{ fontSize: 13 }}>
-                    {reportLoading ? t("report.downloading") : t("report.download")}
+                  <button className={styles.btnOutline} onClick={onShareReport} disabled={reportLoading} style={{ fontSize: 13 }}>
+                    {reportLoading ? t("report.downloading") : t("report.share")}
                   </button>
                 </div>
               </div>
 
-              {/* Refine form（保留功能，外观改成暗色 softCard） */}
+              {/* Refine CTA banner */}
+              {!showRefine && (
+                <div className={styles.refineCta} onClick={() => setShowRefine(true)}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 22 }}>🎯</span>
+                    <div>
+                      <div style={{ fontWeight: 900, fontSize: 14 }}>{t("refine.title")}</div>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,.6)", marginTop: 2 }}>{t("refine.helper")}</div>
+                    </div>
+                  </div>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7 5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </div>
+              )}
+
+              {/* Refine form */}
               {showRefine && (
                 <div style={{ marginTop: 16 }} className={styles.softCard}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
@@ -1169,8 +1032,8 @@ useEffect(() => {
                 {[
                   [t("result.inputs.area"), getLocaleName(area, locale) || "—"],
                   ...(community ? [[t("home.community"), matched === "community" ? `${getLocaleNameWithEnglish(community, locale)} ✓` : getLocaleNameWithEnglish(community, locale)]] : []),
-                  [t("result.inputs.type"), type || "—"],
-                  [t("result.inputs.bedrooms"), beds || "—"],
+                  [t("result.inputs.type"), localType],
+                  [t("result.inputs.bedrooms"), localBeds],
                   [t("result.inputs.size"), formatSqft(sizeSqft)],
                   [t("result.inputs.parking"), refineData?.parking ? refineData.parking : "—"],
                 ].map(([k, v]) => (

@@ -59,7 +59,7 @@
       "studio": "单间",
       "sqft": "平方英尺"
     },
-    "likelyRange": "可能价格区间（AED）",
+    "likelyRange": "可能价格区间（AED 迪拉姆）",
     "conservativeRange": "保守市场区间",
     "likelyBandWidth": "可能区间宽度",
     "lastUpdated": "更新：今天",
@@ -89,7 +89,7 @@
     },
     "rent": {
       "title": "租金估算（参考）",
-      "monthlyLabel": "月租区间（AED）",
+      "monthlyLabel": "月租区间（AED 迪拉姆）",
       "annualLabel": "年租",
       "yieldLabel": "收益率",
       "basis": "依据：用于快速筛选的粗略毛租金收益率区间。"
@@ -264,12 +264,13 @@
     "badge": "月度报告"
   },
   "report": {
-    "download": "下载报告",
+    "download": "保存/分享报告",
     "downloading": "生成中…",
     "reportTitle": "房产估值报告",
     "reportSubtitle": "由 UAEHomeValue 生成",
     "reportSource": "数据来源：DLD（迪拜）+ DARI（阿布扎比）官方开放数据",
-    "reportDisclaimer": "本报告仅供参考，不构成正式评估或法律效力文件。最终价格因楼层、景观、装修状态及成交时点而异。"
+    "reportDisclaimer": "本报告仅供参考，不构成正式评估或法律效力文件。最终价格因楼层、景观、装修状态及成交时点而异。",
+    "share": "保存/分享报告"
   },
   "dataSource": {
     "label": "数据",

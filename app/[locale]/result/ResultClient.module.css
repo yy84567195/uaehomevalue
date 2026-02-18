@@ -710,6 +710,44 @@
   line-height: 1.4;
 }
 
+/* ===== Refine CTA Banner ===== */
+.refineCta {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(59,130,246,.18) 0%, rgba(139,92,246,.18) 100%);
+  border: 1px solid rgba(59,130,246,.35);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text);
+  transition: background .15s, border-color .15s;
+}
+.refineCta:hover {
+  background: linear-gradient(135deg, rgba(59,130,246,.28) 0%, rgba(139,92,246,.28) 100%);
+  border-color: rgba(59,130,246,.55);
+}
+
+.refineBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  transition: opacity .15s;
+  white-space: nowrap;
+}
+.refineBtn:hover {
+  opacity: 0.85;
+}
+
 /* ===== Fallback Banner ===== */
 .fallbackBanner {
   display: flex;
