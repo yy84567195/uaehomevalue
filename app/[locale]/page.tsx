@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations, useLocale } from "next-intl";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import data from "@/data/price_ranges.json";
 import styles from "./HomePage.module.css";
 
@@ -56,6 +56,24 @@ export default function HomePage() {
   const [beds, setBeds] = useState<number>(2);
   const [sizeSqftText, setSizeSqftText] = useState<string>("1250");
   const [loading, setLoading] = useState<boolean>(false);
+
+  // Custom area picker state
+  const [areaOpen, setAreaOpen] = useState(false);
+  const [areaSearch, setAreaSearch] = useState("");
+  const areaRef = useRef<HTMLDivElement>(null);
+
+  // Close area picker when clicking outside
+  useEffect(() => {
+    if (!areaOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (areaRef.current && !areaRef.current.contains(e.target as Node)) {
+        setAreaOpen(false);
+        setAreaSearch("");
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [areaOpen]);
 
   // Restore last search from localStorage on mount
   useEffect(() => {
@@ -233,37 +251,81 @@ return (
             </div>
 
             <div className={styles.formGrid}>
-              {/* Area */}
-              <div className={styles.field}>
+              {/* Area — custom searchable picker */}
+              <div className={`${styles.field} ${styles.fullRow}`} ref={areaRef} style={{ position: "relative", gridColumn: "1 / -1" }}>
                 <div className={styles.label}>{tHome("area")}</div>
-                <select
-                  className={styles.control}
-                  value={area}
-                  onChange={(e) => {
-                    const nextArea = e.target.value;
-                    setArea(nextArea);
-                    setCommunity("");
-                  }}
+                <button
+                  type="button"
+                  className={`${styles.control} ${styles.pickerTrigger}`}
+                  onClick={() => { setAreaOpen((v) => !v); setAreaSearch(""); }}
+                  aria-expanded={areaOpen}
                 >
-                  {areas.map((a) => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </select>
+                  <span>{area}</span>
+                  <svg
+                    width="14" height="14" viewBox="0 0 16 16" fill="none"
+                    style={{ flexShrink: 0, transition: "transform .15s", transform: areaOpen ? "rotate(180deg)" : "rotate(0)" }}
+                  >
+                    <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+
+                {areaOpen && (
+                  <div className={styles.pickerDropdown}>
+                    <input
+                      autoFocus
+                      type="text"
+                      className={styles.pickerSearch}
+                      placeholder="Search area…"
+                      value={areaSearch}
+                      onChange={(e) => setAreaSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape") { setAreaOpen(false); setAreaSearch(""); }
+                        if (e.key === "Enter") {
+                          const filtered = areas.filter((a) => a.toLowerCase().includes(areaSearch.toLowerCase()));
+                          if (filtered.length > 0) { setArea(filtered[0]); setCommunity(""); setAreaOpen(false); setAreaSearch(""); }
+                        }
+                      }}
+                    />
+                    <div className={styles.pickerGrid}>
+                      {areas
+                        .filter((a) => a.toLowerCase().includes(areaSearch.toLowerCase()))
+                        .map((a) => (
+                          <button
+                            key={a}
+                            type="button"
+                            className={`${styles.pickerChip} ${area === a ? styles.pickerChipActive : ""}`}
+                            onClick={() => { setArea(a); setCommunity(""); setAreaOpen(false); setAreaSearch(""); }}
+                          >
+                            {a}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Community */}
-              <div className={styles.field}>
+              {/* Community — inline chips (max 14, no dropdown needed) */}
+              <div className={`${styles.field} ${styles.fullRow}`}>
                 <div className={styles.label}>{tHome("community")}</div>
-                <select className={styles.control} value={community} onChange={(e) => setCommunity(e.target.value)}>
-                  <option value="">{tHome("communityAll")}</option>
+                <div className={styles.communityChips}>
+                  <button
+                    type="button"
+                    className={`${styles.communityChip} ${!community ? styles.communityChipActive : ""}`}
+                    onClick={() => setCommunity("")}
+                  >
+                    {tHome("communityAll")}
+                  </button>
                   {communitiesForArea.map((c) => (
-                    <option key={c} value={c}>
+                    <button
+                      key={c}
+                      type="button"
+                      className={`${styles.communityChip} ${community === c ? styles.communityChipActive : ""}`}
+                      onClick={() => setCommunity(community === c ? "" : c)}
+                    >
                       {c}
-                    </option>
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
 
               {/* Type */}

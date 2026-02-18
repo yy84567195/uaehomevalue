@@ -258,6 +258,124 @@
   white-space: nowrap;
 }
 
+/* ===== Custom Area Picker ===== */
+.pickerTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+.pickerTrigger span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pickerDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 200;
+  /* min-width ensures readable chips even on small form layouts */
+  min-width: 300px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.35);
+  animation: pickerFadeIn .12s ease;
+}
+
+@keyframes pickerFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pickerSearch {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 8px 11px;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 8px;
+  outline: none;
+}
+.pickerSearch::placeholder { color: var(--text-muted); }
+.pickerSearch:focus { border-color: rgba(88,166,255,.55); }
+
+.pickerGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.pickerChip {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: left;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.3;
+  transition: background .1s, color .1s, border-color .1s;
+}
+.pickerChip:hover {
+  background: rgba(88,166,255,.1);
+  border-color: rgba(88,166,255,.3);
+  color: var(--text);
+}
+.pickerChipActive {
+  background: rgba(88,166,255,.18);
+  border-color: rgba(88,166,255,.55);
+  color: var(--text);
+  font-weight: 900;
+}
+
+/* ===== Community Chips ===== */
+.communityChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.communityChip {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .1s, color .1s, border-color .1s;
+}
+.communityChip:hover {
+  background: rgba(88,166,255,.1);
+  border-color: rgba(88,166,255,.3);
+  color: var(--text);
+}
+.communityChipActive {
+  background: rgba(88,166,255,.18);
+  border-color: rgba(88,166,255,.55);
+  color: var(--text);
+  font-weight: 900;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 980px){
   .heroGrid{ grid-template-columns: 1fr; }
