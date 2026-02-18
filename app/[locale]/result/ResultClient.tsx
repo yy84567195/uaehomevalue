@@ -516,6 +516,29 @@ useEffect(() => {
     return { ppsf, rangeWidthPct, activity, yoy, mom, dom };
   }, [sizeSqft, mid, maxFinal, minFinal, confidenceFinal, seed, t]);
 
+  const DUBAI_AREAS_SET = useMemo(() => new Set([
+    "Al Barari","Arabian Ranches","Arabian Ranches 2","Bluewaters Island",
+    "Business Bay","City Walk","DAMAC Hills","DIFC","Downtown Dubai",
+    "Dubai Creek Harbour","Dubai Harbour","Dubai Hills Estate","Dubai Marina",
+    "JBR","JLT","JVC","Jumeirah Golf Estates","MBR City","Palm Jumeirah",
+    "The Greens","The Lakes","The Meadows","The Springs","The Views",
+  ]), []);
+
+  const cityName = useMemo(() => {
+    return DUBAI_AREAS_SET.has(area) ? t("home.cityDubai") : t("home.cityAbuDhabi");
+  }, [area, DUBAI_AREAS_SET, t]);
+
+  const invest = useMemo(() => {
+    const avgYield = (rent.yieldMinPct + rent.yieldMaxPct) / 2;
+    const holdingCostPct = +(1.5 + hashTo01(`${seed}|hold`) * 1.5).toFixed(1);
+    const netYield = +(avgYield - holdingCostPct).toFixed(1);
+    const capitalGain = +market.yoy.toFixed(1);
+    const totalReturn = +(netYield + capitalGain).toFixed(1);
+    const paybackYears = avgYield > 0 ? +(100 / avgYield).toFixed(1) : 0;
+    const heatScore = market.dom <= 35 ? t("result.snapshot.activityHigh") : market.dom <= 60 ? t("result.snapshot.activityMed") : t("result.snapshot.activityLow");
+    return { totalReturn, paybackYears, capitalGain, holdingCostPct, netYield, heatScore };
+  }, [rent, market, seed, t]);
+
   // (保留你原本的颜色逻辑，但用“暗色可读”的值)
   const confTone = useMemo(() => {
     const c = (confidenceFinal || "").toLowerCase();
@@ -555,6 +578,7 @@ useEffect(() => {
 
           {/* ── Location tags ── */}
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12, flexShrink: 0 }}>
+            <span style={{ background: "rgba(52,211,153,.15)", border: "1px solid rgba(52,211,153,.3)", padding: "3px 10px", borderRadius: 4, fontSize: 11, fontWeight: 800, color: "#6ee7b7" }}>{cityName}</span>
             <span style={{ background: "rgba(96,165,250,.2)", border: "1px solid rgba(96,165,250,.4)", padding: "3px 10px", borderRadius: 4, fontSize: 11, fontWeight: 800, color: "#bfdbfe" }}>{getLocaleName(area, locale)}</span>
             {community && <span style={{ background: "rgba(167,139,250,.15)", border: "1px solid rgba(167,139,250,.35)", padding: "3px 10px", borderRadius: 4, fontSize: 11, fontWeight: 700, color: "#ddd6fe" }}>{getLocaleNameWithEnglish(community, locale)}</span>}
             <span style={{ background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.15)", padding: "3px 10px", borderRadius: 4, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,.7)" }}>{localType} · {localBeds} · {formatSqft(sizeSqft)} {t("result.header.sqft")}</span>
@@ -626,19 +650,21 @@ useEffect(() => {
             ))}
           </div>
 
-          {/* ── Value Drivers ── */}
-          <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 8, padding: "10px 12px 8px", marginBottom: "auto", flexShrink: 0 }}>
-            <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,.5)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>{t("result.drivers.title")}</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5 }}>
+          {/* ── Investment Scorecard ── */}
+          <div style={{ background: "linear-gradient(135deg, rgba(52,211,153,.06), rgba(59,130,246,.06))", border: "1px solid rgba(52,211,153,.18)", borderRadius: 8, padding: "10px 12px 8px", marginBottom: "auto", flexShrink: 0 }}>
+            <div style={{ fontSize: 9, fontWeight: 700, color: "#6ee7b7", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>{t("result.invest.title")}</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 5 }}>
               {[
-                [t("result.drivers.items.view.title"), t("result.drivers.items.view.band"), "#60a5fa"],
-                [t("result.drivers.items.floor.title"), t("result.drivers.items.floor.band"), "#a78bfa"],
-                [t("result.drivers.items.condition.title"), t("result.drivers.items.condition.band"), "#34d399"],
-                [t("result.drivers.items.parking.title"), t("result.drivers.items.parking.band"), "#fbbf24"],
-              ].map(([label, band, color], i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 8px", background: "rgba(255,255,255,.03)", borderRadius: 4, border: "1px solid rgba(255,255,255,.06)" }}>
-                  <span style={{ fontSize: 10, color: "rgba(255,255,255,.55)" }}>{label}</span>
-                  <span style={{ fontSize: 10, fontWeight: 800, color: color as string }}>{band}</span>
+                [t("result.invest.totalReturn"), `${invest.totalReturn > 0 ? "+" : ""}${invest.totalReturn}%`, invest.totalReturn >= 8 ? "#6ee7b7" : invest.totalReturn >= 4 ? "#93c5fd" : "#fca5a5"],
+                [t("result.invest.paybackYears"), t("result.invest.years", { n: String(invest.paybackYears) }), "#a78bfa"],
+                [t("result.invest.capitalGain"), `${invest.capitalGain > 0 ? "+" : ""}${invest.capitalGain}%`, invest.capitalGain >= 0 ? "#6ee7b7" : "#fca5a5"],
+                [t("result.invest.holdingCost"), `${invest.holdingCostPct}%`, "#fbbf24"],
+                [t("result.invest.netYield"), `${invest.netYield > 0 ? "+" : ""}${invest.netYield}%`, invest.netYield >= 3 ? "#6ee7b7" : invest.netYield >= 1 ? "#93c5fd" : "#fca5a5"],
+                [t("result.invest.areaHeat"), invest.heatScore, "#60a5fa"],
+              ].map(([label, val, color], i) => (
+                <div key={i} style={{ background: "rgba(255,255,255,.04)", borderRadius: 6, padding: "6px 8px", textAlign: "center", border: "1px solid rgba(255,255,255,.07)" }}>
+                  <div style={{ fontSize: 8, color: "rgba(255,255,255,.45)", marginBottom: 2 }}>{label}</div>
+                  <div style={{ fontSize: 13, fontWeight: 900, color: color as string }}>{val}</div>
                 </div>
               ))}
             </div>

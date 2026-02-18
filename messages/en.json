@@ -152,6 +152,16 @@
         }
       }
     },
+    "invest": {
+      "title": "Investment Scorecard",
+      "totalReturn": "Total annual return",
+      "paybackYears": "Payback period",
+      "capitalGain": "Capital gain (YoY)",
+      "holdingCost": "Holding cost",
+      "netYield": "Net rental yield",
+      "areaHeat": "Area demand",
+      "years": "{n} yrs"
+    },
     "map": {
       "title": "Location map",
       "open": "Open",

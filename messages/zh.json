@@ -153,6 +153,16 @@
         }
       }
     },
+    "invest": {
+      "title": "投资回报记分卡",
+      "totalReturn": "年化总回报",
+      "paybackYears": "回本周期",
+      "capitalGain": "资本增值（同比）",
+      "holdingCost": "持有成本率",
+      "netYield": "净租金回报",
+      "areaHeat": "区域热度",
+      "years": "{n} 年"
+    },
     "map": {
       "title": "位置地图",
       "open": "打开",
