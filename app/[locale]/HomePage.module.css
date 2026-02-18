@@ -219,6 +219,45 @@
   font-weight: 900;
 }
 
+/* ===== Quick area shortcuts ===== */
+.quickAreas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.quickArea {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background .14s, border-color .14s, color .14s;
+  white-space: nowrap;
+}
+
+.quickArea:hover {
+  background: rgba(88,166,255,.12);
+  border-color: rgba(88,166,255,.35);
+  color: var(--text);
+}
+
+.quickAreaActive {
+  font-size: 11px;
+  font-weight: 900;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(88,166,255,.55);
+  background: rgba(88,166,255,.18);
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 980px){
   .heroGrid{ grid-template-columns: 1fr; }

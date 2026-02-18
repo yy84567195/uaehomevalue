@@ -42,7 +42,7 @@ export function estimateValue(input: EstimateInput): EstimateOutput {
       max: 0,
       confidence: 'Low',
       comps: [],
-      notes: ['Not enough starter data for this selection. Please use WhatsApp for a manual check.'],
+      notes: ['No market data for this selection yet. Try a nearby area or community.'],
     };
   }
 
@@ -65,7 +65,7 @@ export function estimateValue(input: EstimateInput): EstimateOutput {
   const notes: string[] = [
     'Estimated range based on similar homes in your area',
     'Reflects bedrooms and size (light adjustment)',
-    'For a more accurate estimate, share floor/view/condition on WhatsApp',
+    'Use the Improve Accuracy option to refine with floor, view and condition',
   ];
 
   if (!exact) {

@@ -102,6 +102,7 @@ export default async function LocaleLayout({
   params: { locale: string };
 }) {
   const locale = params.locale as Locale;
+  // locale is used in the nav link above
 
   // 兜底：非法 locale 直接 404（避免运行时报错）
   if (!locales.includes(locale)) notFound();
@@ -145,20 +146,19 @@ export default async function LocaleLayout({
 
               {/* Right */}
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <LanguageSwitcher />
-                <div
-                  className="badge"
+                <a
+                  href={`/${locale}/methodology`}
                   style={{
                     fontSize: 12,
-                    fontWeight: 900,
-                    padding: "6px 10px",
-                    borderRadius: 999,
-                    background: "#f1f5f9",
-                    color: "#0f172a",
+                    fontWeight: 700,
+                    color: "#64748b",
+                    textDecoration: "none",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  MVP
-                </div>
+                  Methodology
+                </a>
+                <LanguageSwitcher />
               </div>
             </div>
 
@@ -174,10 +174,15 @@ export default async function LocaleLayout({
                 lineHeight: 1.6,
               }}
             >
-              <div style={{ height: 1, background: "#e2e8f0", marginBottom: 12 }} />
+              <div style={{ height: 1, background: "var(--border)", marginBottom: 12 }} />
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 16px", marginBottom: 8 }}>
+                <a href={`/${locale}/methodology`} style={{ color: "#64748b", textDecoration: "none", fontWeight: 700 }}>Methodology</a>
+                <span style={{ color: "#334155" }}>Data: Dubai Land Department (open data)</span>
+                <span>© {new Date().getFullYear()} UAEHomeValue</span>
+              </div>
               UAEHomeValue provides estimated property value ranges based on publicly available market
-              data and comparable listings. All valuations are indicative only and do not constitute
-              an official valuation for legal, mortgage, or financial purposes.
+              data. All valuations are indicative only and do not constitute an official valuation
+              for legal, mortgage, or financial purposes.
             </div>
           </div>
         </NextIntlClientProvider>

@@ -505,15 +505,14 @@
   line-height: 1.55;
 }
 
-.helpCard {
+.subscribeCard {
   margin-top: 28px;
   border-radius: 18px;
-  padding: 16px;
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.10);
+  padding: 20px;
+  background: rgba(59,130,246,.06);
+  border: 1px solid rgba(59,130,246,.20);
   display: grid;
   gap: 10px;
-  text-align: center;
 }
 
 .footer {
@@ -537,11 +536,11 @@
     font-size: 32px;
   }
 }
-/* ✅ Fix: help section links shouldn't be blue */
-.helpCard a,
-.helpCard a:visited,
-.helpCard a:hover,
-.helpCard a:active {
+/* subscribe card links inherit color */
+.subscribeCard a,
+.subscribeCard a:visited,
+.subscribeCard a:hover,
+.subscribeCard a:active {
   color: inherit !important;
   text-decoration: none !important;
 }

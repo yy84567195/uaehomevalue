@@ -105,6 +105,14 @@ useEffect(() => {
   const [maxOverride, setMaxOverride] = useState<number | null>(null);
   const [confidenceOverride, setConfidenceOverride] = useState<string | null>(null);
 
+  // Subscribe state
+  const [subEmail, setSubEmail] = useState("");
+  const [subStatus, setSubStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [subErrKey, setSubErrKey] = useState("errorFailed");
+
+  // Report download
+  const [reportLoading, setReportLoading] = useState(false);
+
 
   // URL params
   const area = useMemo(() => getParam("area"), []);
@@ -169,34 +177,40 @@ useEffect(() => {
     const url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   }
-async function submitLeadFromResult(extra?: { source?: string; notes?: string }) {
-  try {
-    await fetch("/api/lead", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        // 结果页没有姓名/whatsapp输入就先留空
-        name: "",
-        whatsapp: "",
-        notes: extra?.notes || "",
 
-        area,
-        community,
-        type,
-        beds: Number(bedsNum || 0),
-        sizeSqft: Number(sizeSqft || 0),
-
-        estimateMin: Number(minFinal || 0),
-        estimateMax: Number(maxFinal || 0),
-
-        // 可选：告诉你是从哪个按钮提交的（你后端不存也没关系）
-        source: extra?.source || "result",
-      }),
-    });
-  } catch (e) {
-    console.error("lead submit failed (result)", e);
+  async function onSubscribe() {
+    const email = subEmail.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setSubErrKey("errorInvalid");
+      setSubStatus("error");
+      return;
+    }
+    setSubStatus("loading");
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, locale }),
+      });
+      if (res.ok) {
+        setSubStatus("success");
+      } else {
+        setSubErrKey("errorFailed");
+        setSubStatus("error");
+      }
+    } catch {
+      setSubErrKey("errorFailed");
+      setSubStatus("error");
+    }
   }
-}
+
+  function onDownloadReport() {
+    setReportLoading(true);
+    setTimeout(() => {
+      window.print();
+      setReportLoading(false);
+    }, 120);
+  }
   const mid = useMemo(() => (minFinal + maxFinal) / 2 || 0, [minFinal, maxFinal]);
 
   const band = useMemo(() => {
@@ -365,6 +379,54 @@ async function submitLeadFromResult(extra?: { source?: string; notes?: string })
 
   return (
     <div className={styles.page}>
+      {/* Hidden print report — shown only during window.print() */}
+      <div className="uaehv-print-report">
+        <div style={{ fontSize: 22, fontWeight: 900, margin: "0 0 4px", color: "#0f172a" }}>{t("report.reportTitle")}</div>
+        <div style={{ fontSize: 13, color: "#475569", marginBottom: 20, paddingBottom: 12, borderBottom: "1px solid #e2e8f0" }}>
+          {t("report.reportSubtitle")} · {new Date().toLocaleDateString("en-GB")}
+        </div>
+
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>{t("result.likelyRange")}</div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: "#1e40af", margin: "4px 0" }}>
+            {formatAED(likely.likelyMin)} – {formatAED(likely.likelyMax)}
+          </div>
+          <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>
+            {t("result.conservativeRange")}: {formatAED(minFinal)} – {formatAED(maxFinal)} · {t("result.confidence")}: {confidenceFinal}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>{t("result.inputs.title")}</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", lineHeight: 2 }}>
+            {t("result.inputs.area")}: {area || "—"}<br />
+            {community ? <>{t("home.community")}: {community}<br /></> : null}
+            {t("result.inputs.type")}: {type || "—"}<br />
+            {t("result.inputs.bedrooms")}: {bedsLabel || "—"}<br />
+            {t("result.inputs.size")}: {formatSqft(sizeSqft)} {t("result.header.sqft")}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>{t("result.snapshot.pricePerSqft")}</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a" }}>
+            {market.ppsf > 0 ? `${Math.round(market.ppsf).toLocaleString("en-US")} AED/sqft` : "—"}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>{t("result.rent.title")}</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a" }}>
+            {formatAedShort(rent.monthlyMin)} – {formatAedShort(rent.monthlyMax)} / mo · {t("result.rent.yieldLabel")}: {rent.yieldMinPct}–{rent.yieldMaxPct}%
+          </div>
+        </div>
+
+        <div style={{ fontSize: 10, color: "#94a3b8", borderTop: "1px solid #e2e8f0", paddingTop: 10, marginTop: 24, lineHeight: 1.6 }}>
+          {t("report.reportSource")}<br />
+          {t("report.reportDisclaimer")}
+        </div>
+      </div>
+
       <div className={styles.wrap}>
         {/* ✅ refine result modal（保留，但改暗色遮罩/卡片） */}
         {refineResult && (
@@ -455,6 +517,10 @@ async function submitLeadFromResult(extra?: { source?: string; notes?: string })
 
                   <button className={styles.btnPrimary} onClick={() => setShowRefine(true)}>
                     {t("refine.open")}
+                  </button>
+
+                  <button className={styles.btnOutline} onClick={onDownloadReport} disabled={reportLoading} style={{ fontSize: 13 }}>
+                    {reportLoading ? t("report.downloading") : t("report.download")}
                   </button>
                 </div>
               </div>
@@ -610,58 +676,10 @@ async function submitLeadFromResult(extra?: { source?: string; notes?: string })
                       }
 
               setMinOverride(newMin);
-setMaxOverride(newMax);
-setConfidenceOverride(t("refine.messages.refinedBadge"));
-
-// ✅ 结果页也发一封邮件（不影响用户流程）
-submitLeadFromResult({
-  source: "result_refine_submit",
-  notes:
-    `Refine submit` +
-    ` | building=${refineData.building || "-"}` +
-    ` | floor=${refineData.floor || "-"}` +
-    ` | view=${refineData.view || "-"}` +
-    ` | condition=${refineData.condition || "-"}` +
-    ` | parking=${refineData.parking || "-"}` +
-    ` | expectedPrice=${refineData.expectedPrice || "-"}` +
-    ` | amenities=${(refineData.amenities && refineData.amenities.length ? refineData.amenities.join(",") : "-")}` +
-    ` | refinedRange=${newMin}-${newMax}`,
-});
-
-// ✅ send lead email (refine) - do NOT block user flow
-try {
-  await fetch("/api/lead", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name: "",
-      whatsapp: "",
-      notes:
-        `Refine submit` +
-        ` | building=${refineData.building || "-"}` +
-        ` | floor=${refineData.floor || "-"}` +
-        ` | view=${refineData.view || "-"}` +
-        ` | condition=${refineData.condition || "-"}` +
-        ` | parking=${refineData.parking || "-"}` +
-        ` | expectedPrice=${refineData.expectedPrice || "-"}` +
-        ` | amenities=${(refineData.amenities?.length ? refineData.amenities.join(",") : "-")}` +
-        ` | refinedRange=${newMin}-${newMax}`,
-      area,
-      community: String(community || ""),
-      type,
-      beds: Number(beds || 0),
-      sizeSqft: Number(sizeSqftStr || 0),
-      estimateMin: newMin,
-      estimateMax: newMax,
-    }),
-  });
-} catch (e) {
-  console.error("refine lead submit failed", e);
-}
-
-// ✅ UI 结果（保持你原来的）
-setRefineResult({ min: newMin, max: newMax, note: t("refine.messages.thanks") });
-setShowRefine(false);
+              setMaxOverride(newMax);
+              setConfidenceOverride(t("refine.messages.refinedBadge"));
+              setRefineResult({ min: newMin, max: newMax, note: t("refine.messages.thanks") });
+              setShowRefine(false);
                     }}
                   >
                     {t("refine.submit")}
@@ -703,6 +721,16 @@ setShowRefine(false);
                       ℹ︎ {t("home.community")} · {t("home.communityAll")}
                     </div>
                   )}
+                </div>
+
+                {/* Data source badge */}
+                <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                  <div className={styles.badge} style={{ fontSize: 11 }}>
+                    📊 {t("dataSource.label")}: {t("dataSource.value")}
+                  </div>
+                  <a href={`/${locale}/methodology`} style={{ fontSize: 11, color: "var(--accent)", textDecoration: "none", fontWeight: 700 }}>
+                    {t("dataSource.methodologyLink")} →
+                  </a>
                 </div>
               </div>
 
@@ -939,29 +967,74 @@ setShowRefine(false);
           <div className={styles.shareTip}>{t("result.share.tip")}</div>
         </div>
 
-        {/* Help card */}
-        <div className={styles.helpCard}>
-          <div style={{ fontSize: 14, fontWeight: 950 }}>{t("help.title")}</div>
-          <div className={styles.k} style={{ lineHeight: 1.6 }}>{t("help.desc")}</div>
+        {/* Subscribe card */}
+        <div className={styles.subscribeCard}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <div style={{ fontSize: 14, fontWeight: 950 }}>{t("subscribe.title")}</div>
+            <span className={styles.badge} style={{ fontSize: 11 }}>{t("subscribe.badge")}</span>
+          </div>
+          <div className={styles.k} style={{ lineHeight: 1.6, marginBottom: 12 }}>{t("subscribe.desc")}</div>
 
-          <a href="https://wa.me/971581188247" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
-            <button className={styles.btnPrimary}>{t("help.button")}</button>
-          </a>
+          {subStatus === "success" ? (
+            <div className={styles.pillPos} style={{ fontSize: 13, padding: "10px 14px" }}>
+              ✓ {t("subscribe.success")}
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <input
+                type="email"
+                value={subEmail}
+                onChange={(e) => { setSubEmail(e.target.value); setSubStatus("idle"); }}
+                placeholder={t("subscribe.emailPlaceholder")}
+                style={{
+                  flex: "1 1 200px",
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  border: subStatus === "error" ? "1px solid #f87171" : "1px solid var(--border)",
+                  background: "rgba(255,255,255,.05)",
+                  color: "var(--text)",
+                  fontSize: 13,
+                  outline: "none",
+                }}
+                onKeyDown={(e) => e.key === "Enter" && onSubscribe()}
+              />
+              <button
+                className={styles.btnPrimary}
+                onClick={onSubscribe}
+                disabled={subStatus === "loading"}
+                style={{ flex: "0 0 auto", padding: "10px 18px", fontSize: 13 }}
+              >
+                {subStatus === "loading" ? t("subscribe.loading") : t("subscribe.button")}
+              </button>
+            </div>
+          )}
 
-          <div className={styles.k}>{t("help.tip")}</div>
+          {subStatus === "error" && (
+            <div style={{ marginTop: 6, fontSize: 12, color: "#f87171", fontWeight: 700 }}>
+              {t(`subscribe.${subErrKey}`)}
+            </div>
+          )}
+
+          <div className={styles.k} style={{ marginTop: 8, fontSize: 11 }}>{t("subscribe.privacy")}</div>
         </div>
 
         <div className={styles.footerBrand}>
-  <img src="/logo.png" alt="UAEHomeValue" className={styles.footerLogo} />
-  <div>
-    <div className={styles.footerTitle}>UAEHomeValue</div>
-    <div className={styles.footerCopy}>
-      <div className={styles.footerCopy}>
-  Track your Dubai property value growth — anytime, anywhere   © {new Date().getFullYear()} UAEHomeValue
-</div>
-    </div>
-  </div>
-</div>
+          <img src="/logo.png" alt="UAEHomeValue" className={styles.footerLogo} />
+          <div>
+            <div className={styles.footerTitle}>UAEHomeValue</div>
+            <div className={styles.footerCopy}>
+              {t("footer.dataCredit")} · © {new Date().getFullYear()} UAEHomeValue
+            </div>
+            <div style={{ marginTop: 4, display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <a href={`/${locale}/methodology`} style={{ fontSize: 11, color: "var(--accent)", textDecoration: "none", fontWeight: 700 }}>
+                {t("footer.methodology")}
+              </a>
+              <a href={`/${locale}`} style={{ fontSize: 11, color: "var(--text-muted)", textDecoration: "none", fontWeight: 700 }}>
+                ← {t("result.actions.recheck")}
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,9 +1,11 @@
 "use client";
 
 import { useTranslations, useLocale } from "next-intl";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import data from "@/data/price_ranges.json";
 import styles from "./HomePage.module.css";
+
+const LS_KEY = "uaehv_last_search";
 
 type PropertyType = "Apartment" | "Villa";
 
@@ -54,6 +56,22 @@ export default function HomePage() {
   const [beds, setBeds] = useState<number>(2);
   const [sizeSqftText, setSizeSqftText] = useState<string>("1250");
   const [loading, setLoading] = useState<boolean>(false);
+
+  // Restore last search from localStorage on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (saved.area && areas.includes(saved.area)) setArea(saved.area);
+      if (saved.community !== undefined) setCommunity(String(saved.community));
+      if (saved.type === "Apartment" || saved.type === "Villa") setType(saved.type);
+      if (Number.isFinite(Number(saved.beds))) setBeds(Number(saved.beds));
+      if (saved.sizeSqft) setSizeSqftText(String(saved.sizeSqft));
+    } catch {
+      // ignore malformed localStorage
+    }
+  }, [areas]);
 
   // ✅ 用 error code 存储，更稳：不会出现 NO_DATA 直接展示出来
   const [errCode, setErrCode] = useState<string | undefined>(undefined);
@@ -135,26 +153,16 @@ export default function HomePage() {
     return;
   }
 
-  // ✅ 提交 lead（发邮件 / 入库）：不影响主流程
+  // Save search inputs to localStorage for next visit
   try {
-    await fetch("/api/lead", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-     
-        area,
-        community: String(community || ""),
-        type,
-        beds,
-        sizeSqft: Number(sizeSqftNum),
-
-        estimateMin: minVal,
-        estimateMax: maxVal,
-      }),
-    });
-  } catch (e) {
-    console.error("lead submit failed", e);
-  }
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      area,
+      community: community || "",
+      type,
+      beds,
+      sizeSqft: sizeSqftNum,
+    }));
+  } catch { /* ignore */ }
 
   const params = new URLSearchParams({
     area,
@@ -206,6 +214,24 @@ return (
 
           {/* Right */}
           <section className={`${styles.card} ${styles.formCard}`}>
+            {/* Hot areas quick-select */}
+            <div className={styles.quickAreas}>
+              {["Dubai Marina", "Downtown Dubai", "JVC", "Palm Jumeirah", "Business Bay", "JLT"].map((a) => {
+                const exists = areas.includes(a);
+                if (!exists) return null;
+                return (
+                  <button
+                    key={a}
+                    type="button"
+                    className={area === a ? styles.quickAreaActive : styles.quickArea}
+                    onClick={() => { setArea(a); setCommunity(""); }}
+                  >
+                    {a}
+                  </button>
+                );
+              })}
+            </div>
+
             <div className={styles.formGrid}>
               {/* Area */}
               <div className={styles.field}>

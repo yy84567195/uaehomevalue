@@ -157,6 +157,26 @@ body {
     padding: 13px 14px;
   }
 }
+/* ===== Print / Report ===== */
+@media print {
+  body > * { display: none !important; }
+  .uaehv-print-report { display: block !important; }
+
+  .uaehv-print-report {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #fff;
+    color: #0f172a;
+    font-family: system-ui, sans-serif;
+    padding: 32px 40px;
+  }
+}
+
+.uaehv-print-report {
+  display: none;
+}
+
 /* ===== Fix: font unify + iOS + overflow ===== */
 html, body {
   width: 100%;

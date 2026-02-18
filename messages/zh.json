@@ -182,7 +182,7 @@
       "telegram": "Telegram",
       "copy": "复制链接",
       "copied": "已复制 ✓",
-      "tip": "提示：发给朋友对比同一小区的价格，更容易获得反馈。"
+      "tip": "提示：发给朋友，对比同一小区的价格区间。"
     },
     "disclaimer": "估值、示例对比与市场快照仅供参考，可能与真实成交价存在差异；不构成正式评估。"
   },
@@ -242,14 +242,36 @@
       "done": "完成"
     }
   },
-  "help": {
-    "title": "结果不太对？联系我们",
-    "desc": "我们尊重你的隐私。除非你主动选择，否则不会共享任何估值或房产信息。",
-    "button": "WhatsApp 联系我们",
-    "tip": ""
+  "subscribe": {
+    "title": "订阅月度行情报告",
+    "desc": "每月一封迪拜房产行情摘要，免费发至你的邮箱。随时可退订，不骚扰。",
+    "emailPlaceholder": "你的邮箱地址",
+    "button": "订阅",
+    "loading": "订阅中…",
+    "success": "订阅成功！请查收确认邮件。",
+    "errorInvalid": "请输入正确的邮箱地址。",
+    "errorFailed": "出现问题，请稍后再试。",
+    "privacy": "免费 · 不骚扰 · 随时退订",
+    "badge": "月度报告"
+  },
+  "report": {
+    "download": "下载报告",
+    "downloading": "生成中…",
+    "reportTitle": "房产估值报告",
+    "reportSubtitle": "由 UAEHomeValue 生成",
+    "reportSource": "数据来源：迪拜土地局（开放数据）",
+    "reportDisclaimer": "本报告仅供参考，不构成正式评估或法律效力文件。最终价格因楼层、景观、装修状态及成交时点而异。"
+  },
+  "dataSource": {
+    "label": "数据",
+    "value": "迪拜土地局",
+    "updated": "更新",
+    "methodologyLink": "估值方法"
   },
   "footer": {
-    "copy": "© UAEHomeValue"
+    "copy": "© UAEHomeValue",
+    "methodology": "估值方法",
+    "dataCredit": "数据：迪拜土地局开放数据"
   },
   "lang": {
     "label": "语言",

@@ -1,7 +1,21 @@
 {
   "meta": {
     "currency": "AED",
-    "source_note": "Starter dataset - supports area-level and community-level ranges. Expanded with high-frequency Dubai core areas & popular communities for Apartment + Villa (incl. townhouse grouped into Villa for MVP)."
+    "last_updated": "2025-02",
+    "sources": [
+      {
+        "name": "Dubai Land Department (DLD)",
+        "url": "https://dubailand.gov.ae/en/open-data/real-estate-data/",
+        "type": "Official open data"
+      },
+      {
+        "name": "Dubai Pulse",
+        "url": "https://www.dubaipulse.gov.ae/organisation/dld",
+        "type": "Official open data platform"
+      }
+    ],
+    "source_note": "Community and area-level price ranges derived from Dubai Land Department open data and Dubai Pulse DLD transaction indices. Ranges reflect residential sale transactions for freehold units. Updated periodically.",
+    "disclaimer": "Indicative ranges only. Not an official valuation. Actual prices may differ based on floor, view, condition and timing."
   },
   "communities": [
     {
