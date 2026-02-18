@@ -89,65 +89,43 @@ export async function POST(req: NextRequest) {
     const tKey = normKey(type);
 
 const candidates = bedsCandidates(beds);
-
-// 先社区级（community 精确）
 let picked: any[] = [];
+let fallbackLevel: "exact" | "area" | "fuzzy" | "none" = "none";
+
+// Level 1: exact community match
 if (community) {
   for (const b of candidates) {
     const found = rows.filter(
-      (r) =>
-        r.area === area &&
-        r.type === type &&
-        Number(r.beds) === b &&
-        String(r.community || "") === String(community)
+      (r) => r.area === area && r.type === type && Number(r.beds) === b && String(r.community || "") === String(community)
     );
-    if (found.length) {
-      picked = found;
-      break;
-    }
+    if (found.length) { picked = found; fallbackLevel = "exact"; break; }
   }
 }
 
-// 再区域级（无 community 的行）
+// Level 2: area-level (no community)
 if (!picked.length) {
   for (const b of candidates) {
     const found = rows.filter(
-      (r) =>
-        r.area === area &&
-        r.type === type &&
-        Number(r.beds) === b &&
-        !r.community
+      (r) => r.area === area && r.type === type && Number(r.beds) === b && !r.community
     );
-    if (found.length) {
-      picked = found;
-      break;
-    }
+    if (found.length) { picked = found; fallbackLevel = community ? "area" : "exact"; break; }
   }
 }
 
-    // ✅ 2) fallback：area 级（没有 community 字段的行）
-    if (!picked.length) {
-      for (const b of candidates) {
-        const found = rows.filter((r) => {
-          if (normKey(r?.area) !== aKey) return false;
-          if (normKey(r?.type) !== tKey) return false;
-          if (Number(r?.beds) !== b) return false;
-          if (r?.community) return false; // 只要 area-level
-          return true;
-        });
-        if (found.length) {
-          picked = found;
-          break;
-        }
-      }
-    }
+// Level 3: fuzzy - same area + type, any beds
+if (!picked.length) {
+  const sameAreaType = rows.filter((r) => normKey(r?.area) === aKey && normKey(r?.type) === tKey);
+  if (sameAreaType.length) { picked = [sameAreaType[0]]; fallbackLevel = "fuzzy"; }
+}
 
-    if (!picked.length) {
+// Level 4: no data at all - suggest nearby areas
+if (!picked.length) {
+  const areasWithData = [...new Set(rows.filter(r => normKey(r?.type) === tKey).map(r => r.area))].slice(0, 5);
   return NextResponse.json(
-  { error: "NO_DATA" },
-  { status: 404 }
-);
-    }
+    { error: "NO_DATA", suggested_areas: areasWithData },
+    { status: 404 }
+  );
+}
 
     // ✅ 取范围：如果同一档多行，取 min 的最小、max 的最大
     const baseMin = Math.min(...picked.map((r) => Number(r.min)).filter((n) => Number.isFinite(n) && n > 0));
@@ -186,6 +164,7 @@ if (!picked.length) {
       rent_min: rentMin,
       rent_max: rentMax,
       matched: isCommunityMatched ? "community" : "area",
+      fallback_level: fallbackLevel,
       debug: { area, community, building, type, beds, bedsUsed: usedBeds, sizeSqft, factor },
     });
   } catch (e) {

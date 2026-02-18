@@ -20,10 +20,10 @@
       "villa": "Villa"
     },
     "bedsOptions": {
-      "studio": "Studio",
       "1": "1",
       "2": "2",
       "3": "3",
+      "studio": "Studio",
       "4plus": "4+"
     },
     "sizePlaceholder": "e.g. 1250",
@@ -39,7 +39,11 @@
       "network": "Network error. Please try again.",
       "noDataAreaCommunity": "Not enough data for this area or community. Try a different area or clear the community selection."
     },
-    "disclaimer": "Independent market-based estimate · No listings · No agents"
+    "disclaimer": "Independent market-based estimate · No listings · No agents",
+    "cityDubai": "Dubai",
+    "cityAbuDhabi": "Abu Dhabi",
+    "searchArea": "Search area…",
+    "noAreasFound": "No areas found"
   },
   "result": {
     "title": "Estimated market value",
@@ -150,7 +154,8 @@
     },
     "map": {
       "title": "Location map",
-      "open": "Open"
+      "open": "Open",
+      "tip": "Tip: Tap Open to view this location on Google Maps."
     },
     "snapshot": {
       "title": "Market snapshot (estimated)",
@@ -183,7 +188,11 @@
       "copied": "Copied ✓",
       "tip": "Share with a friend to compare prices in the same community."
     },
-    "disclaimer": "Estimates, sample comps, and market snapshot are informational and may differ from actual market prices. Not a formal appraisal."
+    "disclaimer": "Estimates, sample comps, and market snapshot are informational and may differ from actual market prices. Not a formal appraisal.",
+    "fallback": {
+      "area": "This community has limited data. Estimate uses area-wide data for your reference.",
+      "fuzzy": "Limited data available. Estimate uses similar property types in this area as a rough reference."
+    }
   },
   "refine": {
     "open": "Improve accuracy (30 seconds)",

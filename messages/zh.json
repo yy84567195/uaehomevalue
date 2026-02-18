@@ -2,13 +2,13 @@
   "home": {
     "title": "追踪迪拜和阿布扎比的房价走势——随时随地",
     "subtitle": "先估值 · 再决策",
-"badges": {
-  "fast": "30秒快速估值",
-  "areaCommunity": "区域 + 小区",
-  "noAgents": "无中介报价",
-  "noAds": "无广告",
-  "noSpam": "不骚扰"
-},
+    "badges": {
+      "fast": "30秒快速估值",
+      "areaCommunity": "区域 + 小区",
+      "noAgents": "无中介报价",
+      "noAds": "无广告",
+      "noSpam": "不骚扰"
+    },
     "area": "区域",
     "community": "小区（可选）",
     "communityAll": "全部小区",
@@ -20,10 +20,10 @@
       "villa": "别墅"
     },
     "bedsOptions": {
-      "studio": "开间",
       "1": "1",
       "2": "2",
       "3": "3",
+      "studio": "开间",
       "4plus": "4+"
     },
     "sizePlaceholder": "例如：1250",
@@ -39,7 +39,11 @@
       "generic": "估值失败，请稍后再试。",
       "network": "网络错误，请稍后再试。"
     },
-    "disclaimer": "独立市场估值 · 无房源 · 无中介"
+    "disclaimer": "独立市场估值 · 无房源 · 无中介",
+    "cityDubai": "迪拜",
+    "cityAbuDhabi": "阿布扎比",
+    "searchArea": "搜索区域…",
+    "noAreasFound": "未找到区域"
   },
   "result": {
     "title": "预估市场价格",
@@ -49,12 +53,12 @@
       "recheck": "再估算一套",
       "changeInputs": "修改输入"
     },
-  "header": {
-  "beds": "{beds} 房",
-  "bedsPlus": "4房以上",
-  "studio": "单间",
-  "sqft": "平方英尺"
-},
+    "header": {
+      "beds": "{beds} 房",
+      "bedsPlus": "4房以上",
+      "studio": "单间",
+      "sqft": "平方英尺"
+    },
     "likelyRange": "可能价格区间（AED）",
     "conservativeRange": "保守市场区间",
     "likelyBandWidth": "可能区间宽度",
@@ -65,7 +69,7 @@
     "how": {
       "title": "估值如何计算",
       "desc": "本估值基于小区级价格区间，并结合面积进行调整。",
-      "areaMatch": "该估值基于同一区域的近期成交数据。",
+      "areaMatch": "区域级匹配：当前小区数据不足，已回退使用该大区域的价格区间。",
       "factorsTitle": "主要影响因素：",
       "factors": {
         "location": "位置（小区级定价）",
@@ -75,8 +79,7 @@
       },
       "footer": "这是市场估算，不是正式评估。最终价格会因楼栋、楼层、景观、装修状态与成交时点而变化。",
       "extra": "若存在小区级价格区间，我们会优先使用；否则将回退到区域级区间估算。",
-      "communityMatch": "小区级匹配 ✓ 我们已优先使用该小区的价格区间，因此估值更紧更准。",
-      "areaMatch": "区域级匹配：当前小区数据不足，已回退使用该大区域的价格区间。"
+      "communityMatch": "小区级匹配 ✓ 我们已优先使用该小区的价格区间，因此估值更紧更准。"
     },
     "trend": {
       "title": "价格趋势（90天）",
@@ -152,7 +155,8 @@
     },
     "map": {
       "title": "位置地图",
-      "open": "打开"
+      "open": "打开",
+      "tip": "提示：点击「打开」可在谷歌地图中查看该位置。"
     },
     "snapshot": {
       "title": "市场快照（估算）",
@@ -185,7 +189,11 @@
       "copied": "已复制 ✓",
       "tip": "提示：发给朋友，对比同一小区的价格区间。"
     },
-    "disclaimer": "估值、示例对比与市场快照仅供参考，可能与真实成交价存在差异；不构成正式评估。"
+    "disclaimer": "估值、示例对比与市场快照仅供参考，可能与真实成交价存在差异；不构成正式评估。",
+    "fallback": {
+      "area": "该小区数据较少，已使用区域整体数据估算，仅供参考。",
+      "fuzzy": "数据有限，已参考同区域类似户型进行粗略估算。"
+    }
   },
   "refine": {
     "open": "提高准确度（30秒）",

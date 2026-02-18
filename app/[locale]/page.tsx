@@ -3,6 +3,7 @@
 import { useTranslations, useLocale } from "next-intl";
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import data from "@/data/price_ranges.json";
+import { getLocaleName, getLocaleNameWithEnglish } from "@/data/area-names";
 import styles from "./HomePage.module.css";
 
 const LS_KEY = "uaehv_last_search";
@@ -49,6 +50,15 @@ export default function HomePage() {
     const out: Record<string, string[]> = {};
     for (const a of Object.keys(map)) out[a] = Array.from(map[a]).sort();
     return out;
+  }, [rows]);
+
+  const communitiesWithData = useMemo<Set<string>>(() => {
+    const s = new Set<string>();
+    for (const r of rows) {
+      const c = String((r as any)?.community ?? "").trim();
+      if (c) s.add(c);
+    }
+    return s;
   }, [rows]);
 
   const [city, setCity] = useState<City>("Dubai");
@@ -144,7 +154,13 @@ export default function HomePage() {
       const out = await res.json();
       if (!res.ok || out?.error) {
         const e = String(out?.error || "");
-        if (e === "NO_DATA" || e.includes("No estimate available")) setErrCode("NO_DATA_AREA_COMMUNITY");
+        if (e === "NO_DATA" || e.includes("No estimate available")) {
+          if (out?.suggested_areas?.length) {
+            setErrCode("NO_DATA_AREA_COMMUNITY");
+          } else {
+            setErrCode("NO_DATA_AREA_COMMUNITY");
+          }
+        }
         else if (e === "INVALID_INPUT" || e.includes("Invalid")) setErrCode("INVALID_INPUT");
         else setErrCode("GENERIC");
         return;
@@ -163,6 +179,7 @@ export default function HomePage() {
         confidence: String(out?.confidence || "Medium"),
         rent_min: String(out?.rent_min || 0),
         rent_max: String(out?.rent_max || 0),
+        fallback: String(out?.fallback_level || "exact"),
       });
       window.location.href = `/${locale}/result?${params.toString()}`;
     } catch { setErrCode("NETWORK"); }
@@ -201,7 +218,7 @@ export default function HomePage() {
                   className={city === c ? styles.cityTabActive : styles.cityTab}
                   onClick={() => handleCityChange(c)}
                 >
-                  {c === "Dubai" ? "🏙 Dubai" : "🕌 Abu Dhabi"}
+                  {c === "Dubai" ? `🏙 ${tHome("cityDubai")}` : `🕌 ${tHome("cityAbuDhabi")}`}
                 </button>
               ))}
             </div>
@@ -215,7 +232,7 @@ export default function HomePage() {
                   <button key={a} type="button"
                     className={area === a ? styles.quickAreaActive : styles.quickArea}
                     onClick={() => { setArea(a); setCommunity(""); }}
-                  >{a}</button>
+                  >{getLocaleName(a, locale)}</button>
                 );
               })}
             </div>
@@ -229,7 +246,7 @@ export default function HomePage() {
                   className={`${styles.control} ${styles.pickerTrigger}`}
                   onClick={() => { setAreaOpen(true); setAreaSearch(""); }}
                 >
-                  <span>{area}</span>
+                  <span>{getLocaleName(area, locale)}</span>
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
                     <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
@@ -248,33 +265,35 @@ export default function HomePage() {
                     <button key={c} type="button"
                       className={`${styles.communityChip} ${community === c ? styles.communityChipActive : ""}`}
                       onClick={() => setCommunity(community === c ? "" : c)}
-                    >{c}</button>
+                    >{getLocaleNameWithEnglish(c, locale)}{communitiesWithData.has(c) && <span className={styles.dataIndicator} />}</button>
                   ))}
                 </div>
               </div>
 
-              {/* Type */}
+              {/* Type — chips */}
               <div className={styles.field}>
                 <div className={styles.label}>{tHome("type")}</div>
-                <select className={styles.control} value={type} onChange={(e) => setType(e.target.value as PropertyType)}>
-                  <option value="Apartment">{tHome("typeOptions.apartment")}</option>
-                  <option value="Villa">{tHome("typeOptions.villa")}</option>
-                </select>
+                <div className={styles.chipRow}>
+                  {([["Apartment", tHome("typeOptions.apartment")], ["Villa", tHome("typeOptions.villa")]] as const).map(([val, label]) => (
+                    <button key={val} type="button"
+                      className={`${styles.communityChip} ${type === val ? styles.communityChipActive : ""}`}
+                      onClick={() => setType(val as PropertyType)}
+                    >{label}</button>
+                  ))}
+                </div>
               </div>
 
-              {/* Bedrooms */}
+              {/* Bedrooms — chips */}
               <div className={styles.field}>
                 <div className={styles.label}>{tHome("beds")}</div>
-                <select className={styles.control}
-                  value={beds === 6 ? "4plus" : String(beds)}
-                  onChange={(e) => { const v = e.target.value; setBeds(v === "4plus" ? 6 : Number(v)); }}
-                >
-                  <option value="0">{tHome("bedsOptions.studio")}</option>
-                  <option value="1">{tHome("bedsOptions.1")}</option>
-                  <option value="2">{tHome("bedsOptions.2")}</option>
-                  <option value="3">{tHome("bedsOptions.3")}</option>
-                  <option value="4plus">{tHome("bedsOptions.4plus")}</option>
-                </select>
+                <div className={styles.chipRow}>
+                  {([{v:0,l:tHome("bedsOptions.studio")},{v:1,l:"1"},{v:2,l:"2"},{v:3,l:"3"},{v:6,l:"4+"}]).map(({v,l}) => (
+                    <button key={v} type="button"
+                      className={`${styles.communityChip} ${beds === v ? styles.communityChipActive : ""}`}
+                      onClick={() => setBeds(v)}
+                    >{l}</button>
+                  ))}
+                </div>
               </div>
 
               {/* Size */}
@@ -323,29 +342,30 @@ export default function HomePage() {
               ref={searchInputRef}
               type="text"
               className={styles.pickerSearch}
-              placeholder="Search area…"
+              placeholder={tHome("searchArea")}
               value={areaSearch}
               onChange={(e) => setAreaSearch(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Escape") { setAreaOpen(false); setAreaSearch(""); }
                 if (e.key === "Enter") {
-                  const filtered = areasForCity.filter((a) => a.toLowerCase().includes(areaSearch.toLowerCase()));
+                  const q = areaSearch.toLowerCase();
+                  const filtered = areasForCity.filter((a) => a.toLowerCase().includes(q) || getLocaleName(a, locale).toLowerCase().includes(q));
                   if (filtered.length > 0) { setArea(filtered[0]); setCommunity(""); setAreaOpen(false); setAreaSearch(""); }
                 }
               }}
             />
             <div className={styles.pickerGrid}>
               {areasForCity
-                .filter((a) => a.toLowerCase().includes(areaSearch.toLowerCase()))
+                .filter((a) => { const q = areaSearch.toLowerCase(); return a.toLowerCase().includes(q) || getLocaleName(a, locale).toLowerCase().includes(q); })
                 .map((a) => (
                   <button key={a} type="button"
                     className={`${styles.pickerChip} ${area === a ? styles.pickerChipActive : ""}`}
                     onClick={() => { setArea(a); setCommunity(""); setAreaOpen(false); setAreaSearch(""); }}
-                  >{a}</button>
+                  >{getLocaleNameWithEnglish(a, locale)}</button>
                 ))}
-              {areasForCity.filter((a) => a.toLowerCase().includes(areaSearch.toLowerCase())).length === 0 && (
+              {areasForCity.filter((a) => { const q = areaSearch.toLowerCase(); return a.toLowerCase().includes(q) || getLocaleName(a, locale).toLowerCase().includes(q); }).length === 0 && (
                 <div style={{ gridColumn: "1/-1", textAlign: "center", padding: 16, color: "var(--text-muted)", fontSize: 13 }}>
-                  No areas found
+                  {tHome("noAreasFound")}
                 </div>
               )}
             </div>

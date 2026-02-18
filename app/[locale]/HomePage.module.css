@@ -398,6 +398,25 @@
   font-weight: 900;
 }
 
+/* ===== Chip Row (for type, beds) ===== */
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ===== Data indicator dot ===== */
+.dataIndicator {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  margin-left: 4px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
 /* ===== Community Chips ===== */
 .communityChips {
   display: flex;

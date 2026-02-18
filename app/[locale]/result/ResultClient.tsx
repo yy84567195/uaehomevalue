@@ -4,6 +4,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import styles from "./ResultClient.module.css";
 import { formatAED } from "@/lib/estimator";
+import { getLocaleName, getLocaleNameWithEnglish } from "@/data/area-names";
 import FooterBrand from "../components/FooterBrand";
 
 function getParam(name: string) {
@@ -152,6 +153,7 @@ useEffect(() => {
   const max = useMemo(() => Number(getParam("max") || 0), []);
   const confidence = useMemo(() => getParam("confidence") || "Medium", []);
   const matched = useMemo(() => getParam("matched"), []);
+  const fallbackLevel = useMemo(() => getParam("fallback") || "exact", []);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
@@ -226,18 +228,194 @@ useEffect(() => {
   async function onDownloadReport() {
     setReportLoading(true);
     try {
-      const { default: html2canvas } = await import("html2canvas");
       const { jsPDF } = await import("jspdf");
-      const el = document.querySelector(".uaehv-print-report") as HTMLElement;
-      if (!el) { window.print(); return; }
-      el.style.display = "block";
-      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
-      el.style.display = "none";
-      const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = (canvas.height * pdfW) / canvas.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfW, Math.min(pdfH, pdf.internal.pageSize.getHeight()));
+      const W = pdf.internal.pageSize.getWidth();
+      const H = pdf.internal.pageSize.getHeight();
+      const M = 16; // margin
+      const CW = (W - M * 2 - 6) / 2; // column width
+      let y = M;
+
+      const navy = [15, 23, 42] as [number, number, number];
+      const blue = [59, 130, 246] as [number, number, number];
+      const gray = [100, 116, 139] as [number, number, number];
+      const lightGray = [226, 232, 240] as [number, number, number];
+      const white = [255, 255, 255] as [number, number, number];
+
+      const hr = () => {
+        pdf.setDrawColor(...lightGray);
+        pdf.setLineWidth(0.3);
+        pdf.line(M, y, W - M, y);
+        y += 4;
+      };
+
+      // Header bar
+      pdf.setFillColor(...navy);
+      pdf.rect(0, 0, W, 22, "F");
+      pdf.setTextColor(...white);
+      pdf.setFontSize(16);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("UAEHomeValue", M, 10);
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "normal");
+      pdf.text("Property Estimate Report", M, 16);
+      const dateStr = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+      pdf.text(dateStr, W - M, 10, { align: "right" });
+      y = 30;
+
+      // Estimated value section
+      pdf.setTextColor(...navy);
+      pdf.setFontSize(11);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("ESTIMATED VALUE", M, y);
+      y += 7;
+      pdf.setFontSize(20);
+      pdf.setTextColor(...blue);
+      pdf.text(`${formatAED(likely.likelyMin)} — ${formatAED(likely.likelyMax)}`, M, y);
+      y += 8;
+      pdf.setFontSize(11);
+      pdf.setTextColor(...gray);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`Conservative range: ${formatAED(minFinal)} — ${formatAED(maxFinal)}`, M, y);
+      y += 5;
+      pdf.text(`Confidence: ${confidenceFinal}`, M, y);
+      y += 8;
+      hr();
+
+      // Two-column: Property Details | Market Snapshot
+      const colLeftX = M;
+      const colRightX = M + CW + 6;
+      const yColStart = y;
+
+      const drawKV = (x: number, yy: number, key: string, val: string) => {
+        pdf.setFontSize(9);
+        pdf.setTextColor(...gray);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(key, x, yy);
+        pdf.setTextColor(...navy);
+        pdf.setFont("helvetica", "bold");
+        pdf.text(val, x + 38, yy);
+        return yy + 5.5;
+      };
+
+      pdf.setFontSize(10);
+      pdf.setTextColor(...navy);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Property Details", colLeftX, y);
+      y += 6;
+
+      y = drawKV(colLeftX, y, "Area:", getLocaleName(area, locale) || "—");
+      if (community) y = drawKV(colLeftX, y, "Community:", getLocaleNameWithEnglish(community, locale));
+      y = drawKV(colLeftX, y, "Type:", type || "—");
+      y = drawKV(colLeftX, y, "Bedrooms:", bedsLabel || "—");
+      y = drawKV(colLeftX, y, "Size:", `${formatSqft(sizeSqft)} sqft`);
+      const yLeftEnd = y;
+
+      let yR = yColStart;
+      pdf.setFontSize(10);
+      pdf.setTextColor(...navy);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Market Snapshot", colRightX, yR);
+      yR += 6;
+      yR = drawKV(colRightX, yR, "Price/sqft:", sizeSqft > 0 ? `AED ${Math.round(mid / sizeSqft)}` : "—");
+      yR = drawKV(colRightX, yR, "YoY Change:", pct(market.yoy));
+      yR = drawKV(colRightX, yR, "MoM Change:", pct(market.mom));
+      yR = drawKV(colRightX, yR, "Activity:", market.dom <= 40 ? "High" : market.dom <= 70 ? "Medium" : "Low");
+      yR = drawKV(colRightX, yR, "Days on mkt:", `~${market.dom} days`);
+
+      y = Math.max(yLeftEnd, yR) + 4;
+      hr();
+
+      // Rental yield section
+      pdf.setFontSize(11);
+      pdf.setTextColor(...navy);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("RENTAL YIELD", M, y);
+      y += 7;
+      pdf.setFontSize(12);
+      pdf.setTextColor(...blue);
+      pdf.text(`Monthly: AED ${rent.monthlyMin.toLocaleString()} — AED ${rent.monthlyMax.toLocaleString()}`, M, y);
+      y += 6;
+      pdf.setFontSize(10);
+      pdf.setTextColor(...gray);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`Annual: AED ${rent.annualMin.toLocaleString()} — AED ${rent.annualMax.toLocaleString()}`, M, y);
+      y += 5;
+      pdf.text(`Gross Yield: ${rent.yieldMinPct}% — ${rent.yieldMaxPct}%`, M, y);
+      y += 8;
+      hr();
+
+      // Two-column: Comparable Sales | Value Adjustments
+      const yCompStart = y;
+      pdf.setFontSize(10);
+      pdf.setTextColor(...navy);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Comparable Sales", colLeftX, y);
+      y += 6;
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "normal");
+      for (const c of comps.slice(0, 5)) {
+        pdf.setTextColor(...navy);
+        pdf.text(`${c.label}`, colLeftX, y);
+        pdf.setTextColor(...gray);
+        pdf.text(`${formatAedShort(c.price)}  (${formatSqft(c.size)} sqft)`, colLeftX + 36, y);
+        y += 5;
+      }
+      const yCompsEnd = y;
+
+      yR = yCompStart;
+      pdf.setFontSize(10);
+      pdf.setTextColor(...navy);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Value Adjustments", colRightX, yR);
+      yR += 6;
+      const adjustList = [
+        ["Sea / Marina view", "+6% to +12%"],
+        ["High floor", "+2% to +5%"],
+        ["Upgraded / renovated", "+5% to +10%"],
+        ["Low floor / road view", "−3% to −8%"],
+      ];
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "normal");
+      for (const [lbl, impact] of adjustList) {
+        pdf.setTextColor(...navy);
+        pdf.text(lbl, colRightX, yR);
+        pdf.setTextColor(...blue);
+        pdf.text(impact, colRightX + 40, yR);
+        yR += 5;
+      }
+
+      y = Math.max(yCompsEnd, yR) + 6;
+      hr();
+
+      // Fallback banner
+      if (fallbackLevel !== "exact") {
+        pdf.setFontSize(9);
+        pdf.setTextColor(180, 130, 20);
+        pdf.setFont("helvetica", "italic");
+        const fbText = fallbackLevel === "area"
+          ? "Note: Community-level data limited; area-wide data used."
+          : "Note: Limited data; similar property types used as reference.";
+        pdf.text(fbText, M, y);
+        y += 6;
+      }
+
+      // Footer disclaimer
+      pdf.setFontSize(8);
+      pdf.setTextColor(...gray);
+      pdf.setFont("helvetica", "normal");
+      const disclaimer = "Indicative estimate only. Not an official valuation. Final value may differ based on floor, view, condition and timing.";
+      const lines = pdf.splitTextToSize(disclaimer, W - M * 2);
+      pdf.text(lines, M, y);
+      y += lines.length * 3.5 + 3;
+      pdf.text("Data: DLD (Dubai) + DARI (Abu Dhabi) open data  |  uaehomevalue.com", M, y);
+      y += 4;
+
+      // QR code area (simple text link since QR lib adds complexity)
+      pdf.setFontSize(8);
+      pdf.setTextColor(...blue);
+      pdf.textWithLink("View online: " + (typeof window !== "undefined" ? window.location.href : "uaehomevalue.com"), M, y, { url: typeof window !== "undefined" ? window.location.href : "https://uaehomevalue.com" });
+
       pdf.save(`UAEHomeValue_${area.replace(/\s+/g, "_")}_Report.pdf`);
     } catch (e) {
       console.error("PDF generation failed:", e);
@@ -439,8 +617,8 @@ useEffect(() => {
         <div style={{ marginBottom: 18 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>{t("result.inputs.title")}</div>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", lineHeight: 2 }}>
-            {t("result.inputs.area")}: {area || "—"}<br />
-            {community ? <>{t("home.community")}: {community}<br /></> : null}
+            {t("result.inputs.area")}: {getLocaleName(area, locale) || "—"}<br />
+            {community ? <>{t("home.community")}: {getLocaleNameWithEnglish(community, locale)}<br /></> : null}
             {t("result.inputs.type")}: {type || "—"}<br />
             {t("result.inputs.bedrooms")}: {bedsLabel || "—"}<br />
             {t("result.inputs.size")}: {formatSqft(sizeSqft)} {t("result.header.sqft")}
@@ -507,7 +685,7 @@ useEffect(() => {
     <div className={styles.sub}>{t("result.subtitle")}</div>
 
     <div className={styles.metaLine}>
-      {area || "—"} • {type || "—"} •{" "}
+      {getLocaleName(area, locale) || "—"} • {type || "—"} •{" "}
       {bedsLabel
         ? bedsLabel === "Studio"
           ? t("result.header.studio")
@@ -528,6 +706,14 @@ useEffect(() => {
     </a>
   </div>
 </div>
+        {/* Fallback banner */}
+        {fallbackLevel !== "exact" && (
+          <div className={styles.fallbackBanner} data-level={fallbackLevel}>
+            <span className={styles.fallbackIcon}>{fallbackLevel === "area" ? "ℹ️" : "⚠️"}</span>
+            <span>{t(`result.fallback.${fallbackLevel}`)}</span>
+          </div>
+        )}
+
         {/* Main layout */}
         <div className={styles.mainGrid}>
           {/* Left column */}
@@ -580,35 +766,45 @@ useEffect(() => {
                   <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
                     <input placeholder={t("refine.building")} value={refineData.building} onChange={(e) => setRefineData({ ...refineData, building: e.target.value })} style={inputStyle} />
 
-                    <select value={refineData.floor} onChange={(e) => setRefineData({ ...refineData, floor: e.target.value })} style={inputStyle}>
-                      <option value="">{t("refine.floor")}</option>
-                      <option value="low">{t("refine.floorOptions.low")}</option>
-                      <option value="mid">{t("refine.floorOptions.mid")}</option>
-                      <option value="high">{t("refine.floorOptions.high")}</option>
-                    </select>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 900, marginBottom: 6, color: "var(--text)" }}>{t("refine.floor")}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {[{v:"low",l:t("refine.floorOptions.low")},{v:"mid",l:t("refine.floorOptions.mid")},{v:"high",l:t("refine.floorOptions.high")}].map(({v,l}) => (
+                          <button key={v} type="button" className={`${styles.chipBtn} ${refineData.floor===v?styles.chipBtnActive:""}`}
+                            onClick={() => setRefineData({...refineData, floor: refineData.floor===v?"":v})}>{l}</button>
+                        ))}
+                      </div>
+                    </div>
 
-                    <select value={refineData.view} onChange={(e) => setRefineData({ ...refineData, view: e.target.value })} style={inputStyle}>
-                      <option value="">{t("refine.view")}</option>
-                      <option value="sea">{t("refine.viewOptions.sea")}</option>
-                      <option value="city">{t("refine.viewOptions.city")}</option>
-                      <option value="road">{t("refine.viewOptions.road")}</option>
-                    </select>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 900, marginBottom: 6, color: "var(--text)" }}>{t("refine.view")}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {[{v:"sea",l:t("refine.viewOptions.sea")},{v:"city",l:t("refine.viewOptions.city")},{v:"road",l:t("refine.viewOptions.road")}].map(({v,l}) => (
+                          <button key={v} type="button" className={`${styles.chipBtn} ${refineData.view===v?styles.chipBtnActive:""}`}
+                            onClick={() => setRefineData({...refineData, view: refineData.view===v?"":v})}>{l}</button>
+                        ))}
+                      </div>
+                    </div>
 
-                    <select value={refineData.condition} onChange={(e) => setRefineData({ ...refineData, condition: e.target.value })} style={inputStyle}>
-                      <option value="">{t("refine.condition")}</option>
-                      <option value="original">{t("refine.conditionOptions.original")}</option>
-                      <option value="good">{t("refine.conditionOptions.good")}</option>
-                      <option value="upgraded">{t("refine.conditionOptions.upgraded")}</option>
-                      <option value="renovated">{t("refine.conditionOptions.renovated")}</option>
-                    </select>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 900, marginBottom: 6, color: "var(--text)" }}>{t("refine.condition")}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {[{v:"original",l:t("refine.conditionOptions.original")},{v:"good",l:t("refine.conditionOptions.good")},{v:"upgraded",l:t("refine.conditionOptions.upgraded")},{v:"renovated",l:t("refine.conditionOptions.renovated")}].map(({v,l}) => (
+                          <button key={v} type="button" className={`${styles.chipBtn} ${refineData.condition===v?styles.chipBtnActive:""}`}
+                            onClick={() => setRefineData({...refineData, condition: refineData.condition===v?"":v})}>{l}</button>
+                        ))}
+                      </div>
+                    </div>
 
-                    <select value={refineData.parking} onChange={(e) => setRefineData({ ...refineData, parking: e.target.value })} style={inputStyle}>
-                      <option value="">{t("refine.parking")}</option>
-                      <option value="0">{t("refine.parkingOptions.none")}</option>
-                      <option value="1">{t("refine.parkingOptions.one")}</option>
-                      <option value="2">{t("refine.parkingOptions.two")}</option>
-                      <option value="3+">{t("refine.parkingOptions.threePlus")}</option>
-                    </select>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 900, marginBottom: 6, color: "var(--text)" }}>{t("refine.parking")}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {[{v:"0",l:t("refine.parkingOptions.none")},{v:"1",l:t("refine.parkingOptions.one")},{v:"2",l:t("refine.parkingOptions.two")},{v:"3+",l:t("refine.parkingOptions.threePlus")}].map(({v,l}) => (
+                          <button key={v} type="button" className={`${styles.chipBtn} ${refineData.parking===v?styles.chipBtnActive:""}`}
+                            onClick={() => setRefineData({...refineData, parking: refineData.parking===v?"":v})}>{l}</button>
+                        ))}
+                      </div>
+                    </div>
 
                     {/* Amenities（保留你原逻辑，样式稍后你要更“科技”我再给你升级） */}
                     <div style={{ border: "1px solid var(--border)", background: "rgba(255,255,255,.04)", borderRadius: 12, padding: 12 }}>
@@ -915,9 +1111,7 @@ useEffect(() => {
     </div>
 
     <div className={styles.k} style={{ marginTop: 10 }}>
-      {community
-        ? "Tip: Tap Open to view this community on Google Maps."
-        : "Tip: Tap Open to view this area on Google Maps."}
+      {t("result.map.tip")}
     </div>
   </div>
 
@@ -973,8 +1167,8 @@ useEffect(() => {
 
               <div style={{ display: "grid", gap: 10 }}>
                 {[
-                  [t("result.inputs.area"), area || "—"],
-                  ...(community ? [[t("home.community"), matched === "community" ? `${community} ✓` : community]] : []),
+                  [t("result.inputs.area"), getLocaleName(area, locale) || "—"],
+                  ...(community ? [[t("home.community"), matched === "community" ? `${getLocaleNameWithEnglish(community, locale)} ✓` : getLocaleNameWithEnglish(community, locale)]] : []),
                   [t("result.inputs.type"), type || "—"],
                   [t("result.inputs.bedrooms"), beds || "—"],
                   [t("result.inputs.size"), formatSqft(sizeSqft)],
