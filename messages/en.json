@@ -1,14 +1,14 @@
 {
   "home": {
-  "title": "Track your Dubai property value growth — anytime, anywhere",
-  "subtitle": "Estimate first · Decide better",
-   "badges": {
-  "fast": "30s check",
-  "areaCommunity": "Area + Community",
-  "noAgents": "No agents",
-  "noAds": "No ads",
-  "noSpam": "No spam"
-},
+    "title": "Track your Dubai property value growth — anytime, anywhere",
+    "subtitle": "Estimate first · Decide better",
+    "badges": {
+      "fast": "30s check",
+      "areaCommunity": "Area + Community",
+      "noAgents": "No agents",
+      "noAds": "No ads",
+      "noSpam": "No spam"
+    },
     "area": "Area",
     "community": "Community (optional)",
     "communityAll": "All communities",
@@ -36,9 +36,9 @@
       "size": "Please enter a valid size (sqft).",
       "noData": "We don’t have enough market data to produce a reliable estimate for this selection yet. Please try another area or community.",
       "generic": "Estimate failed. Please try again.",
-      "network": "Network error. Please try again."
+      "network": "Network error. Please try again.",
+      "noDataAreaCommunity": "Not enough data for this area or community. Try a different area or clear the community selection."
     },
-    
     "disclaimer": "Independent market-based estimate · No listings · No agents"
   },
   "result": {
@@ -49,12 +49,12 @@
       "recheck": "Re-check another home",
       "changeInputs": "Change inputs"
     },
-"header": {
-  "beds": "{beds} bed",
-  "bedsPlus": "4+ bed",
-  "studio": "Studio",
-  "sqft": "sqft"
-},
+    "header": {
+      "beds": "{beds} bed",
+      "bedsPlus": "4+ bed",
+      "studio": "Studio",
+      "sqft": "sqft"
+    },
     "likelyRange": "Likely value range (AED)",
     "conservativeRange": "Conservative market range",
     "likelyBandWidth": "Likely band width",
